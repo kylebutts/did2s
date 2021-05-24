@@ -6,7 +6,8 @@
 <!-- badges: start -->
 <!-- badges: end -->
 
-The goal of did2s is to …
+The goal of did2s is to estimate TWFE models without running into the
+problem of
 
 ## Installation
 
@@ -18,13 +19,17 @@ You can install did2s from github with:
 
 Researchers often want to estimate either a static TWFE model,
 
-where *μ*<sub>*i*</sub> are unit fixed effects, *μ*<sub>*t*</sub> are
-time fixed effects, and *D*<sub>*i*<sub>*t*</sub></sub> is an indicator
-for receiving treatment, or an event-study TWFE model
+![TWFE Model](man/figures/twfe.png)
 
-where *D*<sub>*i*<sub>*t*</sub><sup>*k*</sup></sub> are lag/leads of
-treatment (k periods from initial treatment date). Sometimes researches
-use variants of this model where they bin or drop leads and lags.
+where *μ*<sub>*i*</sub> are unit fixed effects, *μ*<sub>*t*</sub> are
+time fixed effects, and *D* <sub>it</sub> is an indicator for receiving
+treatment, or an event-study TWFE model
+
+![ES Model](man/figures/es.png)
+
+where *D* <sub>it</sub><sup>k</sup> are lag/leads of treatment (k
+periods from initial treatment date). Sometimes researches use variants
+of this model where they bin or drop leads and lags.
 
 However, running OLS to estimate either model has been shown to not
 recover an average treatment effect and has the potential to be severely
@@ -34,14 +39,12 @@ D’Haultfoeuille 2019; Goodman-Bacon 2018; Sun and Abraham 2020).
 
 One way of thinking about this problem is through the FWL theorem. When
 estimating the unit and time fixed effects, you create a residualized
-*ỹ*<sub>*i*<sub>*t*</sub></sub> which is commonly said to be “the
-outcome variable after removing time shocks and fixed units
-characteristics”, but you also create a residulaized
-*D̃*<sub>*i*<sub>*t*</sub></sub> or
-*D̃*<sub>*i*<sub>*t*</sub><sup>*k*</sup></sub>. To simplify the
-literature, this residualized treatment indicators is what creates the
-problem of interpreting *τ* or *τ*<sup>*k*</sup>, especially when
-treatment effects are heterogeneous.
+*ỹ* <sub>it</sub> which is commonly said to be “the outcome variable
+after removing time shocks and fixed units characteristics”, but you
+also create a residulaized *D̃* <sub>it</sub> or *D̃*
+<sub>it</sub><sup>k</sup>. To simplify the literature, this residualized
+treatment indicators is what creates the problem of interpreting *τ* or
+*τ*<sup>*k*</sup>, especially when treatment effects are heterogeneous.
 
 That’s where Gardner (2021) comes in. What Gardner does to fix the
 problem is quite simple: estimate *μ*<sub>*i*</sub> and
@@ -49,32 +52,29 @@ problem is quite simple: estimate *μ*<sub>*i*</sub> and
 indicators. In the absence of treatment, the TWFE model gives you a
 model for (potentially unobserved) untreated outcomes
 
-*y*<sub>*i*<sub>*t*</sub></sub>(0) = *μ*<sub>*i*</sub> + *μ*<sub>*t*</sub> + *ε*<sub>*i*<sub>*t*</sub></sub>.
+![TWFE Counterfactual](man/figures/twfe_count.png)
 
-Therefore, if you can ***consistently*** estimate
-*y*<sub>*i*<sub>*t*</sub></sub>(0), you can impute the untreated outcome
-and remove that from the observed outcome
-*y*<sub>*i*<sub>*t*</sub></sub>. The value of
-*y*<sub>*i*<sub>*t*</sub></sub> − *ŷ*<sub>*i*<sub>*t*</sub></sub>(0)
-should be close to zero for control units and should be close to
-*τ*<sub>*i*<sub>*t*</sub></sub> for treated observations. Then,
-regressing
-*y*<sub>*i*<sub>*t*</sub></sub> − *ŷ*<sub>*i*<sub>*t*</sub></sub>(0) on
-the treatment variables should give unbiased estimates of treatment
-effects (either static or dynamic/event-study). This is the same logic
-as the new paper Borusyak, Jaravel, and Spiess (2021)
+Therefore, if you can ***consistently*** estimate *y* <sub>it</sub> (0),
+you can impute the untreated outcome and remove that from the observed
+outcome *y* <sub>it</sub>. The value of *y* <sub>it</sub> $ - $
+<sub>it</sub> (0) should be close to zero for control units and should
+be close to *τ* <sub>it</sub> for treated observations. Then, regressing
+*y* <sub>it</sub> $ - $ <sub>it</sub> (0) on the treatment variables
+should give unbiased estimates of treatment effects (either static or
+dynamic/event-study). This is the same logic as the new paper Borusyak,
+Jaravel, and Spiess (2021)
 
 The steps of the two-step estimator are:
 
 1.  First estimate *μ*<sub>*i*</sub> and *μ*<sub>*t*</sub> using
-    untreated/not-yet-treated observations, i.e. the subsample with
-    *D*<sub>*i*<sub>*t*</sub></sub> = 0. Residualize outcomes
-    *ỹ*<sub>*i*<sub>*t*</sub></sub> = *y*<sub>*i*<sub>*t*</sub></sub> − *μ̂*<sub>*i*</sub> − *μ̂*<sub>*t*</sub>.
+    untreated/not-yet-treated observations, i.e. the subsample with *D*
+    <sub>it</sub>  = 0. Residualize outcomes:
 
-2.  Regress *ỹ*<sub>*i*<sub>*t*</sub></sub> on
-    *D*<sub>*i*<sub>*t*</sub></sub> or
-    *D*<sub>*i*<sub>*t*</sub><sup>*k*</sup></sub>’s to estimate the
-    treatment effect *τ* or *τ*<sup>*k*</sup>’s.
+![Y residualized](man/figures/resid.png)
+
+1.  Regress *ỹ* <sub>it</sub> on *D* <sub>it</sub> or *D*
+    <sub>it</sub><sup>k</sup>’s to estimate the treatment effect *τ* or
+    *τ*<sup>*k*</sup>’s.
 
 Some notes:
 
@@ -92,26 +92,24 @@ but are implemented in the R package
 Second, this procedure works so long as *μ*<sub>*i*</sub> and
 *μ*<sub>*t*</sub> are ***consistently*** estimated. The key is to use
 only untreated/not-yet-treated observations to estimate the fixed
-effects. For example, if you used observations with
-*D*<sub>*i*<sub>*t*</sub></sub> = 1, you would attribute treatment
-effects *τ* as “fixed characteristics” and would combine
-*μ*<sub>*i*</sub> with the treatment effects.
+effects. For example, if you used observations with *D* <sub>it</sub> $
+= 1$, you would attribute treatment effects *τ* as “fixed
+characteristics” and would combine *μ*<sub>*i*</sub> with the treatment
+effects.
 
 The fixed effects could be biased/inconsistent if there are anticipation
 effects, i.e. units respond before treatment starts. The fix is fairly
 simple, simply “shift” treatment date earlier by as many years as you
 suspect anticipation to occur (e.g. 2 years before treatment starts) and
 estimate on the subsample where the shifted treatment equals zero. The R
-package allows you to specify the variable
-*D*<sub>*i*<sub>*t*</sub></sub>, if you suspect anticipation, provide
-the shifted variable to this option.
+package allows you to specify the variable *D* <sub>it</sub>, if you
+suspect anticipation, provide the shifted variable to this option.
 
 ### Covariates
 
 This method works with pre-determined covariates as well. Augment the
-above step 1. to include *X*<sub>*i*</sub> and remove that from
-*y*<sub>*i*<sub>*t*</sub></sub> along with the fixed effects to get
-*ỹ*<sub>*i*<sub>*t*</sub></sub>.
+above step 1. to include *X*<sub>*i*</sub> and remove that from *y*
+<sub>it</sub> along with the fixed effects to get *ỹ* <sub>it</sub>.
 
 ## R Package
 
