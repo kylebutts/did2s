@@ -21,16 +21,20 @@
 #' es <- did2s(df_hom, yname = "dep_var", first_stage_formula = "i(state) + i(year)", treat_formula = "i(rel_year)", treat_var = "treat", cluster_vars = "state")
 #' summary(es$estimate, .vcov = es$adj_cov)
 #'
-did2s <- function(data, yname, first_stage_formula, treat_formula, treat_var, cluster_vars) {
+did2s <- function(data, yname, first_stage_formula, treat_formula, treat_var, cluster_vars = NULL) {
 
 	# Extract vars from formula
-	if(inherits(first_stage_formula, "formula")) first_stage_formula <- stats::as.character(first_stage_formula)[[2]]
-	if(inherits(treat_formula, "formula")) treat_formula <- stats::as.character(treat_formula)[[2]]
+	if(inherits(first_stage_formula, "formula")) first_stage_formula <- as.character(first_stage_formula)[[2]]
+	if(inherits(treat_formula, "formula")) treat_formula <- as.character(treat_formula)[[2]]
 
 	# First stage among untreated
 	formula <- stats::as.formula(glue::glue("{yname} ~ 0 + {first_stage_formula}"))
 
-	first_stage <- fixest::feols(formula, cluster = cluster_vars, dplyr::filter(data, !!rlang::sym(treat_var) == 0), warn = FALSE)
+	if(is.null(cluster_vars)) {
+		first_stage <- fixest::feols(formula, se = "standard",        dplyr::filter(data, !!rlang::sym(treat_var) == 0), warn = FALSE)
+	} else {
+		first_stage <- fixest::feols(formula, cluster = cluster_vars, dplyr::filter(data, !!rlang::sym(treat_var) == 0), warn = FALSE)
+	}
 	first_stage_cov <- stats::vcov(first_stage)
 
 	# Residualize outcome variable
@@ -39,11 +43,16 @@ did2s <- function(data, yname, first_stage_formula, treat_formula, treat_var, cl
 	# Second stage
 	formula <- stats::as.formula(glue::glue("adj ~ {treat_formula}"))
 
+	if(is.null(cluster_vars)) {
+		second_stage <- fixest::feols(formula, se = "standard",        data = data, warn = FALSE)
+	} else {
+		second_stage <- fixest::feols(formula, cluster = cluster_vars, data = data, warn = FALSE)
+	}
 	second_stage <- fixest::feols(formula, cluster = cluster_vars, data = data, warn = FALSE)
 	second_stage_cov <- stats::vcov(second_stage)
 
 	# get variable names
-	c <- lapply(names(coef(first_stage)), function(x) {
+	c <- lapply(names(stats::coef(first_stage)), function(x) {
 		# intercept
 		if(x == "(Intercept)") {
 			return(c(1,0))
@@ -68,6 +77,6 @@ did2s <- function(data, yname, first_stage_formula, treat_formula, treat_var, cl
 
 	cov <- second_stage_cov + t(c) %*% first_stage_cov %*% c
 
-	summary(second_stage, .vcov = cov)
-	return(list(estimate = second_stage, adj_cov = cov))
+	# summary creates fixest object with correct standard errors and vcov
+	return(summary(second_stage, .vcov = cov))
 }

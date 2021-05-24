@@ -4,7 +4,14 @@
 \alias{did2s}
 \title{Calculate two-stage difference-in-differences following Gardner (2021)}
 \usage{
-did2s(data, yname, first_stage_formula, treat_formula, treat_var, cluster_vars)
+did2s(
+  data,
+  yname,
+  first_stage_formula,
+  treat_formula,
+  treat_var,
+  cluster_vars = NULL
+)
 }
 \arguments{
 \item{data}{the dataframe containing all the variables}
