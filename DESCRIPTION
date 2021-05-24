@@ -1,16 +1,25 @@
 Package: did2s
-Title: What the Package Does (One Line, Title Case)
+Title: Estimate Two-Stage Difference-in-Differences following Gardner (2021)
 Version: 0.0.0.9000
 Authors@R: 
-    person(given = "First",
-           family = "Last",
-           role = c("aut", "cre"),
-           email = "first.last@example.com",
-           comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: What the package does (one paragraph).
-License: `use_mit_license()`, `use_gpl3_license()` or friends to
-    pick a license
+    person(given = "Kyle",
+           family = "Butts",
+           role = "cre",
+           email = "kyle.butts@colorado.edu",
+           comment = c(ORCID = "0000-0002-9048-8059"))
+Description: This package creates the funciton `did2s` which allows you to estimate TWFE diff-in-diff/event-study models. To avoid the problems caused by OLS estimation of the TWFE model, this function first estimates the fixed effects and covariates using untreated observations and then in a second stage, estimates the treatment effects.
+License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.1
+Imports: 
+    fixest,
+    dplyr,
+    magrittr,
+    glue,
+    stats,
+    stringr,
+    rlang
+Depends: 
+    R (>= 2.10)
