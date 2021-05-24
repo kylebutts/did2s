@@ -20,6 +20,8 @@ Imports:
     glue,
     stats,
     stringr,
-    rlang
+    rlang,
+    tibble,
+    tidyr
 Depends: 
     R (>= 2.10)
