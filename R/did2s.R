@@ -1,4 +1,4 @@
-#' Calculate two-stage difference-in-differences, following Gardner (2021)
+#' Calculate two-stage difference-in-differences following Gardner (2021)
 #'
 #' @param data the dataframe containing all the variables
 #' @param yname Outcome variable
@@ -7,48 +7,64 @@
 #' @param treat_var a variable that = 1 if treated, = 0 otherwise
 #' @param cluster_vars what variable to cluster standard errors
 #'
+#' @return list containing fixest estimate and corrected variance-covariance matrix
+#' @export
+#' @examples
+#' # Load Example Dataset
+#' data("df_hom")
+#'
+#' # Static
+#' static <- did2s(df_hom, yname = "dep_var", first_stage_formula = "i(state) + i(year)", treat_formula = "i(treat)", treat_var = "treat", cluster_vars = "state")
+#' summary(static$estimate, .vcov = static$adj_cov)
+#'
+#' # Event-Study
+#' es <- did2s(df_hom, yname = "dep_var", first_stage_formula = "i(state) + i(year)", treat_formula = "i(rel_year)", treat_var = "treat", cluster_vars = "state")
+#' summary(es$estimate, .vcov = es$adj_cov)
+#'
 did2s <- function(data, yname, first_stage_formula, treat_formula, treat_var, cluster_vars) {
 
 	# Extract vars from formula
-	if(inherits(first_stage_formula, "formula")) first_stage_formula <- as.character(first_stage_formula)[[2]]
-	if(inherits(treat_formula, "formula")) treat_formula <- as.character(treat_formula)[[2]]
+	if(inherits(first_stage_formula, "formula")) first_stage_formula <- stats::as.character(first_stage_formula)[[2]]
+	if(inherits(treat_formula, "formula")) treat_formula <- stats::as.character(treat_formula)[[2]]
 
 	# First stage among untreated
-	formula <- glue("{yname} ~ 0 + {first_stage_formula}") %>% as.formula()
+	formula <- stats::as.formula(glue::glue("{yname} ~ 0 + {first_stage_formula}"))
 
-	first_stage <- fixest::feols(formula, cluster = cluster_vars, data %>% filter(!!sym(treat_var) == 0))
-	first_stage_cov <- vcov(first_stage)
+	first_stage <- fixest::feols(formula, cluster = cluster_vars, dplyr::filter(data, !!rlang::sym(treat_var) == 0), warn = FALSE)
+	first_stage_cov <- stats::vcov(first_stage)
 
 	# Residualize outcome variable
-	data$adj <- data[[yname]] - predict(first_stage, newdata = data)
+	data$adj <- data[[yname]] - stats::predict(first_stage, newdata = data)
 
 	# Second stage
-	formula <- glue("adj ~ {treat_formula}") %>% as.formula()
+	formula <- stats::as.formula(glue::glue("adj ~ {treat_formula}"))
 
 	second_stage <- fixest::feols(formula, cluster = cluster_vars, data = data, warn = FALSE)
-	second_stage_cov <- vcov(second_stage)
+	second_stage_cov <- stats::vcov(second_stage)
 
 	# get variable names
 	c <- lapply(names(coef(first_stage)), function(x) {
 		# intercept
 		if(x == "(Intercept)") {
-			data$intercept <- 1
-			formula <- glue("intercept ~ 0 + {treat_formula}") %>% as.formula()
+			return(c(1,0))
 		}
 		# factor variables
-		else if(str_detect(x, "::")) {
-			var <- str_extract(x, ".*(?=::)")
-			val <- str_extract(x, "(?<=::).*")
-			formula <- glue("({val} == {var}) ~ {treat_formula}") %>% as.formula()
+		else if(stringr::str_detect(x, "::")) {
+			var <- stringr::str_extract(x, ".*(?=::)")
+			val <- stringr::str_extract(x, "(?<=::).*")
+			formula <- stats::as.formula(glue::glue("({val} == {var}) ~ {treat_formula}"))
+			return(fixest::feols(formula, data = data, warn = FALSE)$coefficients)
 		}
 		# covariates
 		else {
-			formula <- glue("{x} ~ {treat_formula}") %>% as.formula()
+			formula <- stats::as.formula(glue::glue("{x} ~ {treat_formula}"))
+			return(fixest::feols(formula, data = data, warn = FALSE)$coefficients)
 		}
 
-		return(fixest::feols(formula, data = data, warn = FALSE)$coefficients)
 
-	}) %>% unlist() %>% matrix(ncol = length(names(coef(second_stage))), byrow = T)
+
+	})
+	c <- matrix(unlist(c), ncol = length(names(coef(second_stage))), byrow = T)
 
 	cov <- second_stage_cov + t(c) %*% first_stage_cov %*% c
 
