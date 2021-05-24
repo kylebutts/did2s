@@ -1,0 +1,50 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+```
+
+# did2s
+
+<!-- badges: start -->
+<!-- badges: end -->
+
+The goal of did2s is to ...
+
+## Installation
+
+You can install did2s from github with:
+
+``` r
+devtools::install_github("kylebutts/did2s")
+```
+
+## Example
+
+This is a basic example which shows you how to solve a common problem:
+
+```{r example}
+library(did2s)
+
+# Load Example Dataset
+data("df_hom")
+
+# Static
+static <- did2s(df_hom, yname = "dep_var", first_stage_formula = "i(state) + i(year)", treat_formula = "i(treat)", treat_var = "treat", cluster_vars = "state")
+summary(static$estimate, .vcov = static$adj_cov)
+
+# Event-Study
+es <- did2s(df_hom, yname = "dep_var", first_stage_formula = "i(state) + i(year)", treat_formula = "i(rel_year)", treat_var = "treat", cluster_vars = "state")
+summary(es$estimate, .vcov = es$adj_cov)
+
+```
+
