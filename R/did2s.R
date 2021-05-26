@@ -15,11 +15,11 @@
 #'
 #' # Static
 #' static <- did2s(df_hom, yname = "dep_var", first_stage_formula = "i(state) + i(year)", treat_formula = "i(treat)", treat_var = "treat", cluster_vars = "state")
-#' summary(static$estimate, .vcov = static$adj_cov)
+#' fixest::esttable(static)
 #'
 #' # Event-Study
 #' es <- did2s(df_hom, yname = "dep_var", first_stage_formula = "i(state) + i(year)", treat_formula = "i(rel_year)", treat_var = "treat", cluster_vars = "state")
-#' summary(es$estimate, .vcov = es$adj_cov)
+#' fixest::esttable(es)
 #'
 did2s <- function(data, yname, first_stage_formula, treat_formula, treat_var, cluster_vars = NULL) {
 
@@ -61,7 +61,13 @@ did2s <- function(data, yname, first_stage_formula, treat_formula, treat_var, cl
 		else if(stringr::str_detect(x, "::")) {
 			var <- stringr::str_extract(x, ".*(?=::)")
 			val <- stringr::str_extract(x, "(?<=::).*")
-			formula <- stats::as.formula(glue::glue("({val} == {var}) ~ {treat_formula}"))
+
+			if(inherits(data[[var]], "numeric")){
+				formula <- stats::as.formula(glue::glue("({var} == {val}) ~ {treat_formula}"))
+			} else {
+				formula <- stats::as.formula(glue::glue("({var} == '{val}') ~ {treat_formula}"))
+			}
+
 			return(fixest::feols(formula, data = data, warn = FALSE)$coefficients)
 		}
 		# covariates
