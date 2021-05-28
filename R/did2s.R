@@ -1,13 +1,14 @@
 #' Calculate two-stage difference-in-differences following Gardner (2021)
 #'
-#' @param data the dataframe containing all the variables
+#' @param data The dataframe containing all the variables
 #' @param yname Outcome variable
-#' @param first_stage_formula fixed effects and other covariates you want to residualize with in first stage, use i() for fixed effects., following fixest::feols.
-#' @param treat_formula second stage, these should be the treatment indicator(s) (e.g. treatment variable or es leads/lags), use i() for factor variables, following fixest::feols.
-#' @param treat_var a variable that = 1 if treated, = 0 otherwise
-#' @param cluster_vars what variable to cluster standard errors
+#' @param first_stage_formula Fixed effects and other covariates you want to residualize with in first stage, use i() for fixed effects., following fixest::feols.
+#' @param treat_formula Second stage, these should be the treatment indicator(s) (e.g. treatment variable or es leads/lags), use i() for factor variables, following fixest::feols.
+#' @param treat_var A variable that = 1 if treated, = 0 otherwise
+#' @param cluster_var What variable to cluster standard errors. This can be IDs or a higher aggregate level (state for example)
+#' @param n_bootstraps How many bootstraps to run. Default is 250
 #'
-#' @return list containing fixest estimate and corrected variance-covariance matrix
+#' @return fixest::feols point estimate with bootstrap standard errors
 #' @export
 #' @examples
 #' # Load Example Dataset
@@ -18,23 +19,60 @@
 #' fixest::esttable(static)
 #'
 #' # Event-Study
-#' es <- did2s(df_hom, yname = "dep_var", first_stage_formula = "i(state) + i(year)", treat_formula = "i(rel_year)", treat_var = "treat", cluster_vars = "state")
+#' es <- did2s(df_hom, yname = "dep_var", first_stage_formula = "i(state) + i(year)", treat_formula = "i(rel_year)", treat_var = "treat", cluster_var = "state")
 #' fixest::esttable(es)
 #'
-did2s <- function(data, yname, first_stage_formula, treat_formula, treat_var, cluster_vars = NULL) {
+did2s <- function(data, yname, first_stage_formula, treat_formula, treat_var, cluster_var, n_bootstraps = 250) {
+
+	# Check Parameters ---------------------------------------------------------
 
 	# Extract vars from formula
 	if(inherits(first_stage_formula, "formula")) first_stage_formula <- as.character(first_stage_formula)[[2]]
 	if(inherits(treat_formula, "formula")) treat_formula <- as.character(treat_formula)[[2]]
 
+
+	# Point Estimates ----------------------------------------------------------
+
+	estimate <- did2s_estimate(
+		data = data,
+		yname = yname,
+		first_stage_formula = first_stage_formula,
+		treat_formula = treat_formula,
+		treat_var = treat_var
+	)
+
+	cli::cli_alert("Starting {n_bootstraps} bootstraps at cluster level: {cluster_var}")
+
+	samples <- rsample::bootstraps(data, times = n_bootstraps, strata = all_of(cluster_var), pool = 0)
+
+	estimates <- purrr::map_dfr(samples$splits, function(x) {
+						   	data <- as.data.frame(x)
+
+						   	estimate <- did2s_estimate(
+						   		data = data,
+						   		yname = yname,
+						   		first_stage_formula = first_stage_formula,
+						   		treat_formula = treat_formula,
+						   		treat_var = treat_var
+						   	)
+
+						   	return(coef(estimate$second_stage))
+				   })
+
+	cov <- cov(estimates)
+
+
+	# summary creates fixest object with correct standard errors and vcov
+	return(base::suppressWarnings(summary(estimate$second_stage, .vcov = cov)))
+}
+
+
+
+did2s_estimate <- function(data, yname, first_stage_formula, treat_formula, treat_var) {
 	# First stage among untreated
 	formula <- stats::as.formula(glue::glue("{yname} ~ 0 + {first_stage_formula}"))
 
-	if(is.null(cluster_vars)) {
-		first_stage <- fixest::feols(formula, se = "standard",        dplyr::filter(data, !!rlang::sym(treat_var) == 0), warn = FALSE)
-	} else {
-		first_stage <- fixest::feols(formula, cluster = cluster_vars, dplyr::filter(data, !!rlang::sym(treat_var) == 0), warn = FALSE)
-	}
+	first_stage <- fixest::feols(formula, se = "standard", dplyr::filter(data, !!rlang::sym(treat_var) == 0), warn=FALSE, notes=FALSE)
 	first_stage_cov <- stats::vcov(first_stage)
 
 	# Residualize outcome variable
@@ -43,46 +81,13 @@ did2s <- function(data, yname, first_stage_formula, treat_formula, treat_var, cl
 	# Second stage
 	formula <- stats::as.formula(glue::glue("adj ~ {treat_formula}"))
 
-	if(is.null(cluster_vars)) {
-		second_stage <- fixest::feols(formula, se = "standard",        data = data, warn = FALSE)
-	} else {
-		second_stage <- fixest::feols(formula, cluster = cluster_vars, data = data, warn = FALSE)
-	}
-	second_stage <- fixest::feols(formula, cluster = cluster_vars, data = data, warn = FALSE)
+	second_stage <- fixest::feols(formula, se = "standard", data = data, warn=FALSE, notes=FALSE)
 	second_stage_cov <- stats::vcov(second_stage)
 
-	# get variable names
-	c <- lapply(names(stats::coef(first_stage)), function(x) {
-		# intercept
-		if(x == "(Intercept)") {
-			return(c(1,0))
-		}
-		# factor variables
-		else if(stringr::str_detect(x, "::")) {
-			var <- stringr::str_extract(x, ".*(?=::)")
-			val <- stringr::str_extract(x, "(?<=::).*")
-
-			if(inherits(data[[var]], "numeric")){
-				formula <- stats::as.formula(glue::glue("({var} == {val}) ~ {treat_formula}"))
-			} else {
-				formula <- stats::as.formula(glue::glue("({var} == '{val}') ~ {treat_formula}"))
-			}
-
-			return(fixest::feols(formula, data = data, warn = FALSE)$coefficients)
-		}
-		# covariates
-		else {
-			formula <- stats::as.formula(glue::glue("{x} ~ {treat_formula}"))
-			return(fixest::feols(formula, data = data, warn = FALSE)$coefficients)
-		}
-
-
-
-	})
-	c <- matrix(unlist(c), ncol = length(names(coef(second_stage))), byrow = T)
-
-	cov <- second_stage_cov + t(c) %*% first_stage_cov %*% c
-
-	# summary creates fixest object with correct standard errors and vcov
-	return(summary(second_stage, .vcov = cov))
+	return(list(
+		first_stage = first_stage,
+		first_stage_cov = first_stage_cov,
+		second_stage = second_stage,
+		second_stage_cov = second_stage_cov
+	))
 }

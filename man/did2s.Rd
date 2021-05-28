@@ -10,21 +10,24 @@ did2s(
   first_stage_formula,
   treat_formula,
   treat_var,
-  cluster_vars = NULL
+  cluster_var,
+  n_bootstraps = 250
 )
 }
 \arguments{
-\item{data}{the dataframe containing all the variables}
+\item{data}{The dataframe containing all the variables}
 
 \item{yname}{Outcome variable}
 
-\item{first_stage_formula}{fixed effects and other covariates you want to residualize with in first stage, use i() for fixed effects., following fixest::feols.}
+\item{first_stage_formula}{Fixed effects and other covariates you want to residualize with in first stage, use i() for fixed effects., following fixest::feols.}
 
-\item{treat_formula}{second stage, these should be the treatment indicator(s) (e.g. treatment variable or es leads/lags), use i() for factor variables, following fixest::feols.}
+\item{treat_formula}{Second stage, these should be the treatment indicator(s) (e.g. treatment variable or es leads/lags), use i() for factor variables, following fixest::feols.}
 
-\item{treat_var}{a variable that = 1 if treated, = 0 otherwise}
+\item{treat_var}{A variable that = 1 if treated, = 0 otherwise}
 
-\item{cluster_vars}{what variable to cluster standard errors}
+\item{cluster_var}{What variable to cluster standard errors. This can be IDs or a higher aggregate level (state for example)}
+
+\item{n_bootstraps}{How many bootstraps to run. Default is 250}
 }
 \value{
 list containing fixest estimate and corrected variance-covariance matrix
@@ -38,10 +41,10 @@ data("df_hom")
 
 # Static
 static <- did2s(df_hom, yname = "dep_var", first_stage_formula = "i(state) + i(year)", treat_formula = "i(treat)", treat_var = "treat", cluster_vars = "state")
-summary(static$estimate, .vcov = static$adj_cov)
+fixest::esttable(static)
 
 # Event-Study
 es <- did2s(df_hom, yname = "dep_var", first_stage_formula = "i(state) + i(year)", treat_formula = "i(rel_year)", treat_var = "treat", cluster_vars = "state")
-summary(es$estimate, .vcov = es$adj_cov)
+fixest::esttable(es)
 
 }
