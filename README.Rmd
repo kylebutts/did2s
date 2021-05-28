@@ -19,7 +19,7 @@ knitr::opts_chunk$set(
 <!-- badges: start -->
 <!-- badges: end -->
 
-The goal of did2s is to estimate TWFE models without running into the problem of 
+The goal of did2s is to estimate TWFE models without running into the problem of staggered treatment adoption. 
 
 ## Installation
 
@@ -33,11 +33,11 @@ devtools::install_github("kylebutts/did2s")
 
 Researchers often want to estimate either a static TWFE model,
 
-![TWFE Model](man/figures/twfe.png)
+<img src="man/figures/twfe.png" width="400px" height="100%">
 
 where $\mu_i$ are unit fixed effects, $\mu_t$ are time fixed effects, and $D$ <sub>it</sub> is an indicator for receiving treatment, or an event-study TWFE model
 
-![ES Model](man/figures/es.png)
+<img src="man/figures/es.png" width="450px" height="100%">
 
 where $D$ <sub>it</sub><sup>k</sup> are lag/leads of treatment (k periods from initial treatment date). Sometimes researches use variants of this model where they bin or drop leads and lags.
 
@@ -47,7 +47,7 @@ One way of thinking about this problem is through the FWL theorem. When estimati
 
 That's where @Gardner_2021 comes in. What Gardner does to fix the problem is quite simple: estimate $\mu_i$ and $\mu_t$ seperately so you don't residualize the treatment indicators. In the absence of treatment, the TWFE model gives you a model for (potentially unobserved) untreated outcomes 
 
-![TWFE Counterfactual ](man/figures/twfe_count.png)
+<img src="man/figures/twfe_count.png" width="350px" height="100%">
 
 Therefore, if you can ***consistently*** estimate $y$ <sub>it</sub> $(0)$, you can impute the untreated outcome and remove that from the observed outcome $y$ <sub>it</sub>. The value of $y$ <sub>it</sub> $ - \hat{y}$ <sub>it</sub> $(0)$ should be close to zero for control units and should be close to $\tau$ <sub>it</sub> for treated observations. Then, regressing $y$ <sub>it</sub> $ - \hat{y}$ <sub>it</sub> $(0)$ on the treatment variables should give unbiased estimates of treatment effects (either static or dynamic/event-study). This is the same logic as the new paper @Borusyak_Jaravel_Spiess_2021
 
@@ -55,7 +55,7 @@ The steps of the two-step estimator are:
 
 1. First estimate $\mu_i$ and $\mu_t$ using untreated/not-yet-treated observations, i.e. the subsample with $D$ <sub>it</sub> $=0$. Residualize outcomes:
 
-![Y residualized](man/figures/resid.png)
+<img src="man/figures/resid.png" width="350px" height="100%">
 
 2. Regress $\tilde{y}$ <sub>it</sub> on $D$ <sub>it</sub> or $D$ <sub>it</sub><sup>k</sup>'s to estimate the treatment effect $\tau$ or $\tau^k$'s.
 
@@ -93,7 +93,8 @@ The main function is `did2s` which estimates the two-stage did procedure. This f
 - `first_stage_formula`: formula for first stage, can include fixed effects and covariates, but do not include treatment variable(s)!
 - `treat_formula`: This should be the treatment variable or in the case of event studies, treatment variables.
 - `treat_var`: This has to be the 0/1 treatment variable that marks when treatment turns on for a unit. If you suspect anticipation, see note above for accounting for this.
-- `cluster_vars`: Optional, this tells which variables to cluster on
+- `cluster_var`: Which variables to cluster on
+- `n_bootstraps`: How many clustered bootstraps to perform for standard errors
 
 did2s returns a list with two objects:
 
@@ -155,7 +156,7 @@ First, lets estimate a static did:
 static <- did2s(df_het, 
 				yname = "dep_var", first_stage_formula = ~i(state) + i(year), 
 				treat_formula = ~i(treat), treat_var = "treat", 
-				cluster_vars = "state")
+				cluster_var = "state")
 
 fixest::esttable(static)
 
@@ -169,7 +170,7 @@ Then, let's estimate an event study did:
 es <- did2s(df_het,
 			yname = "dep_var", first_stage_formula = ~i(state) + i(year), 
 			treat_formula = ~i(rel_year), treat_var = "treat", 
-			cluster_vars = "state")
+			cluster_var = "state")
 
 fixest::esttable(es)
 

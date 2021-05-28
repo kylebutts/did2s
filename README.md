@@ -7,7 +7,7 @@
 <!-- badges: end -->
 
 The goal of did2s is to estimate TWFE models without running into the
-problem of
+problem of staggered treatment adoption.
 
 ## Installation
 
@@ -19,13 +19,13 @@ You can install did2s from github with:
 
 Researchers often want to estimate either a static TWFE model,
 
-![TWFE Model](man/figures/twfe.png)
+<img src="man/figures/twfe.png" width="400px" height="100%">
 
 where *μ*<sub>*i*</sub> are unit fixed effects, *μ*<sub>*t*</sub> are
 time fixed effects, and *D* <sub>it</sub> is an indicator for receiving
 treatment, or an event-study TWFE model
 
-![ES Model](man/figures/es.png)
+<img src="man/figures/es.png" width="450px" height="100%">
 
 where *D* <sub>it</sub><sup>k</sup> are lag/leads of treatment (k
 periods from initial treatment date). Sometimes researches use variants
@@ -52,7 +52,7 @@ problem is quite simple: estimate *μ*<sub>*i*</sub> and
 indicators. In the absence of treatment, the TWFE model gives you a
 model for (potentially unobserved) untreated outcomes
 
-![TWFE Counterfactual](man/figures/twfe_count.png)
+<img src="man/figures/twfe_count.png" width="350px" height="100%">
 
 Therefore, if you can ***consistently*** estimate *y* <sub>it</sub> (0),
 you can impute the untreated outcome and remove that from the observed
@@ -70,7 +70,7 @@ The steps of the two-step estimator are:
     untreated/not-yet-treated observations, i.e. the subsample with *D*
     <sub>it</sub>  = 0. Residualize outcomes:
 
-![Y residualized](man/figures/resid.png)
+<img src="man/figures/resid.png" width="350px" height="100%">
 
 1.  Regress *ỹ* <sub>it</sub> on *D* <sub>it</sub> or *D*
     <sub>it</sub><sup>k</sup>’s to estimate the treatment effect *τ* or
@@ -131,7 +131,9 @@ procedure. This function requires the following options:
 -   `treat_var`: This has to be the 0/1 treatment variable that marks
     when treatment turns on for a unit. If you suspect anticipation, see
     note above for accounting for this.
--   `cluster_vars`: Optional, this tells which variables to cluster on
+-   `cluster_var`: Which variables to cluster on
+-   `n_bootstraps`: How many clustered bootstraps to perform for
+    standard errors
 
 did2s returns a list with two objects:
 
@@ -242,15 +244,15 @@ First, lets estimate a static did:
     static <- did2s(df_het, 
                     yname = "dep_var", first_stage_formula = ~i(state) + i(year), 
                     treat_formula = ~i(treat), treat_var = "treat", 
-                    cluster_vars = "state")
-    #> The variable 'state::40' has been removed because of collinearity (see $collin.var).
+                    cluster_var = "state")
+    #> → Starting 250 bootstraps at cluster level: state
 
     fixest::esttable(static)
     #>                              static
     #> Dependent Var.:                 adj
     #>                                    
-    #> (Intercept)     1.78e-15 (4.59e-10)
-    #> treat = TRUE      2.380*** (0.0504)
+    #> (Intercept)     1.78e-15 (6.01e-14)
+    #> treat = TRUE      2.380*** (0.0278)
     #> _______________ ___________________
     #> S.E. type                    Custom
     #> Observations                 31,000
@@ -264,58 +266,55 @@ Then, let’s estimate an event study did:
     es <- did2s(df_het,
                 yname = "dep_var", first_stage_formula = ~i(state) + i(year), 
                 treat_formula = ~i(rel_year), treat_var = "treat", 
-                cluster_vars = "state")
-    #> The variable 'state::40' has been removed because of collinearity (see $collin.var).
-    #> Warning in matrix(unlist(c), ncol = length(names(coef(second_stage))), byrow =
-    #> T): data length [2900] is not a sub-multiple or multiple of the number of rows
-    #> [70]
+                cluster_var = "state")
+    #> → Starting 250 bootstraps at cluster level: state
 
     fixest::esttable(es)
     #>                                es
     #> Dependent Var.:               adj
     #>                                  
-    #> (Intercept)       0.0495 (0.1094)
-    #> rel_year = -19    0.1055 (0.1079)
-    #> rel_year = -18   -0.0065 (0.1351)
-    #> rel_year = -17    0.0303 (0.1089)
-    #> rel_year = -16    0.0529 (0.1247)
-    #> rel_year = -15    0.1670 (0.1354)
-    #> rel_year = -14    0.1213 (0.1179)
-    #> rel_year = -13    0.0445 (0.1042)
-    #> rel_year = -12    0.0404 (0.1267)
-    #> rel_year = -11    0.1482 (0.1230)
-    #> rel_year = -10    0.0458 (0.1299)
-    #> rel_year = -9     0.0018 (0.1227)
-    #> rel_year = -8     0.0383 (0.1083)
-    #> rel_year = -7     0.1048 (0.0966)
-    #> rel_year = -6    -0.0274 (0.1088)
-    #> rel_year = -5    -0.0143 (0.1115)
-    #> rel_year = -4    -0.1003 (0.1202)
-    #> rel_year = -3    -0.0589 (0.1126)
-    #> rel_year = -2    -0.0406 (0.1101)
-    #> rel_year = -1     0.0684 (0.1158)
-    #> rel_year = 0    1.678*** (0.1240)
-    #> rel_year = 1    1.703*** (0.1161)
-    #> rel_year = 2    1.822*** (0.1262)
-    #> rel_year = 3    1.869*** (0.1191)
-    #> rel_year = 4    1.890*** (0.1257)
-    #> rel_year = 5    2.096*** (0.1374)
-    #> rel_year = 6    2.131*** (0.1173)
-    #> rel_year = 7    2.298*** (0.1117)
-    #> rel_year = 8    2.363*** (0.1091)
-    #> rel_year = 9    2.570*** (0.1141)
-    #> rel_year = 10   2.631*** (0.1219)
-    #> rel_year = 11   2.663*** (0.1549)
-    #> rel_year = 12   2.622*** (0.1551)
-    #> rel_year = 13   2.606*** (0.1647)
-    #> rel_year = 14   2.705*** (0.1746)
-    #> rel_year = 15   2.774*** (0.1704)
-    #> rel_year = 16   2.645*** (0.1608)
-    #> rel_year = 17   2.847*** (0.1490)
-    #> rel_year = 18   3.081*** (0.1669)
-    #> rel_year = 19   3.181*** (0.1601)
-    #> rel_year = 20   3.259*** (0.1509)
-    #> rel_year = Inf   -0.1104 (0.1334)
+    #> (Intercept)       0.0495 (0.0797)
+    #> rel_year = -19    0.1055 (0.1180)
+    #> rel_year = -18   -0.0065 (0.1214)
+    #> rel_year = -17    0.0303 (0.1142)
+    #> rel_year = -16    0.0529 (0.1126)
+    #> rel_year = -15    0.1670 (0.1160)
+    #> rel_year = -14    0.1213 (0.1096)
+    #> rel_year = -13    0.0445 (0.1162)
+    #> rel_year = -12    0.0404 (0.1166)
+    #> rel_year = -11    0.1482 (0.1130)
+    #> rel_year = -10    0.0458 (0.1105)
+    #> rel_year = -9     0.0018 (0.0993)
+    #> rel_year = -8     0.0383 (0.0994)
+    #> rel_year = -7     0.1048 (0.0928)
+    #> rel_year = -6    -0.0274 (0.0999)
+    #> rel_year = -5    -0.0143 (0.0994)
+    #> rel_year = -4    -0.1003 (0.0963)
+    #> rel_year = -3    -0.0589 (0.0963)
+    #> rel_year = -2    -0.0406 (0.0890)
+    #> rel_year = -1     0.0684 (0.0930)
+    #> rel_year = 0    1.678*** (0.1290)
+    #> rel_year = 1    1.703*** (0.1167)
+    #> rel_year = 2    1.822*** (0.1234)
+    #> rel_year = 3    1.869*** (0.1103)
+    #> rel_year = 4    1.890*** (0.1204)
+    #> rel_year = 5    2.096*** (0.1217)
+    #> rel_year = 6    2.131*** (0.1239)
+    #> rel_year = 7    2.298*** (0.1174)
+    #> rel_year = 8    2.363*** (0.1175)
+    #> rel_year = 9    2.570*** (0.1156)
+    #> rel_year = 10   2.631*** (0.1281)
+    #> rel_year = 11   2.663*** (0.1524)
+    #> rel_year = 12   2.622*** (0.1454)
+    #> rel_year = 13   2.606*** (0.1515)
+    #> rel_year = 14   2.705*** (0.1594)
+    #> rel_year = 15   2.774*** (0.1582)
+    #> rel_year = 16   2.645*** (0.1409)
+    #> rel_year = 17   2.847*** (0.1668)
+    #> rel_year = 18   3.081*** (0.1557)
+    #> rel_year = 19   3.181*** (0.1472)
+    #> rel_year = 20   3.259*** (0.1510)
+    #> rel_year = Inf   -0.1104 (0.0812)
     #> _______________ _________________
     #> S.E. type                  Custom
     #> Observations               31,000

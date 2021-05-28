@@ -76,10 +76,10 @@ did2s_estimate <- function(data, yname, first_stage_formula, treat_formula, trea
 	first_stage_cov <- stats::vcov(first_stage)
 
 	# Residualize outcome variable
-	data$adj <- data[[yname]] - stats::predict(first_stage, newdata = data)
+	data$zz000adj <- data[[yname]] - stats::predict(first_stage, newdata = data)
 
 	# Second stage
-	formula <- stats::as.formula(glue::glue("adj ~ {treat_formula}"))
+	formula <- stats::as.formula(glue::glue("zz000adj ~ {treat_formula}"))
 
 	second_stage <- fixest::feols(formula, se = "standard", data = data, warn=FALSE, notes=FALSE)
 	second_stage_cov <- stats::vcov(second_stage)
