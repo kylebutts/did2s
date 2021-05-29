@@ -7,6 +7,7 @@
 #' @param treat_var A variable that = 1 if treated, = 0 otherwise
 #' @param cluster_var What variable to cluster standard errors. This can be IDs or a higher aggregate level (state for example)
 #' @param n_bootstraps How many bootstraps to run. Default is 250
+#' @param parallel If TRUE, will run bootstraps in parallel
 #'
 #' @return fixest::feols point estimate with bootstrap standard errors
 #' @export
@@ -15,14 +16,14 @@
 #' data("df_hom")
 #'
 #' # Static
-#' static <- did2s(df_hom, yname = "dep_var", first_stage_formula = "i(state) + i(year)", treat_formula = "i(treat)", treat_var = "treat", cluster_vars = "state")
+#' static <- did2s(df_hom, yname = "dep_var", first_stage_formula = "i(state) + i(year)", treat_formula = "i(treat)", treat_var = "treat", cluster_var = "state")
 #' fixest::esttable(static)
 #'
 #' # Event-Study
 #' es <- did2s(df_hom, yname = "dep_var", first_stage_formula = "i(state) + i(year)", treat_formula = "i(rel_year)", treat_var = "treat", cluster_var = "state")
 #' fixest::esttable(es)
 #'
-did2s <- function(data, yname, first_stage_formula, treat_formula, treat_var, cluster_var, n_bootstraps = 250) {
+did2s <- function(data, yname, first_stage_formula, treat_formula, treat_var, cluster_var, n_bootstraps = 250, parallel = TRUE) {
 
 	# Check Parameters ---------------------------------------------------------
 
@@ -45,19 +46,37 @@ did2s <- function(data, yname, first_stage_formula, treat_formula, treat_var, cl
 
 	samples <- rsample::bootstraps(data, times = n_bootstraps, strata = all_of(cluster_var), pool = 0)
 
-	estimates <- purrr::map_dfr(samples$splits, function(x) {
-						   	data <- as.data.frame(x)
+	if(parallel) {
+		future::plan(future::multisession)
 
-						   	estimate <- did2s_estimate(
-						   		data = data,
-						   		yname = yname,
-						   		first_stage_formula = first_stage_formula,
-						   		treat_formula = treat_formula,
-						   		treat_var = treat_var
-						   	)
+		estimates <- furrr::future_map_dfr(samples$splits, function(x) {
+			data <- as.data.frame(x)
 
-						   	return(coef(estimate$second_stage))
-				   })
+			estimate <- did2s_estimate(
+				data = data,
+				yname = yname,
+				first_stage_formula = first_stage_formula,
+				treat_formula = treat_formula,
+				treat_var = treat_var
+			)
+
+			return(coef(estimate$second_stage))
+		}, seed = NULL)
+	} else {
+		estimates <- purrr::map_dfr(samples$splits, function(x) {
+			data <- rsample::as.data.frame(x)
+
+			estimate <- did2s_estimate(
+				data = data,
+				yname = yname,
+				first_stage_formula = first_stage_formula,
+				treat_formula = treat_formula,
+				treat_var = treat_var
+			)
+
+			return(coef(estimate$second_stage))
+		})
+	}
 
 	cov <- cov(estimates)
 
@@ -91,3 +110,15 @@ did2s_estimate <- function(data, yname, first_stage_formula, treat_formula, trea
 		second_stage_cov = second_stage_cov
 	))
 }
+
+
+## Testing
+# data("df_hom")
+# data = df_hom
+# yname = "dep_var"
+# first_stage_formula = ~ i(unit) + i(year)
+# treat_formula = ~ i(rel_year, ref = c(-1, Inf))
+# treat_var = "treat"
+# cluster_var = "state"
+# n_bootstraps = 250
+# parallel = TRUE
