@@ -1,4 +1,4 @@
-did_impute <- function(data, yname, group_name, first_stage_formula, treat_var, weights){
+did_impute <- function(data, yname, group_name, rel_time_name, id_name, first_stage_formula, treat_var, weights){
 	# Treat
 	treat <- data[data[[treat_var]] == 1,]
 
@@ -25,18 +25,40 @@ did_impute <- function(data, yname, group_name, first_stage_formula, treat_var, 
 	Z_0 <- create_Z(0)
 	Z_1 <- create_Z(1)
 	Z <- create_Z(c(0,1))
-	w <- data[data[[treat_var]] == 1,][[weight]]
 
-	# Not Working
-	# v <- - t(Z) %*% solve(t(Z_0) %*% Z_0) %*% t(Z_1) %*% w
-	v <- w
+	se <- c()
+	for(weight in weights) {
 
-	# Equation (10) of Borusyak et. al. 2021
-	# Calculate \bar{\tau}_{et}
+		# Not Working
+		# v <- - t(Z) %*% solve(t(Z_0) %*% Z_0) %*% t(Z_1) %*% w
+		w <- data[data[[treat_var]] == 1,][[weight]]
+		data$zz000v <- data[[weight]]
 
-	# Equation (8)
-	# Calculate variance of estimate
+		# Equation (10) of Borusyak et. al. 2021
+		# Calculate tau_it - \bar{\tau}_{et}
 
+		data <- data %>%
+			dplyr::group_by(!!rlang::sym(group_name), !!rlang::sym(rel_year_name))  %>%
+			dplyr::mutate(
+				zz000tau_et = if_else(!!rlang::sym(treat_var) == 1,
+									  sum(zz000v^2 * zz000adj)/sum(zz000v^2) * treat,
+									  0),
+				zz000tau_centered = zz000adj - zz000tau_et
+			) %>%
+			dplyr::ungroup()
+
+		# Equation (8)
+		# Calculate variance of estimate
+		variance <- data %>%
+			dplyr::group_by(!!rlang::sym(id_name)) %>%
+			dplyr::summarize(zz000temp = sum(zz000v * zz000tau_centered)^2) %>%
+			pull(zz000temp) %>%
+			mean()
+
+		se <- c(se, sqrt(variance))
+	}
+
+	return(list(estimate = est, se = sqrt(variance)))
 }
 
 
@@ -79,6 +101,8 @@ data("df_hom")
 data = df_hom %>% group_by(treat) %>% mutate(weight = 1/n() * treat)
 yname = "dep_var"
 group_name = "group"
+rel_year_name = "rel_year"
+id_name = "unit"
 first_stage_formula = "i(state) + i(year)"
 treat_var = "treat"
 weights = "weight"
