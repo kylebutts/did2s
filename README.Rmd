@@ -63,7 +63,7 @@ Some notes:
 
 ### Standard Errors
 
-First, the standard errors on $\tau$ or $\tau^k$'s will be incorrect as the dependent variable is itself an estimate. This is referred to the generated regressor problem in econometrics parlance. Therefore, @Gardner_2021 has developed a GMM estimator that will give asymptotically correct standard errors. Details are left to the paper, but are implemented in the R package
+First, the standard errors on $\tau$ or $\tau^k$'s will be incorrect as the dependent variable is itself an estimate. This is referred to the generated regressor problem in econometrics parlance. Therefore, @Gardner_2021 has derived asymptotically correct standard errors based on Newey and McFadden (1994). Details are left to the paper, but are implemented in the R package
 
 ### Anticipation
 
@@ -94,7 +94,9 @@ The main function is `did2s` which estimates the two-stage did procedure. This f
 - `treat_formula`: This should be the treatment variable or in the case of event studies, treatment variables.
 - `treat_var`: This has to be the 0/1 treatment variable that marks when treatment turns on for a unit. If you suspect anticipation, see note above for accounting for this.
 - `cluster_var`: Which variables to cluster on
-- `n_bootstraps`: How many clustered bootstraps to perform for standard errors
+- `weights`: Optional variable to run a weighted first- and second-stage regressions
+- `bootstrap`: Should standard errors be bootstrapped instead? Default is False.
+- `n_bootstraps`: How many clustered bootstraps to perform for standard errors. Default is 250.
 
 did2s returns a list with two objects:
 
@@ -155,12 +157,14 @@ First, lets estimate a static did:
 # Static
 static <- did2s(df_het, 
 				yname = "dep_var", first_stage_formula = ~i(state) + i(year), 
-				treat_formula = ~i(treat), treat_var = "treat", 
+				treat_formula = ~i(treat, ref=FALSE), treat_var = "treat", 
 				cluster_var = "state")
 
 fixest::esttable(static)
 
 ```
+
+This is very close to the true treatment effect of `r df_het %>% filter(treat == 1) %>% summarize(att = mean(te + te_dynamic)) %>% pull(att)`.
 
 Then, let's estimate an event study did:
 
@@ -169,7 +173,7 @@ Then, let's estimate an event study did:
 # Event Study
 es <- did2s(df_het,
 			yname = "dep_var", first_stage_formula = ~i(state) + i(year), 
-			treat_formula = ~i(rel_year), treat_var = "treat", 
+			treat_formula = ~i(rel_year, ref=c(-1, Inf)), treat_var = "treat", 
 			cluster_var = "state")
 
 fixest::esttable(es)
@@ -184,7 +188,7 @@ pts <- broom::tidy(es) %>%
     filter(str_detect(term, "rel_year::")) %>%
 	select(rel_year = term, estimate, se = std.error) %>%
     mutate(
-        rel_year = as.numeric(str_remove(rel_year, "rel_year::")),
+        rel_year = as.numeric(str_remove(rel_year, "rel_year::")) + 0.05,
         ci_lower = estimate - 1.96 * se,
         ci_upper = estimate + 1.96 * se,
         group = "Estimated Effect"
@@ -197,7 +201,8 @@ te_true <- df_het %>%
     group_by(rel_year) %>%
     summarize(estimate = mean(te + te_dynamic)) %>%
 	mutate(group = "True Effect") %>%
-    filter(rel_year >= -8 & rel_year <= 8)
+    filter(rel_year >= -8 & rel_year <= 8) %>%
+	mutate(rel_year = rel_year - 0.05)
 
 pts <- bind_rows(pts, te_true)
 
@@ -229,5 +234,6 @@ ggplot() +
 
 
 ## References
+
 
 

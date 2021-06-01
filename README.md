@@ -83,9 +83,9 @@ Some notes:
 First, the standard errors on *τ* or *τ*<sup>*k*</sup>’s will be
 incorrect as the dependent variable is itself an estimate. This is
 referred to the generated regressor problem in econometrics parlance.
-Therefore, Gardner (2021) has developed a GMM estimator that will give
-asymptotically correct standard errors. Details are left to the paper,
-but are implemented in the R package
+Therefore, Gardner (2021) has derived asymptotically correct standard
+errors based on Newey and McFadden (1994). Details are left to the
+paper, but are implemented in the R package
 
 ### Anticipation
 
@@ -132,8 +132,12 @@ procedure. This function requires the following options:
     when treatment turns on for a unit. If you suspect anticipation, see
     note above for accounting for this.
 -   `cluster_var`: Which variables to cluster on
+-   `weights`: Optional variable to run a weighted first- and
+    second-stage regressions
+-   `bootstrap`: Should standard errors be bootstrapped instead? Default
+    is False.
 -   `n_bootstraps`: How many clustered bootstraps to perform for
-    standard errors
+    standard errors. Default is 250.
 
 did2s returns a list with two objects:
 
@@ -156,6 +160,10 @@ among the groups. Here is one unit’s data:
     #> x dplyr::lag()    masks stats::lag()
     library(did2s)
     library(fixest)
+    #> fixest 0.9.0, BREAKING changes! 
+    #> in i():
+    #>   a) the two first arguments have been swapped! Now it's i(factor_var, continuous_var) for interactions. 
+    #>   b) argument 'drop' has been removed (put everything in 'ref' now).
     library(rmarkdown)
 
     # Load theme
@@ -243,21 +251,21 @@ First, lets estimate a static did:
     # Static
     static <- did2s(df_het, 
                     yname = "dep_var", first_stage_formula = ~i(state) + i(year), 
-                    treat_formula = ~i(treat), treat_var = "treat", 
+                    treat_formula = ~i(treat, ref=FALSE), treat_var = "treat", 
                     cluster_var = "state")
-    #> → Starting 250 bootstraps at cluster level: state
 
     fixest::esttable(static)
-    #>                              static
-    #> Dependent Var.:                 adj
-    #>                                    
-    #> (Intercept)     1.78e-15 (6.01e-14)
-    #> treat = TRUE      2.380*** (0.0278)
-    #> _______________ ___________________
-    #> S.E. type                    Custom
-    #> Observations                 31,000
-    #> R2                          0.28957
-    #> Adj. R2                     0.28955
+    #>                            static
+    #> Dependent Var.:           dep_var
+    #>                                  
+    #> treat = TRUE    2.380*** (0.0614)
+    #> _______________ _________________
+    #> S.E. type                  Custom
+    #> Observations               31,000
+    #> R2                        0.28955
+    #> Adj. R2                   0.28955
+
+This is very close to the true treatment effect of 2.2485745.
 
 Then, let’s estimate an event study did:
 
@@ -265,61 +273,58 @@ Then, let’s estimate an event study did:
     # Event Study
     es <- did2s(df_het,
                 yname = "dep_var", first_stage_formula = ~i(state) + i(year), 
-                treat_formula = ~i(rel_year), treat_var = "treat", 
+                treat_formula = ~i(rel_year, ref=c(-1, Inf)), treat_var = "treat", 
                 cluster_var = "state")
-    #> → Starting 250 bootstraps at cluster level: state
 
     fixest::esttable(es)
-    #>                                es
-    #> Dependent Var.:               adj
-    #>                                  
-    #> (Intercept)       0.0495 (0.0797)
-    #> rel_year = -19    0.1055 (0.1180)
-    #> rel_year = -18   -0.0065 (0.1214)
-    #> rel_year = -17    0.0303 (0.1142)
-    #> rel_year = -16    0.0529 (0.1126)
-    #> rel_year = -15    0.1670 (0.1160)
-    #> rel_year = -14    0.1213 (0.1096)
-    #> rel_year = -13    0.0445 (0.1162)
-    #> rel_year = -12    0.0404 (0.1166)
-    #> rel_year = -11    0.1482 (0.1130)
-    #> rel_year = -10    0.0458 (0.1105)
-    #> rel_year = -9     0.0018 (0.0993)
-    #> rel_year = -8     0.0383 (0.0994)
-    #> rel_year = -7     0.1048 (0.0928)
-    #> rel_year = -6    -0.0274 (0.0999)
-    #> rel_year = -5    -0.0143 (0.0994)
-    #> rel_year = -4    -0.1003 (0.0963)
-    #> rel_year = -3    -0.0589 (0.0963)
-    #> rel_year = -2    -0.0406 (0.0890)
-    #> rel_year = -1     0.0684 (0.0930)
-    #> rel_year = 0    1.678*** (0.1290)
-    #> rel_year = 1    1.703*** (0.1167)
-    #> rel_year = 2    1.822*** (0.1234)
-    #> rel_year = 3    1.869*** (0.1103)
-    #> rel_year = 4    1.890*** (0.1204)
-    #> rel_year = 5    2.096*** (0.1217)
-    #> rel_year = 6    2.131*** (0.1239)
-    #> rel_year = 7    2.298*** (0.1174)
-    #> rel_year = 8    2.363*** (0.1175)
-    #> rel_year = 9    2.570*** (0.1156)
-    #> rel_year = 10   2.631*** (0.1281)
-    #> rel_year = 11   2.663*** (0.1524)
-    #> rel_year = 12   2.622*** (0.1454)
-    #> rel_year = 13   2.606*** (0.1515)
-    #> rel_year = 14   2.705*** (0.1594)
-    #> rel_year = 15   2.774*** (0.1582)
-    #> rel_year = 16   2.645*** (0.1409)
-    #> rel_year = 17   2.847*** (0.1668)
-    #> rel_year = 18   3.081*** (0.1557)
-    #> rel_year = 19   3.181*** (0.1472)
-    #> rel_year = 20   3.259*** (0.1510)
-    #> rel_year = Inf   -0.1104 (0.0812)
-    #> _______________ _________________
-    #> S.E. type                  Custom
-    #> Observations               31,000
-    #> R2                        0.30629
-    #> Adj. R2                   0.30537
+    #>                                 es
+    #> Dependent Var.:            dep_var
+    #>                                   
+    #> rel_year = -20     0.0495 (0.0795)
+    #> rel_year = -19    0.1550. (0.0793)
+    #> rel_year = -18     0.0429 (0.0862)
+    #> rel_year = -17     0.0798 (0.0805)
+    #> rel_year = -16     0.1023 (0.0882)
+    #> rel_year = -15    0.2164* (0.0948)
+    #> rel_year = -14    0.1708* (0.0839)
+    #> rel_year = -13     0.0940 (0.0806)
+    #> rel_year = -12     0.0899 (0.0840)
+    #> rel_year = -11    0.1976* (0.0800)
+    #> rel_year = -10     0.0953 (0.0619)
+    #> rel_year = -9      0.0513 (0.0586)
+    #> rel_year = -8     0.0878* (0.0403)
+    #> rel_year = -7   0.1542*** (0.0440)
+    #> rel_year = -6      0.0221 (0.0510)
+    #> rel_year = -5      0.0351 (0.0490)
+    #> rel_year = -4     -0.0508 (0.0505)
+    #> rel_year = -3     -0.0094 (0.0496)
+    #> rel_year = -2      0.0089 (0.0565)
+    #> rel_year = 0     1.727*** (0.0827)
+    #> rel_year = 1     1.752*** (0.0798)
+    #> rel_year = 2     1.871*** (0.0930)
+    #> rel_year = 3     1.918*** (0.0755)
+    #> rel_year = 4     1.940*** (0.0842)
+    #> rel_year = 5     2.146*** (0.0847)
+    #> rel_year = 6     2.180*** (0.0920)
+    #> rel_year = 7     2.348*** (0.0818)
+    #> rel_year = 8     2.413*** (0.0764)
+    #> rel_year = 9     2.620*** (0.1075)
+    #> rel_year = 10    2.681*** (0.0954)
+    #> rel_year = 11    2.712*** (0.1204)
+    #> rel_year = 12    2.672*** (0.1533)
+    #> rel_year = 13    2.656*** (0.1225)
+    #> rel_year = 14    2.755*** (0.1293)
+    #> rel_year = 15    2.823*** (0.1341)
+    #> rel_year = 16    2.694*** (0.1200)
+    #> rel_year = 17    2.897*** (0.1266)
+    #> rel_year = 18    3.130*** (0.1160)
+    #> rel_year = 19    3.231*** (0.1235)
+    #> rel_year = 20    3.308*** (0.1120)
+    #> _______________ __________________
+    #> S.E. type                   Custom
+    #> Observations                31,000
+    #> R2                         0.30589
+    #> Adj. R2                    0.30501
 
 And plot the results:
 
@@ -328,7 +333,7 @@ And plot the results:
         filter(str_detect(term, "rel_year::")) %>%
         select(rel_year = term, estimate, se = std.error) %>%
         mutate(
-            rel_year = as.numeric(str_remove(rel_year, "rel_year::")),
+            rel_year = as.numeric(str_remove(rel_year, "rel_year::")) + 0.05,
             ci_lower = estimate - 1.96 * se,
             ci_upper = estimate + 1.96 * se,
             group = "Estimated Effect"
@@ -341,7 +346,8 @@ And plot the results:
         group_by(rel_year) %>%
         summarize(estimate = mean(te + te_dynamic)) %>%
         mutate(group = "True Effect") %>%
-        filter(rel_year >= -8 & rel_year <= 8)
+        filter(rel_year >= -8 & rel_year <= 8) %>%
+        mutate(rel_year = rel_year - 0.05)
 
     pts <- bind_rows(pts, te_true)
 
@@ -390,8 +396,8 @@ Event Study Designs: Robust and Efficient Estimation,” 48.
 
 Callaway, Brantly, and Pedro H. C. Sant’Anna. 2018.
 “Difference-in-Differences with Multiple Time Periods and an Application
-on the Minimum Wage and Employment.” *arXiv:1803.09015 \[Econ, Math,
-Stat\]*, August. <http://arxiv.org/abs/1803.09015>.
+on the Minimum Wage and Employment.” *arXiv:1803.09015*, August.
+<http://arxiv.org/abs/1803.09015>.
 
 </div>
 
