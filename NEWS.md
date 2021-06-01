@@ -1,3 +1,6 @@
-# did2s 0.0.0.9000
+# did2s 0.1.0.0
 
-* Added a `NEWS.md` file to track changes to the package.
+* Correct and robust standard errors
+
+# did2s 0.0.1.0
+

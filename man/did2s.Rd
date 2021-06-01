@@ -11,6 +11,8 @@ did2s(
   treat_formula,
   treat_var,
   cluster_var,
+  weights = NULL,
+  bootstrap = FALSE,
   n_bootstraps = 250
 )
 }
@@ -27,10 +29,14 @@ did2s(
 
 \item{cluster_var}{What variable to cluster standard errors. This can be IDs or a higher aggregate level (state for example)}
 
+\item{weights}{Optional variable to run a weighted first- and second-stage regressions}
+
+\item{bootstrap}{Should standard errors be calculated using bootstrap? Default is FALSE.}
+
 \item{n_bootstraps}{How many bootstraps to run. Default is 250}
 }
 \value{
-list containing fixest estimate and corrected variance-covariance matrix
+fixest::feols point estimate with adjusted standard errors (either by formula or by bootstrap)
 }
 \description{
 Calculate two-stage difference-in-differences following Gardner (2021)
@@ -40,11 +46,23 @@ Calculate two-stage difference-in-differences following Gardner (2021)
 data("df_hom")
 
 # Static
-static <- did2s(df_hom, yname = "dep_var", first_stage_formula = "i(state) + i(year)", treat_formula = "i(treat)", treat_var = "treat", cluster_vars = "state")
+static <- did2s(df_hom, yname = "dep_var", first_stage_formula = "i(state) + i(year)", treat_formula = "i(treat)", treat_var = "treat", cluster_var = "state")
 fixest::esttable(static)
 
 # Event-Study
-es <- did2s(df_hom, yname = "dep_var", first_stage_formula = "i(state) + i(year)", treat_formula = "i(rel_year)", treat_var = "treat", cluster_vars = "state")
+es <- did2s(df_hom, yname = "dep_var", first_stage_formula = "i(state) + i(year)", treat_formula = "i(rel_year)", treat_var = "treat", cluster_var = "state")
 fixest::esttable(es)
+
+# Castle Data
+castle <- haven::read_dta("https://github.com/scunning1975/mixtape/raw/master/castle.dta")
+
+did2s(
+	data = castle,
+	yname = "l_homicide",
+	first_stage_formula = ~ i(sid) + i(year),
+	treat_formula = ~ i(post, ref=0),
+	treat_var = "post",
+	cluster_var = "state", weights = "popwt"
+)
 
 }
