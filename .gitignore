@@ -4,5 +4,4 @@
 .httr-oauth
 .DS_Store
 R/testparms.R
-docs
 inst/doc

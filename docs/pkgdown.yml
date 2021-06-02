@@ -1,0 +1,10 @@
+pandoc: 2.10.1
+pkgdown: 1.6.1
+pkgdown_sha: ~
+articles:
+  Two-Stage-Difference-in-Differences: Two-Stage-Difference-in-Differences.html
+last_built: 2021-06-02T05:02Z
+urls:
+  reference: http://kylebutts.com/did2s/reference
+  article: http://kylebutts.com/did2s/articles
+
