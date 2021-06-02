@@ -40,6 +40,9 @@ procedure. This function requires the following options:
     when treatment turns on for a unit. If you suspect anticipation, see
     note above for accounting for this.
 -   `cluster_var`: Which variables to cluster on
+
+Optional options:
+
 -   `weights`: Optional variable to run a weighted first- and
     second-stage regressions
 -   `bootstrap`: Should standard errors be bootstrapped instead? Default

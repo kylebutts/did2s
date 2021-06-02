@@ -50,6 +50,9 @@ The main function is `did2s` which estimates the two-stage did procedure. This f
 - `treat_formula`: This should be the treatment variable or in the case of event studies, treatment variables.
 - `treat_var`: This has to be the 0/1 treatment variable that marks when treatment turns on for a unit. If you suspect anticipation, see note above for accounting for this.
 - `cluster_var`: Which variables to cluster on
+
+Optional options:
+
 - `weights`: Optional variable to run a weighted first- and second-stage regressions
 - `bootstrap`: Should standard errors be bootstrapped instead? Default is False.
 - `n_bootstraps`: How many clustered bootstraps to perform for standard errors. Default is 250.
