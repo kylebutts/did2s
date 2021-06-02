@@ -17,17 +17,17 @@
 #' data("df_hom")
 #'
 #' # Static
-#' static <- did2s(df_hom, yname = "dep_var", first_stage_formula = "i(state) + i(year)", treat_formula = "i(treat)", treat_var = "treat", cluster_var = "state")
+#' static <- did2s(df_hom, yname = "dep_var", first_stage_formula = "i(state) + i(year)", treat_formula = "i(treat, ref=FALSE)", treat_var = "treat", cluster_var = "state")
 #' fixest::esttable(static)
 #'
 #' # Event-Study
-#' es <- did2s(df_hom, yname = "dep_var", first_stage_formula = "i(state) + i(year)", treat_formula = "i(rel_year)", treat_var = "treat", cluster_var = "state")
+#' es <- did2s(df_hom, yname = "dep_var", first_stage_formula = "i(state) + i(year)", treat_formula = "i(rel_year, ref=c(-1, Inf))", treat_var = "treat", cluster_var = "state")
 #' fixest::esttable(es)
 #'
 #' # Castle Data
 #' castle <- haven::read_dta("https://github.com/scunning1975/mixtape/raw/master/castle.dta")
 #'
-#' did2s(
+#' did2s::did2s(
 #' 	data = castle,
 #' 	yname = "l_homicide",
 #' 	first_stage_formula = ~ i(sid) + i(year),
@@ -38,13 +38,21 @@
 #'
 did2s <- function(data, yname, first_stage_formula, treat_formula, treat_var, cluster_var, weights = NULL, bootstrap = FALSE, n_bootstraps = 250) {
 
-	# Print --------------------------------------------------------------------
-
 	# Check Parameters ---------------------------------------------------------
 
 	# Extract vars from formula
 	if(inherits(first_stage_formula, "formula")) first_stage_formula <- as.character(first_stage_formula)[[2]]
 	if(inherits(treat_formula, "formula")) treat_formula <- as.character(treat_formula)[[2]]
+
+	# Print --------------------------------------------------------------------
+	cli::cli_h1("Two-stage Difference-in-Differences")
+	cli::cli_alert("Running with first stage formula {.var {paste0('~ ', first_stage_formula)}} and treat formula {.var {paste0('~ ', treat_formula)}}")
+	cli::cli_alert("The indicator variable that denotes when treatment is on is {.var {treat_var}}")
+	if(!bootstrap) cli::cli_alert("Standard errors will be clustered by {.var {cluster_var}}")
+	if(bootstrap) cli::cli_alert("Standard errors will be block bootstrapped with cluster {.var {cluster_var}}")
+	cli::cat_line()
+	cli::cli_alert_info("For more information on the methodology, visit {.url https://www.kylebutts.com/did2s}")
+	cli::cat_line()
 
 	# Point Estimates ----------------------------------------------------------
 
@@ -78,15 +86,17 @@ did2s <- function(data, yname, first_stage_formula, treat_formula, treat_var, cl
 		# Unique values of cluster variable
 		cl <- unique(data[[cluster_var]])
 
+		V <- t(x2) %*% x1 %*% solve(t(x10) %*% x10)
+
 		meat <- lapply(cl, function(c) {
 				idx <- data[[cluster_var]] == c
 
-				# W_g = e_2g' X_2g - e_1g' X_1g^0 (X_1g'^0 X_1g^0) X_1g' X_2g
-				v <- t(second_u[idx]) %*% (x2[idx,]) -
-					t(first_u[idx]) %*% x10[idx,] %*% solve(t(x10) %*% x10) %*% t(x1) %*% x2
+				# W_g = X_2g' e_2g - (X_2' X_12) (X_11' X_11)^-1 X_11g' e_1g
+				W <- t(x2[idx,]) %*% second_u[idx] -
+					V %*% t(x10[idx,]) %*% first_u[idx]
 
-				# = W_g' W_g
-				return(t(v) %*% v)
+				# = W_g W_g'
+				return(W %*% t(W))
 			})
 
 		meat_sum <- Reduce("+", meat)

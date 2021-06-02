@@ -26,7 +26,12 @@ Imports:
     rsample,
     purrr,
     future,
-    furrr
+    furrr,
+    cli
 Depends: 
     R (>= 2.10)
 URL: http://kylebutts.com/did2s
+Suggests: 
+    rmarkdown,
+    knitr
+VignetteBuilder: knitr

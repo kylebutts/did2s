@@ -46,17 +46,17 @@ Calculate two-stage difference-in-differences following Gardner (2021)
 data("df_hom")
 
 # Static
-static <- did2s(df_hom, yname = "dep_var", first_stage_formula = "i(state) + i(year)", treat_formula = "i(treat)", treat_var = "treat", cluster_var = "state")
+static <- did2s(df_hom, yname = "dep_var", first_stage_formula = "i(state) + i(year)", treat_formula = "i(treat, ref=FALSE)", treat_var = "treat", cluster_var = "state")
 fixest::esttable(static)
 
 # Event-Study
-es <- did2s(df_hom, yname = "dep_var", first_stage_formula = "i(state) + i(year)", treat_formula = "i(rel_year)", treat_var = "treat", cluster_var = "state")
+es <- did2s(df_hom, yname = "dep_var", first_stage_formula = "i(state) + i(year)", treat_formula = "i(rel_year, ref=c(-1, Inf))", treat_var = "treat", cluster_var = "state")
 fixest::esttable(es)
 
 # Castle Data
 castle <- haven::read_dta("https://github.com/scunning1975/mixtape/raw/master/castle.dta")
 
-did2s(
+did2s::did2s(
 	data = castle,
 	yname = "l_homicide",
 	first_stage_formula = ~ i(sid) + i(year),

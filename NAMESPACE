@@ -2,6 +2,5 @@
 
 export("%>%")
 export(did2s)
-export(did_impute)
 export(gen_data)
 importFrom(magrittr,"%>%")

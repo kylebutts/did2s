@@ -1,1 +1,5 @@
+template:
+    package: preferably
+params:
+    toggle: manual
 url: http://kylebutts.com/did2s
