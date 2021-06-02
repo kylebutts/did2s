@@ -17,104 +17,12 @@ You can install did2s from github with:
 
 ## Two-stage Difference-in-differences (Gardner 2021)
 
-Researchers often want to estimate either a static TWFE model,
-
-<img src="man/figures/twfe.png" width="400px" height="100%">
-
-where *μ*<sub>*i*</sub> are unit fixed effects, *μ*<sub>*t*</sub> are
-time fixed effects, and *D* <sub>it</sub> is an indicator for receiving
-treatment, or an event-study TWFE model
-
-<img src="man/figures/es.png" width="450px" height="100%">
-
-where *D* <sub>it</sub><sup>k</sup> are lag/leads of treatment (k
-periods from initial treatment date). Sometimes researches use variants
-of this model where they bin or drop leads and lags.
-
-However, running OLS to estimate either model has been shown to not
-recover an average treatment effect and has the potential to be severely
-misleading in cases of treatment effect heterogeneity (Borusyak,
-Jaravel, and Spiess 2021; Callaway and Sant’Anna 2018; Chaisemartin and
-D’Haultfoeuille 2019; Goodman-Bacon 2018; Sun and Abraham 2020).
-
-One way of thinking about this problem is through the FWL theorem. When
-estimating the unit and time fixed effects, you create a residualized
-*ỹ* <sub>it</sub> which is commonly said to be “the outcome variable
-after removing time shocks and fixed units characteristics”, but you
-also create a residulaized *D̃* <sub>it</sub> or *D̃*
-<sub>it</sub><sup>k</sup>. To simplify the literature, this residualized
-treatment indicators is what creates the problem of interpreting *τ* or
-*τ*<sup>*k*</sup>, especially when treatment effects are heterogeneous.
-
-That’s where Gardner (2021) comes in. What Gardner does to fix the
-problem is quite simple: estimate *μ*<sub>*i*</sub> and
-*μ*<sub>*t*</sub> seperately so you don’t residualize the treatment
-indicators. In the absence of treatment, the TWFE model gives you a
-model for (potentially unobserved) untreated outcomes
-
-<img src="man/figures/twfe_count.png" width="350px" height="100%">
-
-Therefore, if you can ***consistently*** estimate *y* <sub>it</sub> (0),
-you can impute the untreated outcome and remove that from the observed
-outcome *y* <sub>it</sub>. The value of *y* <sub>it</sub> $ - $
-<sub>it</sub> (0) should be close to zero for control units and should
-be close to *τ* <sub>it</sub> for treated observations. Then, regressing
-*y* <sub>it</sub> $ - $ <sub>it</sub> (0) on the treatment variables
-should give unbiased estimates of treatment effects (either static or
-dynamic/event-study). This is the same logic as the new paper Borusyak,
-Jaravel, and Spiess (2021)
-
-The steps of the two-step estimator are:
-
-1.  First estimate *μ*<sub>*i*</sub> and *μ*<sub>*t*</sub> using
-    untreated/not-yet-treated observations, i.e. the subsample with *D*
-    <sub>it</sub>  = 0. Residualize outcomes:
-
-<img src="man/figures/resid.png" width="350px" height="100%">
-
-1.  Regress *ỹ* <sub>it</sub> on *D* <sub>it</sub> or *D*
-    <sub>it</sub><sup>k</sup>’s to estimate the treatment effect *τ* or
-    *τ*<sup>*k*</sup>’s.
-
-Some notes:
-
-### Standard Errors
-
-First, the standard errors on *τ* or *τ*<sup>*k*</sup>’s will be
-incorrect as the dependent variable is itself an estimate. This is
-referred to the generated regressor problem in econometrics parlance.
-Therefore, Gardner (2021) has derived asymptotically correct standard
-errors based on Newey and McFadden (1994). Details are left to the
-paper, but are implemented in the R package
-
-### Anticipation
-
-Second, this procedure works so long as *μ*<sub>*i*</sub> and
-*μ*<sub>*t*</sub> are ***consistently*** estimated. The key is to use
-only untreated/not-yet-treated observations to estimate the fixed
-effects. For example, if you used observations with *D* <sub>it</sub> $
-= 1$, you would attribute treatment effects *τ* as “fixed
-characteristics” and would combine *μ*<sub>*i*</sub> with the treatment
-effects.
-
-The fixed effects could be biased/inconsistent if there are anticipation
-effects, i.e. units respond before treatment starts. The fix is fairly
-simple, simply “shift” treatment date earlier by as many years as you
-suspect anticipation to occur (e.g. 2 years before treatment starts) and
-estimate on the subsample where the shifted treatment equals zero. The R
-package allows you to specify the variable *D* <sub>it</sub>, if you
-suspect anticipation, provide the shifted variable to this option.
-
-### Covariates
-
-This method works with pre-determined covariates as well. Augment the
-above step 1. to include *X*<sub>*i*</sub> and remove that from *y*
-<sub>it</sub> along with the fixed effects to get *ỹ* <sub>it</sub>.
-
-## R Package
+For details on the methodology, view this
+[vignette](http://kylebutts.com/did2s/articles/Two-Stage-Difference-in-Differences.html)
 
 I have created an R package with the help of John Gardner to estimate
-the two-stage procedure. To install the package, run the following:
+the two-stage difference-in-differences estimator. To install the
+package, run the following:
 
     devtools::install_github("kylebutts/did2s")
 
@@ -161,8 +69,8 @@ among the groups. Here is one unit’s data:
     library(did2s)
     library(fixest)
     #> fixest 0.9.0, BREAKING changes! 
-    #> in i():
-    #>   a) the two first arguments have been swapped! Now it's i(factor_var, continuous_var) for interactions. 
+    #> In i():
+    #>   a) the first two arguments have been swapped! Now it's i(factor_var, continuous_var) for interactions. 
     #>   b) argument 'drop' has been removed (put everything in 'ref' now).
     library(rmarkdown)
 
@@ -253,6 +161,12 @@ First, lets estimate a static did:
                     yname = "dep_var", first_stage_formula = ~i(state) + i(year), 
                     treat_formula = ~i(treat, ref=FALSE), treat_var = "treat", 
                     cluster_var = "state")
+    #> 
+    #> ── Two-stage Difference-in-Differences ─────────────────────────────────────────
+    #> → Running with first stage formula `~ i(state) + i(year)` and treat formula `~ i(treat, ref = FALSE)`
+    #> → The indicator variable that denotes when treatment is on is `treat`
+    #> → Standard errors will be clustered by `state`
+    #> ℹ For more information on the methodology, visit <https://www.kylebutts.com/did2s>
 
     fixest::esttable(static)
     #>                            static
@@ -275,6 +189,12 @@ Then, let’s estimate an event study did:
                 yname = "dep_var", first_stage_formula = ~i(state) + i(year), 
                 treat_formula = ~i(rel_year, ref=c(-1, Inf)), treat_var = "treat", 
                 cluster_var = "state")
+    #> 
+    #> ── Two-stage Difference-in-Differences ─────────────────────────────────────────
+    #> → Running with first stage formula `~ i(state) + i(year)` and treat formula `~ i(rel_year, ref = c(-1, Inf))`
+    #> → The indicator variable that denotes when treatment is on is `treat`
+    #> → Standard errors will be clustered by `state`
+    #> ℹ For more information on the methodology, visit <https://www.kylebutts.com/did2s>
 
     fixest::esttable(es)
     #>                                 es
@@ -385,49 +305,10 @@ Event-study plot with example data
 
 <div id="refs" class="references hanging-indent">
 
-<div id="ref-Borusyak_Jaravel_Spiess_2021">
-
-Borusyak, Kirill, Xavier Jaravel, and Jann Spiess. 2021. “Revisiting
-Event Study Designs: Robust and Efficient Estimation,” 48.
-
-</div>
-
-<div id="ref-Callaway_SantAnna_2018">
-
-Callaway, Brantly, and Pedro H. C. Sant’Anna. 2018.
-“Difference-in-Differences with Multiple Time Periods and an Application
-on the Minimum Wage and Employment.” *arXiv:1803.09015*, August.
-<http://arxiv.org/abs/1803.09015>.
-
-</div>
-
-<div id="ref-deChaisemartin_DHaultfoeuille_2019">
-
-Chaisemartin, Clement de, and Xavier D’Haultfoeuille. 2019. *Two-Way
-Fixed Effects Estimators with Heterogeneous Treatment Effects*. w25904.
-National Bureau of Economic Research. <https://doi.org/10.3386/w25904>.
-
-</div>
-
 <div id="ref-Gardner_2021">
 
 Gardner, John. 2021. “Two-Stage Difference-in-Differences.” Working
 Paper. <https://jrgcmu.github.io/2sdd_current.pdf>.
-
-</div>
-
-<div id="ref-Goodman-Bacon_2018">
-
-Goodman-Bacon, Andrew. 2018. *Difference-in-Differences with Variation
-in Treatment Timing*. w25018. National Bureau of Economic Research.
-<https://doi.org/10.3386/w25018>.
-
-</div>
-
-<div id="ref-Sun_Abraham_2020">
-
-Sun, Liyang, and Sarah Abraham. 2020. “Estimating Dynamic Treatment
-Effects in Event Studies with Heterogeneous Treatment Effects,” 53.
 
 </div>
 

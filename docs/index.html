@@ -106,46 +106,8 @@
 <div id="two-stage-difference-in-differences-gardner-2021" class="section level2">
 <h2 class="hasAnchor">
 <a href="#two-stage-difference-in-differences-gardner-2021" class="anchor"></a>Two-stage Difference-in-differences (Gardner 2021)</h2>
-<p>Researchers often want to estimate either a static TWFE model,</p>
-<p><img src="reference/figures/twfe.png" width="400px" height="100%"></p>
-<p>where <em>μ</em><sub><em>i</em></sub> are unit fixed effects, <em>μ</em><sub><em>t</em></sub> are time fixed effects, and <em>D</em> <sub>it</sub> is an indicator for receiving treatment, or an event-study TWFE model</p>
-<p><img src="reference/figures/es.png" width="450px" height="100%"></p>
-<p>where <em>D</em> <sub>it</sub><sup>k</sup> are lag/leads of treatment (k periods from initial treatment date). Sometimes researches use variants of this model where they bin or drop leads and lags.</p>
-<p>However, running OLS to estimate either model has been shown to not recover an average treatment effect and has the potential to be severely misleading in cases of treatment effect heterogeneity (Borusyak, Jaravel, and Spiess 2021; Callaway and Sant’Anna 2018; Chaisemartin and D’Haultfoeuille 2019; Goodman-Bacon 2018; Sun and Abraham 2020).</p>
-<p>One way of thinking about this problem is through the FWL theorem. When estimating the unit and time fixed effects, you create a residualized <em>ỹ</em> <sub>it</sub> which is commonly said to be “the outcome variable after removing time shocks and fixed units characteristics”, but you also create a residulaized <em>D̃</em> <sub>it</sub> or <em>D̃</em> <sub>it</sub><sup>k</sup>. To simplify the literature, this residualized treatment indicators is what creates the problem of interpreting <em>τ</em> or <em>τ</em><sup><em>k</em></sup>, especially when treatment effects are heterogeneous.</p>
-<p>That’s where Gardner (2021) comes in. What Gardner does to fix the problem is quite simple: estimate <em>μ</em><sub><em>i</em></sub> and <em>μ</em><sub><em>t</em></sub> seperately so you don’t residualize the treatment indicators. In the absence of treatment, the TWFE model gives you a model for (potentially unobserved) untreated outcomes</p>
-<p><img src="reference/figures/twfe_count.png" width="350px" height="100%"></p>
-<p>Therefore, if you can <strong><em>consistently</em></strong> estimate <em>y</em> <sub>it</sub> (0), you can impute the untreated outcome and remove that from the observed outcome <em>y</em> <sub>it</sub>. The value of <em>y</em> <sub>it</sub> $ - $ <sub>it</sub> (0) should be close to zero for control units and should be close to <em>τ</em> <sub>it</sub> for treated observations. Then, regressing <em>y</em> <sub>it</sub> $ - $ <sub>it</sub> (0) on the treatment variables should give unbiased estimates of treatment effects (either static or dynamic/event-study). This is the same logic as the new paper Borusyak, Jaravel, and Spiess (2021)</p>
-<p>The steps of the two-step estimator are:</p>
-<ol>
-<li>First estimate <em>μ</em><sub><em>i</em></sub> and <em>μ</em><sub><em>t</em></sub> using untreated/not-yet-treated observations, i.e. the subsample with <em>D</em> <sub>it</sub>  = 0. Residualize outcomes:</li>
-</ol>
-<p><img src="reference/figures/resid.png" width="350px" height="100%"></p>
-<ol>
-<li>Regress <em>ỹ</em> <sub>it</sub> on <em>D</em> <sub>it</sub> or <em>D</em> <sub>it</sub><sup>k</sup>’s to estimate the treatment effect <em>τ</em> or <em>τ</em><sup><em>k</em></sup>’s.</li>
-</ol>
-<p>Some notes:</p>
-<div id="standard-errors" class="section level3">
-<h3 class="hasAnchor">
-<a href="#standard-errors" class="anchor"></a>Standard Errors</h3>
-<p>First, the standard errors on <em>τ</em> or <em>τ</em><sup><em>k</em></sup>’s will be incorrect as the dependent variable is itself an estimate. This is referred to the generated regressor problem in econometrics parlance. Therefore, Gardner (2021) has derived asymptotically correct standard errors based on Newey and McFadden (1994). Details are left to the paper, but are implemented in the R package</p>
-</div>
-<div id="anticipation" class="section level3">
-<h3 class="hasAnchor">
-<a href="#anticipation" class="anchor"></a>Anticipation</h3>
-<p>Second, this procedure works so long as <em>μ</em><sub><em>i</em></sub> and <em>μ</em><sub><em>t</em></sub> are <strong><em>consistently</em></strong> estimated. The key is to use only untreated/not-yet-treated observations to estimate the fixed effects. For example, if you used observations with <em>D</em> <sub>it</sub> $ = 1$, you would attribute treatment effects <em>τ</em> as “fixed characteristics” and would combine <em>μ</em><sub><em>i</em></sub> with the treatment effects.</p>
-<p>The fixed effects could be biased/inconsistent if there are anticipation effects, i.e. units respond before treatment starts. The fix is fairly simple, simply “shift” treatment date earlier by as many years as you suspect anticipation to occur (e.g. 2 years before treatment starts) and estimate on the subsample where the shifted treatment equals zero. The R package allows you to specify the variable <em>D</em> <sub>it</sub>, if you suspect anticipation, provide the shifted variable to this option.</p>
-</div>
-<div id="covariates" class="section level3">
-<h3 class="hasAnchor">
-<a href="#covariates" class="anchor"></a>Covariates</h3>
-<p>This method works with pre-determined covariates as well. Augment the above step 1. to include <em>X</em><sub><em>i</em></sub> and remove that from <em>y</em> <sub>it</sub> along with the fixed effects to get <em>ỹ</em> <sub>it</sub>.</p>
-</div>
-</div>
-<div id="r-package" class="section level2">
-<h2 class="hasAnchor">
-<a href="#r-package" class="anchor"></a>R Package</h2>
-<p>I have created an R package with the help of John Gardner to estimate the two-stage procedure. To install the package, run the following:</p>
+<p>For details on the methodology, view this <a href="http://kylebutts.com/did2s/articles/Two-Stage-Difference-in-Differences.html">vignette</a></p>
+<p>I have created an R package with the help of John Gardner to estimate the two-stage difference-in-differences estimator. To install the package, run the following:</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true"></a>devtools<span class="op">::</span><span class="kw">install_github</span>(<span class="st">"kylebutts/did2s"</span>)</span></code></pre></div>
 <p>To view the documentation, type <code><a href="reference/did2s.html">?did2s</a></code> into the console.</p>
 <p>The main function is <code>did2s</code> which estimates the two-stage did procedure. This function requires the following options:</p>
@@ -187,8 +149,8 @@
 <span id="cb3-10"><a href="#cb3-10" aria-hidden="true"></a><span class="kw">library</span>(did2s)</span>
 <span id="cb3-11"><a href="#cb3-11" aria-hidden="true"></a><span class="kw">library</span>(fixest)</span>
 <span id="cb3-12"><a href="#cb3-12" aria-hidden="true"></a><span class="co">#&gt; fixest 0.9.0, BREAKING changes! </span></span>
-<span id="cb3-13"><a href="#cb3-13" aria-hidden="true"></a><span class="co">#&gt; in i():</span></span>
-<span id="cb3-14"><a href="#cb3-14" aria-hidden="true"></a><span class="co">#&gt;   a) the two first arguments have been swapped! Now it's i(factor_var, continuous_var) for interactions. </span></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true"></a><span class="co">#&gt; In i():</span></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true"></a><span class="co">#&gt;   a) the first two arguments have been swapped! Now it's i(factor_var, continuous_var) for interactions. </span></span>
 <span id="cb3-15"><a href="#cb3-15" aria-hidden="true"></a><span class="co">#&gt;   b) argument 'drop' has been removed (put everything in 'ref' now).</span></span>
 <span id="cb3-16"><a href="#cb3-16" aria-hidden="true"></a><span class="kw">library</span>(rmarkdown)</span>
 <span id="cb3-17"><a href="#cb3-17" aria-hidden="true"></a></span>
@@ -498,17 +460,23 @@ Example data with heterogeneous treatment effects
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true"></a>                <span class="dt">yname =</span> <span class="st">"dep_var"</span>, <span class="dt">first_stage_formula =</span> <span class="op">~</span><span class="kw">i</span>(state) <span class="op">+</span><span class="st"> </span><span class="kw">i</span>(year), </span>
 <span id="cb5-4"><a href="#cb5-4" aria-hidden="true"></a>                <span class="dt">treat_formula =</span> <span class="op">~</span><span class="kw">i</span>(treat, <span class="dt">ref=</span><span class="ot">FALSE</span>), <span class="dt">treat_var =</span> <span class="st">"treat"</span>, </span>
 <span id="cb5-5"><a href="#cb5-5" aria-hidden="true"></a>                <span class="dt">cluster_var =</span> <span class="st">"state"</span>)</span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true"></a></span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true"></a>fixest<span class="op">::</span><span class="kw">esttable</span>(static)</span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true"></a><span class="co">#&gt;                            static</span></span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true"></a><span class="co">#&gt; Dependent Var.:           dep_var</span></span>
-<span id="cb5-10"><a href="#cb5-10" aria-hidden="true"></a><span class="co">#&gt;                                  </span></span>
-<span id="cb5-11"><a href="#cb5-11" aria-hidden="true"></a><span class="co">#&gt; treat = TRUE    2.380*** (0.0614)</span></span>
-<span id="cb5-12"><a href="#cb5-12" aria-hidden="true"></a><span class="co">#&gt; _______________ _________________</span></span>
-<span id="cb5-13"><a href="#cb5-13" aria-hidden="true"></a><span class="co">#&gt; S.E. type                  Custom</span></span>
-<span id="cb5-14"><a href="#cb5-14" aria-hidden="true"></a><span class="co">#&gt; Observations               31,000</span></span>
-<span id="cb5-15"><a href="#cb5-15" aria-hidden="true"></a><span class="co">#&gt; R2                        0.28955</span></span>
-<span id="cb5-16"><a href="#cb5-16" aria-hidden="true"></a><span class="co">#&gt; Adj. R2                   0.28955</span></span></code></pre></div>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true"></a><span class="co">#&gt; ── Two-stage Difference-in-Differences ─────────────────────────────────────────</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true"></a><span class="co">#&gt; → Running with first stage formula `~ i(state) + i(year)` and treat formula `~ i(treat, ref = FALSE)`</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true"></a><span class="co">#&gt; → The indicator variable that denotes when treatment is on is `treat`</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true"></a><span class="co">#&gt; → Standard errors will be clustered by `state`</span></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true"></a><span class="co">#&gt; ℹ For more information on the methodology, visit &lt;https://www.kylebutts.com/did2s&gt;</span></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true"></a></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true"></a>fixest<span class="op">::</span><span class="kw">esttable</span>(static)</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true"></a><span class="co">#&gt;                            static</span></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true"></a><span class="co">#&gt; Dependent Var.:           dep_var</span></span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true"></a><span class="co">#&gt;                                  </span></span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true"></a><span class="co">#&gt; treat = TRUE    2.380*** (0.0614)</span></span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true"></a><span class="co">#&gt; _______________ _________________</span></span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true"></a><span class="co">#&gt; S.E. type                  Custom</span></span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true"></a><span class="co">#&gt; Observations               31,000</span></span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true"></a><span class="co">#&gt; R2                        0.28955</span></span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true"></a><span class="co">#&gt; Adj. R2                   0.28955</span></span></code></pre></div>
 <p>This is very close to the true treatment effect of 2.2485745.</p>
 <p>Then, let’s estimate an event study did:</p>
 <div class="sourceCode" id="cb6"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true"></a><span class="co"># Event Study</span></span>
@@ -516,56 +484,62 @@ Example data with heterogeneous treatment effects
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true"></a>            <span class="dt">yname =</span> <span class="st">"dep_var"</span>, <span class="dt">first_stage_formula =</span> <span class="op">~</span><span class="kw">i</span>(state) <span class="op">+</span><span class="st"> </span><span class="kw">i</span>(year), </span>
 <span id="cb6-4"><a href="#cb6-4" aria-hidden="true"></a>            <span class="dt">treat_formula =</span> <span class="op">~</span><span class="kw">i</span>(rel_year, <span class="dt">ref=</span><span class="kw">c</span>(<span class="op">-</span><span class="dv">1</span>, <span class="ot">Inf</span>)), <span class="dt">treat_var =</span> <span class="st">"treat"</span>, </span>
 <span id="cb6-5"><a href="#cb6-5" aria-hidden="true"></a>            <span class="dt">cluster_var =</span> <span class="st">"state"</span>)</span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true"></a></span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true"></a>fixest<span class="op">::</span><span class="kw">esttable</span>(es)</span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true"></a><span class="co">#&gt;                                 es</span></span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true"></a><span class="co">#&gt; Dependent Var.:            dep_var</span></span>
-<span id="cb6-10"><a href="#cb6-10" aria-hidden="true"></a><span class="co">#&gt;                                   </span></span>
-<span id="cb6-11"><a href="#cb6-11" aria-hidden="true"></a><span class="co">#&gt; rel_year = -20     0.0495 (0.0795)</span></span>
-<span id="cb6-12"><a href="#cb6-12" aria-hidden="true"></a><span class="co">#&gt; rel_year = -19    0.1550. (0.0793)</span></span>
-<span id="cb6-13"><a href="#cb6-13" aria-hidden="true"></a><span class="co">#&gt; rel_year = -18     0.0429 (0.0862)</span></span>
-<span id="cb6-14"><a href="#cb6-14" aria-hidden="true"></a><span class="co">#&gt; rel_year = -17     0.0798 (0.0805)</span></span>
-<span id="cb6-15"><a href="#cb6-15" aria-hidden="true"></a><span class="co">#&gt; rel_year = -16     0.1023 (0.0882)</span></span>
-<span id="cb6-16"><a href="#cb6-16" aria-hidden="true"></a><span class="co">#&gt; rel_year = -15    0.2164* (0.0948)</span></span>
-<span id="cb6-17"><a href="#cb6-17" aria-hidden="true"></a><span class="co">#&gt; rel_year = -14    0.1708* (0.0839)</span></span>
-<span id="cb6-18"><a href="#cb6-18" aria-hidden="true"></a><span class="co">#&gt; rel_year = -13     0.0940 (0.0806)</span></span>
-<span id="cb6-19"><a href="#cb6-19" aria-hidden="true"></a><span class="co">#&gt; rel_year = -12     0.0899 (0.0840)</span></span>
-<span id="cb6-20"><a href="#cb6-20" aria-hidden="true"></a><span class="co">#&gt; rel_year = -11    0.1976* (0.0800)</span></span>
-<span id="cb6-21"><a href="#cb6-21" aria-hidden="true"></a><span class="co">#&gt; rel_year = -10     0.0953 (0.0619)</span></span>
-<span id="cb6-22"><a href="#cb6-22" aria-hidden="true"></a><span class="co">#&gt; rel_year = -9      0.0513 (0.0586)</span></span>
-<span id="cb6-23"><a href="#cb6-23" aria-hidden="true"></a><span class="co">#&gt; rel_year = -8     0.0878* (0.0403)</span></span>
-<span id="cb6-24"><a href="#cb6-24" aria-hidden="true"></a><span class="co">#&gt; rel_year = -7   0.1542*** (0.0440)</span></span>
-<span id="cb6-25"><a href="#cb6-25" aria-hidden="true"></a><span class="co">#&gt; rel_year = -6      0.0221 (0.0510)</span></span>
-<span id="cb6-26"><a href="#cb6-26" aria-hidden="true"></a><span class="co">#&gt; rel_year = -5      0.0351 (0.0490)</span></span>
-<span id="cb6-27"><a href="#cb6-27" aria-hidden="true"></a><span class="co">#&gt; rel_year = -4     -0.0508 (0.0505)</span></span>
-<span id="cb6-28"><a href="#cb6-28" aria-hidden="true"></a><span class="co">#&gt; rel_year = -3     -0.0094 (0.0496)</span></span>
-<span id="cb6-29"><a href="#cb6-29" aria-hidden="true"></a><span class="co">#&gt; rel_year = -2      0.0089 (0.0565)</span></span>
-<span id="cb6-30"><a href="#cb6-30" aria-hidden="true"></a><span class="co">#&gt; rel_year = 0     1.727*** (0.0827)</span></span>
-<span id="cb6-31"><a href="#cb6-31" aria-hidden="true"></a><span class="co">#&gt; rel_year = 1     1.752*** (0.0798)</span></span>
-<span id="cb6-32"><a href="#cb6-32" aria-hidden="true"></a><span class="co">#&gt; rel_year = 2     1.871*** (0.0930)</span></span>
-<span id="cb6-33"><a href="#cb6-33" aria-hidden="true"></a><span class="co">#&gt; rel_year = 3     1.918*** (0.0755)</span></span>
-<span id="cb6-34"><a href="#cb6-34" aria-hidden="true"></a><span class="co">#&gt; rel_year = 4     1.940*** (0.0842)</span></span>
-<span id="cb6-35"><a href="#cb6-35" aria-hidden="true"></a><span class="co">#&gt; rel_year = 5     2.146*** (0.0847)</span></span>
-<span id="cb6-36"><a href="#cb6-36" aria-hidden="true"></a><span class="co">#&gt; rel_year = 6     2.180*** (0.0920)</span></span>
-<span id="cb6-37"><a href="#cb6-37" aria-hidden="true"></a><span class="co">#&gt; rel_year = 7     2.348*** (0.0818)</span></span>
-<span id="cb6-38"><a href="#cb6-38" aria-hidden="true"></a><span class="co">#&gt; rel_year = 8     2.413*** (0.0764)</span></span>
-<span id="cb6-39"><a href="#cb6-39" aria-hidden="true"></a><span class="co">#&gt; rel_year = 9     2.620*** (0.1075)</span></span>
-<span id="cb6-40"><a href="#cb6-40" aria-hidden="true"></a><span class="co">#&gt; rel_year = 10    2.681*** (0.0954)</span></span>
-<span id="cb6-41"><a href="#cb6-41" aria-hidden="true"></a><span class="co">#&gt; rel_year = 11    2.712*** (0.1204)</span></span>
-<span id="cb6-42"><a href="#cb6-42" aria-hidden="true"></a><span class="co">#&gt; rel_year = 12    2.672*** (0.1533)</span></span>
-<span id="cb6-43"><a href="#cb6-43" aria-hidden="true"></a><span class="co">#&gt; rel_year = 13    2.656*** (0.1225)</span></span>
-<span id="cb6-44"><a href="#cb6-44" aria-hidden="true"></a><span class="co">#&gt; rel_year = 14    2.755*** (0.1293)</span></span>
-<span id="cb6-45"><a href="#cb6-45" aria-hidden="true"></a><span class="co">#&gt; rel_year = 15    2.823*** (0.1341)</span></span>
-<span id="cb6-46"><a href="#cb6-46" aria-hidden="true"></a><span class="co">#&gt; rel_year = 16    2.694*** (0.1200)</span></span>
-<span id="cb6-47"><a href="#cb6-47" aria-hidden="true"></a><span class="co">#&gt; rel_year = 17    2.897*** (0.1266)</span></span>
-<span id="cb6-48"><a href="#cb6-48" aria-hidden="true"></a><span class="co">#&gt; rel_year = 18    3.130*** (0.1160)</span></span>
-<span id="cb6-49"><a href="#cb6-49" aria-hidden="true"></a><span class="co">#&gt; rel_year = 19    3.231*** (0.1235)</span></span>
-<span id="cb6-50"><a href="#cb6-50" aria-hidden="true"></a><span class="co">#&gt; rel_year = 20    3.308*** (0.1120)</span></span>
-<span id="cb6-51"><a href="#cb6-51" aria-hidden="true"></a><span class="co">#&gt; _______________ __________________</span></span>
-<span id="cb6-52"><a href="#cb6-52" aria-hidden="true"></a><span class="co">#&gt; S.E. type                   Custom</span></span>
-<span id="cb6-53"><a href="#cb6-53" aria-hidden="true"></a><span class="co">#&gt; Observations                31,000</span></span>
-<span id="cb6-54"><a href="#cb6-54" aria-hidden="true"></a><span class="co">#&gt; R2                         0.30589</span></span>
-<span id="cb6-55"><a href="#cb6-55" aria-hidden="true"></a><span class="co">#&gt; Adj. R2                    0.30501</span></span></code></pre></div>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true"></a><span class="co">#&gt; ── Two-stage Difference-in-Differences ─────────────────────────────────────────</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true"></a><span class="co">#&gt; → Running with first stage formula `~ i(state) + i(year)` and treat formula `~ i(rel_year, ref = c(-1, Inf))`</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true"></a><span class="co">#&gt; → The indicator variable that denotes when treatment is on is `treat`</span></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true"></a><span class="co">#&gt; → Standard errors will be clustered by `state`</span></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true"></a><span class="co">#&gt; ℹ For more information on the methodology, visit &lt;https://www.kylebutts.com/did2s&gt;</span></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true"></a></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true"></a>fixest<span class="op">::</span><span class="kw">esttable</span>(es)</span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true"></a><span class="co">#&gt;                                 es</span></span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true"></a><span class="co">#&gt; Dependent Var.:            dep_var</span></span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true"></a><span class="co">#&gt;                                   </span></span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true"></a><span class="co">#&gt; rel_year = -20     0.0495 (0.0795)</span></span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true"></a><span class="co">#&gt; rel_year = -19    0.1550. (0.0793)</span></span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true"></a><span class="co">#&gt; rel_year = -18     0.0429 (0.0862)</span></span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true"></a><span class="co">#&gt; rel_year = -17     0.0798 (0.0805)</span></span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true"></a><span class="co">#&gt; rel_year = -16     0.1023 (0.0882)</span></span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true"></a><span class="co">#&gt; rel_year = -15    0.2164* (0.0948)</span></span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true"></a><span class="co">#&gt; rel_year = -14    0.1708* (0.0839)</span></span>
+<span id="cb6-24"><a href="#cb6-24" aria-hidden="true"></a><span class="co">#&gt; rel_year = -13     0.0940 (0.0806)</span></span>
+<span id="cb6-25"><a href="#cb6-25" aria-hidden="true"></a><span class="co">#&gt; rel_year = -12     0.0899 (0.0840)</span></span>
+<span id="cb6-26"><a href="#cb6-26" aria-hidden="true"></a><span class="co">#&gt; rel_year = -11    0.1976* (0.0800)</span></span>
+<span id="cb6-27"><a href="#cb6-27" aria-hidden="true"></a><span class="co">#&gt; rel_year = -10     0.0953 (0.0619)</span></span>
+<span id="cb6-28"><a href="#cb6-28" aria-hidden="true"></a><span class="co">#&gt; rel_year = -9      0.0513 (0.0586)</span></span>
+<span id="cb6-29"><a href="#cb6-29" aria-hidden="true"></a><span class="co">#&gt; rel_year = -8     0.0878* (0.0403)</span></span>
+<span id="cb6-30"><a href="#cb6-30" aria-hidden="true"></a><span class="co">#&gt; rel_year = -7   0.1542*** (0.0440)</span></span>
+<span id="cb6-31"><a href="#cb6-31" aria-hidden="true"></a><span class="co">#&gt; rel_year = -6      0.0221 (0.0510)</span></span>
+<span id="cb6-32"><a href="#cb6-32" aria-hidden="true"></a><span class="co">#&gt; rel_year = -5      0.0351 (0.0490)</span></span>
+<span id="cb6-33"><a href="#cb6-33" aria-hidden="true"></a><span class="co">#&gt; rel_year = -4     -0.0508 (0.0505)</span></span>
+<span id="cb6-34"><a href="#cb6-34" aria-hidden="true"></a><span class="co">#&gt; rel_year = -3     -0.0094 (0.0496)</span></span>
+<span id="cb6-35"><a href="#cb6-35" aria-hidden="true"></a><span class="co">#&gt; rel_year = -2      0.0089 (0.0565)</span></span>
+<span id="cb6-36"><a href="#cb6-36" aria-hidden="true"></a><span class="co">#&gt; rel_year = 0     1.727*** (0.0827)</span></span>
+<span id="cb6-37"><a href="#cb6-37" aria-hidden="true"></a><span class="co">#&gt; rel_year = 1     1.752*** (0.0798)</span></span>
+<span id="cb6-38"><a href="#cb6-38" aria-hidden="true"></a><span class="co">#&gt; rel_year = 2     1.871*** (0.0930)</span></span>
+<span id="cb6-39"><a href="#cb6-39" aria-hidden="true"></a><span class="co">#&gt; rel_year = 3     1.918*** (0.0755)</span></span>
+<span id="cb6-40"><a href="#cb6-40" aria-hidden="true"></a><span class="co">#&gt; rel_year = 4     1.940*** (0.0842)</span></span>
+<span id="cb6-41"><a href="#cb6-41" aria-hidden="true"></a><span class="co">#&gt; rel_year = 5     2.146*** (0.0847)</span></span>
+<span id="cb6-42"><a href="#cb6-42" aria-hidden="true"></a><span class="co">#&gt; rel_year = 6     2.180*** (0.0920)</span></span>
+<span id="cb6-43"><a href="#cb6-43" aria-hidden="true"></a><span class="co">#&gt; rel_year = 7     2.348*** (0.0818)</span></span>
+<span id="cb6-44"><a href="#cb6-44" aria-hidden="true"></a><span class="co">#&gt; rel_year = 8     2.413*** (0.0764)</span></span>
+<span id="cb6-45"><a href="#cb6-45" aria-hidden="true"></a><span class="co">#&gt; rel_year = 9     2.620*** (0.1075)</span></span>
+<span id="cb6-46"><a href="#cb6-46" aria-hidden="true"></a><span class="co">#&gt; rel_year = 10    2.681*** (0.0954)</span></span>
+<span id="cb6-47"><a href="#cb6-47" aria-hidden="true"></a><span class="co">#&gt; rel_year = 11    2.712*** (0.1204)</span></span>
+<span id="cb6-48"><a href="#cb6-48" aria-hidden="true"></a><span class="co">#&gt; rel_year = 12    2.672*** (0.1533)</span></span>
+<span id="cb6-49"><a href="#cb6-49" aria-hidden="true"></a><span class="co">#&gt; rel_year = 13    2.656*** (0.1225)</span></span>
+<span id="cb6-50"><a href="#cb6-50" aria-hidden="true"></a><span class="co">#&gt; rel_year = 14    2.755*** (0.1293)</span></span>
+<span id="cb6-51"><a href="#cb6-51" aria-hidden="true"></a><span class="co">#&gt; rel_year = 15    2.823*** (0.1341)</span></span>
+<span id="cb6-52"><a href="#cb6-52" aria-hidden="true"></a><span class="co">#&gt; rel_year = 16    2.694*** (0.1200)</span></span>
+<span id="cb6-53"><a href="#cb6-53" aria-hidden="true"></a><span class="co">#&gt; rel_year = 17    2.897*** (0.1266)</span></span>
+<span id="cb6-54"><a href="#cb6-54" aria-hidden="true"></a><span class="co">#&gt; rel_year = 18    3.130*** (0.1160)</span></span>
+<span id="cb6-55"><a href="#cb6-55" aria-hidden="true"></a><span class="co">#&gt; rel_year = 19    3.231*** (0.1235)</span></span>
+<span id="cb6-56"><a href="#cb6-56" aria-hidden="true"></a><span class="co">#&gt; rel_year = 20    3.308*** (0.1120)</span></span>
+<span id="cb6-57"><a href="#cb6-57" aria-hidden="true"></a><span class="co">#&gt; _______________ __________________</span></span>
+<span id="cb6-58"><a href="#cb6-58" aria-hidden="true"></a><span class="co">#&gt; S.E. type                   Custom</span></span>
+<span id="cb6-59"><a href="#cb6-59" aria-hidden="true"></a><span class="co">#&gt; Observations                31,000</span></span>
+<span id="cb6-60"><a href="#cb6-60" aria-hidden="true"></a><span class="co">#&gt; R2                         0.30589</span></span>
+<span id="cb6-61"><a href="#cb6-61" aria-hidden="true"></a><span class="co">#&gt; Adj. R2                    0.30501</span></span></code></pre></div>
 <p>And plot the results:</p>
 <div class="sourceCode" id="cb7"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true"></a>pts &lt;-<span class="st"> </span>broom<span class="op">::</span><span class="kw">tidy</span>(es) <span class="op">%&gt;%</span></span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true"></a><span class="st">    </span><span class="kw">filter</span>(<span class="kw">str_detect</span>(term, <span class="st">"rel_year::"</span>)) <span class="op">%&gt;%</span></span>
@@ -620,23 +594,8 @@ Event-study plot with example data
 <h2 class="hasAnchor">
 <a href="#references" class="anchor"></a>References</h2>
 <div id="refs" class="references hanging-indent">
-<div id="ref-Borusyak_Jaravel_Spiess_2021">
-<p>Borusyak, Kirill, Xavier Jaravel, and Jann Spiess. 2021. “Revisiting Event Study Designs: Robust and Efficient Estimation,” 48.</p>
-</div>
-<div id="ref-Callaway_SantAnna_2018">
-<p>Callaway, Brantly, and Pedro H. C. Sant’Anna. 2018. “Difference-in-Differences with Multiple Time Periods and an Application on the Minimum Wage and Employment.” <em>arXiv:1803.09015</em>, August. <a href="http://arxiv.org/abs/1803.09015" class="uri">http://arxiv.org/abs/1803.09015</a>.</p>
-</div>
-<div id="ref-deChaisemartin_DHaultfoeuille_2019">
-<p>Chaisemartin, Clement de, and Xavier D’Haultfoeuille. 2019. <em>Two-Way Fixed Effects Estimators with Heterogeneous Treatment Effects</em>. w25904. National Bureau of Economic Research. <a href="https://doi.org/10.3386/w25904" class="uri">https://doi.org/10.3386/w25904</a>.</p>
-</div>
 <div id="ref-Gardner_2021">
 <p>Gardner, John. 2021. “Two-Stage Difference-in-Differences.” Working Paper. <a href="https://jrgcmu.github.io/2sdd_current.pdf" class="uri">https://jrgcmu.github.io/2sdd_current.pdf</a>.</p>
-</div>
-<div id="ref-Goodman-Bacon_2018">
-<p>Goodman-Bacon, Andrew. 2018. <em>Difference-in-Differences with Variation in Treatment Timing</em>. w25018. National Bureau of Economic Research. <a href="https://doi.org/10.3386/w25018" class="uri">https://doi.org/10.3386/w25018</a>.</p>
-</div>
-<div id="ref-Sun_Abraham_2020">
-<p>Sun, Liyang, and Sarah Abraham. 2020. “Estimating Dynamic Treatment Effects in Event Studies with Heterogeneous Treatment Effects,” 53.</p>
 </div>
 </div>
 </div>

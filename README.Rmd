@@ -31,54 +31,10 @@ devtools::install_github("kylebutts/did2s")
 
 ## Two-stage Difference-in-differences [@Gardner_2021]
 
-Researchers often want to estimate either a static TWFE model,
 
-<img src="man/figures/twfe.png" width="400px" height="100%">
+For details on the methodology, view this [vignette](http://kylebutts.com/did2s/articles/Two-Stage-Difference-in-Differences.html)
 
-where $\mu_i$ are unit fixed effects, $\mu_t$ are time fixed effects, and $D$ <sub>it</sub> is an indicator for receiving treatment, or an event-study TWFE model
-
-<img src="man/figures/es.png" width="450px" height="100%">
-
-where $D$ <sub>it</sub><sup>k</sup> are lag/leads of treatment (k periods from initial treatment date). Sometimes researches use variants of this model where they bin or drop leads and lags.
-
-However, running OLS to estimate either model has been shown to not recover an average treatment effect and has the potential to be severely misleading in cases of treatment effect heterogeneity [@Borusyak_Jaravel_Spiess_2021; @Callaway_SantAnna_2018; @deChaisemartin_DHaultfoeuille_2019; @Goodman-Bacon_2018; @Sun_Abraham_2020]. 
-
-One way of thinking about this problem is through the FWL theorem. When estimating the unit and time fixed effects, you create a residualized $\tilde{y}$ <sub>it</sub> which is commonly said to be "the outcome variable after removing time shocks and fixed units characteristics", but you also create a residulaized $\tilde{D}$ <sub>it</sub> or $\tilde{D}$ <sub>it</sub><sup>k</sup>. To simplify the literature, this residualized treatment indicators is what creates the problem of interpreting $\tau$ or $\tau^k$, especially when treatment effects are heterogeneous.
-
-That's where @Gardner_2021 comes in. What Gardner does to fix the problem is quite simple: estimate $\mu_i$ and $\mu_t$ seperately so you don't residualize the treatment indicators. In the absence of treatment, the TWFE model gives you a model for (potentially unobserved) untreated outcomes 
-
-<img src="man/figures/twfe_count.png" width="350px" height="100%">
-
-Therefore, if you can ***consistently*** estimate $y$ <sub>it</sub> $(0)$, you can impute the untreated outcome and remove that from the observed outcome $y$ <sub>it</sub>. The value of $y$ <sub>it</sub> $ - \hat{y}$ <sub>it</sub> $(0)$ should be close to zero for control units and should be close to $\tau$ <sub>it</sub> for treated observations. Then, regressing $y$ <sub>it</sub> $ - \hat{y}$ <sub>it</sub> $(0)$ on the treatment variables should give unbiased estimates of treatment effects (either static or dynamic/event-study). This is the same logic as the new paper @Borusyak_Jaravel_Spiess_2021
-
-The steps of the two-step estimator are:
-
-1. First estimate $\mu_i$ and $\mu_t$ using untreated/not-yet-treated observations, i.e. the subsample with $D$ <sub>it</sub> $=0$. Residualize outcomes:
-
-<img src="man/figures/resid.png" width="350px" height="100%">
-
-2. Regress $\tilde{y}$ <sub>it</sub> on $D$ <sub>it</sub> or $D$ <sub>it</sub><sup>k</sup>'s to estimate the treatment effect $\tau$ or $\tau^k$'s.
-
-Some notes:
-
-### Standard Errors
-
-First, the standard errors on $\tau$ or $\tau^k$'s will be incorrect as the dependent variable is itself an estimate. This is referred to the generated regressor problem in econometrics parlance. Therefore, @Gardner_2021 has derived asymptotically correct standard errors based on Newey and McFadden (1994). Details are left to the paper, but are implemented in the R package
-
-### Anticipation
-
-Second, this procedure works so long as $\mu_i$ and $\mu_t$ are ***consistently*** estimated. The key is to use only untreated/not-yet-treated observations to estimate the fixed effects. For example, if you used observations with $D$ <sub>it</sub> $ = 1$, you would attribute treatment effects $\tau$ as "fixed characteristics" and would combine $\mu_i$ with the treatment effects.
-
-The fixed effects could be biased/inconsistent if there are anticipation effects, i.e. units respond before treatment starts. The fix is fairly simple, simply "shift" treatment date earlier by as many years as you suspect anticipation to occur (e.g. 2 years before treatment starts) and estimate on the subsample where the shifted treatment equals zero. The R package allows you to specify the variable $D$ <sub>it</sub>, if you suspect anticipation, provide the shifted variable to this option.
-
-### Covariates
-
-This method works with pre-determined covariates as well. Augment the above step 1. to include $X_i$ and remove that from $y$ <sub>it</sub> along with the fixed effects to get $\tilde{y}$ <sub>it</sub>. 
-
-
-## R Package
-
-I have created an R package with the help of John Gardner to estimate the two-stage procedure. To install the package, run the following:
+I have created an R package with the help of John Gardner to estimate the two-stage difference-in-differences estimator. To install the package, run the following:
 
 ```{r, eval = FALSE}
 devtools::install_github("kylebutts/did2s")
