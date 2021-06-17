@@ -2,9 +2,9 @@
 #'
 #' @param data The dataframe containing all the variables
 #' @param yname Outcome variable
-#' @param first_stage_formula Fixed effects and other covariates you want to residualize with in first stage, use i() for fixed effects., following fixest::feols.
-#' @param treat_formula Second stage, these should be the treatment indicator(s) (e.g. treatment variable or es leads/lags), use i() for factor variables, following fixest::feols.
-#' @param treat_var A variable that = 1 if treated, = 0 otherwise
+#' @param first_stage Fixed effects and other covariates you want to residualize with in first stage, use i() for fixed effects., following fixest::feols.
+#' @param second_stage Second stage, these should be the treatment indicator(s) (e.g. treatment variable or es leads/lags), use i() for factor variables, following fixest::feols.
+#' @param treatment A variable that = 1 if treated, = 0 otherwise
 #' @param cluster_var What variable to cluster standard errors. This can be IDs or a higher aggregate level (state for example)
 #' @param weights Optional variable to run a weighted first- and second-stage regressions
 #' @param bootstrap Should standard errors be calculated using bootstrap? Default is FALSE.
@@ -17,37 +17,37 @@
 #' data("df_hom")
 #'
 #' # Static
-#' static <- did2s(df_hom, yname = "dep_var", first_stage_formula = "i(state) + i(year)", treat_formula = "i(treat, ref=FALSE)", treat_var = "treat", cluster_var = "state")
+#' static <- did2s(df_hom, yname = "dep_var", first_stage = "i(state) + i(year)", second_stage = "i(treat, ref=FALSE)", treatment = "treat", cluster_var = "state")
 #' fixest::esttable(static)
 #'
 #' # Event-Study
-#' es <- did2s(df_hom, yname = "dep_var", first_stage_formula = "i(state) + i(year)", treat_formula = "i(rel_year, ref=c(-1, Inf))", treat_var = "treat", cluster_var = "state")
+#' es <- did2s(df_hom, yname = "dep_var", first_stage = "i(state) + i(year)", second_stage = "i(rel_year, ref=c(-1, Inf))", treatment = "treat", cluster_var = "state")
 #' fixest::esttable(es)
 #'
 #' # Castle Data
 #' castle <- haven::read_dta("https://github.com/scunning1975/mixtape/raw/master/castle.dta")
 #'
-#' did2s::did2s(
+#' did2s(
 #' 	data = castle,
 #' 	yname = "l_homicide",
-#' 	first_stage_formula = ~ i(sid) + i(year),
-#' 	treat_formula = ~ i(post, ref=0),
-#' 	treat_var = "post",
+#' 	first_stage = ~ i(sid) + i(year),
+#' 	second_stage = ~ i(post, ref=0),
+#' 	treatment = "post",
 #' 	cluster_var = "state", weights = "popwt"
 #' )
 #'
-did2s <- function(data, yname, first_stage_formula, treat_formula, treat_var, cluster_var, weights = NULL, bootstrap = FALSE, n_bootstraps = 250) {
+did2s <- function(data, yname, first_stage, second_stage, treatment, cluster_var, weights = NULL, bootstrap = FALSE, n_bootstraps = 250) {
 
 	# Check Parameters ---------------------------------------------------------
 
 	# Extract vars from formula
-	if(inherits(first_stage_formula, "formula")) first_stage_formula <- as.character(first_stage_formula)[[2]]
-	if(inherits(treat_formula, "formula")) treat_formula <- as.character(treat_formula)[[2]]
+	if(inherits(first_stage, "formula")) first_stage <- as.character(first_stage)[[2]]
+	if(inherits(second_stage, "formula")) second_stage <- as.character(second_stage)[[2]]
 
 	# Print --------------------------------------------------------------------
 	cli::cli_h1("Two-stage Difference-in-Differences")
-	cli::cli_alert("Running with first stage formula {.var {paste0('~ ', first_stage_formula)}} and treat formula {.var {paste0('~ ', treat_formula)}}")
-	cli::cli_alert("The indicator variable that denotes when treatment is on is {.var {treat_var}}")
+	cli::cli_alert("Running with first stage formula {.var {paste0('~ ', first_stage)}} and treat formula {.var {paste0('~ ', second_stage)}}")
+	cli::cli_alert("The indicator variable that denotes when treatment is on is {.var {treatment}}")
 	if(!bootstrap) cli::cli_alert("Standard errors will be clustered by {.var {cluster_var}}")
 	if(bootstrap) cli::cli_alert("Standard errors will be block bootstrapped with cluster {.var {cluster_var}}")
 	cli::cat_line()
@@ -59,9 +59,9 @@ did2s <- function(data, yname, first_stage_formula, treat_formula, treat_var, cl
 	est <- did2s_estimate(
 		data = data,
 		yname = yname,
-		first_stage_formula = first_stage_formula,
-		treat_formula = treat_formula,
-		treat_var = treat_var,
+		first_stage = first_stage,
+		second_stage = second_stage,
+		treatment = treatment,
 		weights = weights
 	)
 
@@ -72,12 +72,12 @@ did2s <- function(data, yname, first_stage_formula, treat_formula, treat_var, cl
 		# Extract first stage
 		first_u <- data[[yname]] - stats::predict(est$first_stage, newdata = data)
 		# Zero out rows with D_it = 1
-		first_u[data[[treat_var]] == 1] <- 0
+		first_u[data[[treatment]] == 1] <- 0
 
 		x1 <- stats::model.matrix(est$first_stage, data = data)
 		# Zero out rows with D_it = 1
 		x10 <- x1
-		x10[data[[treat_var]] == 1] <- 0
+		x10[data[[treatment]] == 1] <- 0
 
 		# Extract second stage
 		second_u <- stats::residuals(est$second_stage)
@@ -121,9 +121,9 @@ did2s <- function(data, yname, first_stage_formula, treat_formula, treat_var, cl
 			estimate <- did2s_estimate(
 				data = data,
 				yname = yname,
-				first_stage_formula = first_stage_formula,
-				treat_formula = treat_formula,
-				treat_var = treat_var,
+				first_stage = first_stage,
+				second_stage = second_stage,
+				treatment = treatment,
 				weights = weights
 			)
 
@@ -140,11 +140,11 @@ did2s <- function(data, yname, first_stage_formula, treat_formula, treat_var, cl
 
 
 
-did2s_estimate <- function(data, yname, first_stage_formula, treat_formula, treat_var, weights = NULL) {
+did2s_estimate <- function(data, yname, first_stage, second_stage, treatment, weights = NULL) {
 	# First stage among untreated
-	formula <- stats::as.formula(glue::glue("{yname} ~ 0 + {first_stage_formula}"))
+	formula <- stats::as.formula(glue::glue("{yname} ~ 0 + {first_stage}"))
 
-	untreat <- dplyr::filter(data, !!rlang::sym(treat_var) == 0)
+	untreat <- dplyr::filter(data, !!rlang::sym(treatment) == 0)
 	if(is.null(weights)) {
 		weights_vector <- NULL
 	} else {
@@ -159,7 +159,7 @@ did2s_estimate <- function(data, yname, first_stage_formula, treat_formula, trea
 	data[[yname]] <- data[[yname]] - stats::predict(first_stage, newdata = data)
 
 	# Second stage
-	formula <- stats::as.formula(glue::glue("{yname} ~ 0 + {treat_formula}"))
+	formula <- stats::as.formula(glue::glue("{yname} ~ 0 + {second_stage}"))
 
 	if(!is.null(weights)) weights_vector <- data[[weights]]
 

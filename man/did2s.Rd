@@ -7,9 +7,9 @@
 did2s(
   data,
   yname,
-  first_stage_formula,
-  treat_formula,
-  treat_var,
+  first_stage,
+  second_stage,
+  treatment,
   cluster_var,
   weights = NULL,
   bootstrap = FALSE,
@@ -21,11 +21,11 @@ did2s(
 
 \item{yname}{Outcome variable}
 
-\item{first_stage_formula}{Fixed effects and other covariates you want to residualize with in first stage, use i() for fixed effects., following fixest::feols.}
+\item{first_stage}{Fixed effects and other covariates you want to residualize with in first stage, use i() for fixed effects., following fixest::feols.}
 
-\item{treat_formula}{Second stage, these should be the treatment indicator(s) (e.g. treatment variable or es leads/lags), use i() for factor variables, following fixest::feols.}
+\item{second_stage}{Second stage, these should be the treatment indicator(s) (e.g. treatment variable or es leads/lags), use i() for factor variables, following fixest::feols.}
 
-\item{treat_var}{A variable that = 1 if treated, = 0 otherwise}
+\item{treatment}{A variable that = 1 if treated, = 0 otherwise}
 
 \item{cluster_var}{What variable to cluster standard errors. This can be IDs or a higher aggregate level (state for example)}
 
@@ -46,11 +46,11 @@ Calculate two-stage difference-in-differences following Gardner (2021)
 data("df_hom")
 
 # Static
-static <- did2s(df_hom, yname = "dep_var", first_stage_formula = "i(state) + i(year)", treat_formula = "i(treat, ref=FALSE)", treat_var = "treat", cluster_var = "state")
+static <- did2s(df_hom, yname = "dep_var", first_stage = "i(state) + i(year)", second_stage = "i(treat, ref=FALSE)", treatment = "treat", cluster_var = "state")
 fixest::esttable(static)
 
 # Event-Study
-es <- did2s(df_hom, yname = "dep_var", first_stage_formula = "i(state) + i(year)", treat_formula = "i(rel_year, ref=c(-1, Inf))", treat_var = "treat", cluster_var = "state")
+es <- did2s(df_hom, yname = "dep_var", first_stage = "i(state) + i(year)", second_stage = "i(rel_year, ref=c(-1, Inf))", treatment = "treat", cluster_var = "state")
 fixest::esttable(es)
 
 # Castle Data
@@ -59,9 +59,9 @@ castle <- haven::read_dta("https://github.com/scunning1975/mixtape/raw/master/ca
 did2s::did2s(
 	data = castle,
 	yname = "l_homicide",
-	first_stage_formula = ~ i(sid) + i(year),
-	treat_formula = ~ i(post, ref=0),
-	treat_var = "post",
+	first_stage = ~ i(sid) + i(year),
+	second_stage = ~ i(post, ref=0),
+	treatment = "post",
 	cluster_var = "state", weights = "popwt"
 )
 
