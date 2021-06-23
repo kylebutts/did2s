@@ -36,6 +36,9 @@ jobs:
         run: |
           remotes::install_deps(dependencies = TRUE)
           install.packages("pkgdown", type = "binary")
+          install.packages("tidyverse", type = "binary")
+          install.packages("fixest", type = "binary")
+          install.packages("rmarkdown", type = "binary")
           remotes::install_github("amirmasoudabdol/preferably", type = "source")
         shell: Rscript {0}
 
