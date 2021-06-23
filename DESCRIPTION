@@ -1,6 +1,6 @@
 Package: did2s
 Title: Estimate Two-Stage Difference-in-Differences following Gardner (2021)
-Version: 0.1.0
+Version: 0.2.0
 Authors@R: 
     person(given = "Kyle",
            family = "Butts",
@@ -27,7 +27,9 @@ Imports:
     purrr,
     future,
     furrr,
-    cli
+    cli,
+    Matrix,
+    Rcpp
 Depends: 
     R (>= 2.10)
 URL: http://kylebutts.com/did2s
@@ -35,3 +37,6 @@ Suggests:
     rmarkdown,
     knitr
 VignetteBuilder: knitr
+LinkingTo: 
+    RcppArmadillo,
+    Rcpp

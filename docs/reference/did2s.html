@@ -101,7 +101,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">did2s</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.2.0</span>
       </span>
     </div>
 
@@ -164,9 +164,9 @@
     <pre class="usage"><span class='fu'>did2s</span><span class='op'>(</span>
   <span class='va'>data</span>,
   <span class='va'>yname</span>,
-  <span class='va'>first_stage_formula</span>,
-  <span class='va'>treat_formula</span>,
-  <span class='va'>treat_var</span>,
+  <span class='va'>first_stage</span>,
+  <span class='va'>second_stage</span>,
+  <span class='va'>treatment</span>,
   <span class='va'>cluster_var</span>,
   weights <span class='op'>=</span> <span class='cn'>NULL</span>,
   bootstrap <span class='op'>=</span> <span class='cn'>FALSE</span>,
@@ -185,15 +185,15 @@
       <td><p>Outcome variable</p></td>
     </tr>
     <tr>
-      <th>first_stage_formula</th>
+      <th>first_stage</th>
       <td><p>Fixed effects and other covariates you want to residualize with in first stage, use i() for fixed effects., following fixest::feols.</p></td>
     </tr>
     <tr>
-      <th>treat_formula</th>
+      <th>second_stage</th>
       <td><p>Second stage, these should be the treatment indicator(s) (e.g. treatment variable or es leads/lags), use i() for factor variables, following fixest::feols.</p></td>
     </tr>
     <tr>
-      <th>treat_var</th>
+      <th>treatment</th>
       <td><p>A variable that = 1 if treated, = 0 otherwise</p></td>
     </tr>
     <tr>
@@ -223,8 +223,8 @@
 <span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span><span class='op'>(</span><span class='st'>"df_hom"</span><span class='op'>)</span>
 
 <span class='co'># Static</span>
-<span class='va'>static</span> <span class='op'>&lt;-</span> <span class='fu'>did2s</span><span class='op'>(</span><span class='va'>df_hom</span>, yname <span class='op'>=</span> <span class='st'>"dep_var"</span>, first_stage_formula <span class='op'>=</span> <span class='st'>"i(state) + i(year)"</span>, treat_formula <span class='op'>=</span> <span class='st'>"i(treat, ref=FALSE)"</span>, treat_var <span class='op'>=</span> <span class='st'>"treat"</span>, cluster_var <span class='op'>=</span> <span class='st'>"state"</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; </div><div class='output co'>#&gt; <span class='message'><span style='color: #00BBBB;'>──</span> <span style='font-weight: bold;'>Two-stage Difference-in-Differences</span> <span style='color: #00BBBB;'>─────────────────────────────────────────</span></span></div><div class='output co'>#&gt; <span class='message'>→ Running with first stage formula <span style='color: #262626; background-color: #DADADA;'>`~ i(state) + i(year)`</span> and treat formula <span style='color: #262626; background-color: #DADADA;'>`~ i(treat, ref=FALSE)`</span></span></div><div class='output co'>#&gt; <span class='message'>→ The indicator variable that denotes when treatment is on is <span style='color: #262626; background-color: #DADADA;'>`treat`</span></span></div><div class='output co'>#&gt; <span class='message'>→ Standard errors will be clustered by <span style='color: #262626; background-color: #DADADA;'>`state`</span></span></div><div class='output co'>#&gt; </div><div class='output co'>#&gt; <span class='message'><span style='color: #00BBBB;'>ℹ</span> For more information on the methodology, visit <span style='color: #0000BB; font-style: italic;'>&lt;https://www.kylebutts.com/did2s&gt;</span></span></div><div class='output co'>#&gt; </div><div class='input'><span class='fu'>fixest</span><span class='fu'>::</span><span class='fu'><a href='https://lrberge.github.io/fixest/reference/etable.html'>esttable</a></span><span class='op'>(</span><span class='va'>static</span><span class='op'>)</span>
+<span class='va'>static</span> <span class='op'>&lt;-</span> <span class='fu'>did2s</span><span class='op'>(</span><span class='va'>df_hom</span>, yname <span class='op'>=</span> <span class='st'>"dep_var"</span>, first_stage <span class='op'>=</span> <span class='st'>"i(state) + i(year)"</span>, second_stage <span class='op'>=</span> <span class='st'>"i(treat, ref=FALSE)"</span>, treatment <span class='op'>=</span> <span class='st'>"treat"</span>, cluster_var <span class='op'>=</span> <span class='st'>"state"</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; </div><div class='output co'>#&gt; <span class='message'><span style='color: #00BBBB;'>──</span> <span style='font-weight: bold;'>Two-stage Difference-in-Differences</span> <span style='color: #00BBBB;'>─────────────────────────────────────────</span></span></div><div class='output co'>#&gt; <span class='message'>→ Running with first stage formula <span style='color: #262626; background-color: #DADADA;'>`~ i(state) + i(year)`</span> and second stage formula <span style='color: #262626; background-color: #DADADA;'>`~ i(treat, ref=FALSE)`</span></span></div><div class='output co'>#&gt; <span class='message'>→ The indicator variable that denotes when treatment is on is <span style='color: #262626; background-color: #DADADA;'>`treat`</span></span></div><div class='output co'>#&gt; <span class='message'>→ Standard errors will be clustered by <span style='color: #262626; background-color: #DADADA;'>`state`</span></span></div><div class='output co'>#&gt; </div><div class='output co'>#&gt; <span class='message'><span style='color: #00BBBB;'>ℹ</span> For more information on the methodology, visit <span style='color: #0000BB; font-style: italic;'>&lt;https://www.kylebutts.com/did2s&gt;</span></span></div><div class='output co'>#&gt; </div><div class='input'><span class='fu'>fixest</span><span class='fu'>::</span><span class='fu'><a href='https://lrberge.github.io/fixest/reference/etable.html'>esttable</a></span><span class='op'>(</span><span class='va'>static</span><span class='op'>)</span>
 </div><div class='output co'>#&gt;                            static
 #&gt; Dependent Var.:           dep_var
 #&gt;                                  
@@ -235,8 +235,8 @@
 #&gt; R2                        0.22784
 #&gt; Adj. R2                   0.22784</div><div class='input'>
 <span class='co'># Event-Study</span>
-<span class='va'>es</span> <span class='op'>&lt;-</span> <span class='fu'>did2s</span><span class='op'>(</span><span class='va'>df_hom</span>, yname <span class='op'>=</span> <span class='st'>"dep_var"</span>, first_stage_formula <span class='op'>=</span> <span class='st'>"i(state) + i(year)"</span>, treat_formula <span class='op'>=</span> <span class='st'>"i(rel_year, ref=c(-1, Inf))"</span>, treat_var <span class='op'>=</span> <span class='st'>"treat"</span>, cluster_var <span class='op'>=</span> <span class='st'>"state"</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; </div><div class='output co'>#&gt; <span class='message'><span style='color: #00BBBB;'>──</span> <span style='font-weight: bold;'>Two-stage Difference-in-Differences</span> <span style='color: #00BBBB;'>─────────────────────────────────────────</span></span></div><div class='output co'>#&gt; <span class='message'>→ Running with first stage formula <span style='color: #262626; background-color: #DADADA;'>`~ i(state) + i(year)`</span> and treat formula <span style='color: #262626; background-color: #DADADA;'>`~ i(rel_year, ref=c(-1, Inf))`</span></span></div><div class='output co'>#&gt; <span class='message'>→ The indicator variable that denotes when treatment is on is <span style='color: #262626; background-color: #DADADA;'>`treat`</span></span></div><div class='output co'>#&gt; <span class='message'>→ Standard errors will be clustered by <span style='color: #262626; background-color: #DADADA;'>`state`</span></span></div><div class='output co'>#&gt; </div><div class='output co'>#&gt; <span class='message'><span style='color: #00BBBB;'>ℹ</span> For more information on the methodology, visit <span style='color: #0000BB; font-style: italic;'>&lt;https://www.kylebutts.com/did2s&gt;</span></span></div><div class='output co'>#&gt; </div><div class='input'><span class='fu'>fixest</span><span class='fu'>::</span><span class='fu'><a href='https://lrberge.github.io/fixest/reference/etable.html'>esttable</a></span><span class='op'>(</span><span class='va'>es</span><span class='op'>)</span>
+<span class='va'>es</span> <span class='op'>&lt;-</span> <span class='fu'>did2s</span><span class='op'>(</span><span class='va'>df_hom</span>, yname <span class='op'>=</span> <span class='st'>"dep_var"</span>, first_stage <span class='op'>=</span> <span class='st'>"i(state) + i(year)"</span>, second_stage <span class='op'>=</span> <span class='st'>"i(rel_year, ref=c(-1, Inf))"</span>, treatment <span class='op'>=</span> <span class='st'>"treat"</span>, cluster_var <span class='op'>=</span> <span class='st'>"state"</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; </div><div class='output co'>#&gt; <span class='message'><span style='color: #00BBBB;'>──</span> <span style='font-weight: bold;'>Two-stage Difference-in-Differences</span> <span style='color: #00BBBB;'>─────────────────────────────────────────</span></span></div><div class='output co'>#&gt; <span class='message'>→ Running with first stage formula <span style='color: #262626; background-color: #DADADA;'>`~ i(state) + i(year)`</span> and second stage formula <span style='color: #262626; background-color: #DADADA;'>`~ i(rel_year, ref=c(-1, Inf))`</span></span></div><div class='output co'>#&gt; <span class='message'>→ The indicator variable that denotes when treatment is on is <span style='color: #262626; background-color: #DADADA;'>`treat`</span></span></div><div class='output co'>#&gt; <span class='message'>→ Standard errors will be clustered by <span style='color: #262626; background-color: #DADADA;'>`state`</span></span></div><div class='output co'>#&gt; </div><div class='output co'>#&gt; <span class='message'><span style='color: #00BBBB;'>ℹ</span> For more information on the methodology, visit <span style='color: #0000BB; font-style: italic;'>&lt;https://www.kylebutts.com/did2s&gt;</span></span></div><div class='output co'>#&gt; </div><div class='input'><span class='fu'>fixest</span><span class='fu'>::</span><span class='fu'><a href='https://lrberge.github.io/fixest/reference/etable.html'>esttable</a></span><span class='op'>(</span><span class='va'>es</span><span class='op'>)</span>
 </div><div class='output co'>#&gt;                                 es
 #&gt; Dependent Var.:            dep_var
 #&gt;                                   
@@ -288,19 +288,19 @@
 <span class='co'># Castle Data</span>
 <span class='va'>castle</span> <span class='op'>&lt;-</span> <span class='fu'>haven</span><span class='fu'>::</span><span class='fu'><a href='https://haven.tidyverse.org/reference/read_dta.html'>read_dta</a></span><span class='op'>(</span><span class='st'>"https://github.com/scunning1975/mixtape/raw/master/castle.dta"</span><span class='op'>)</span>
 
-<span class='fu'>did2s</span><span class='fu'>::</span><span class='fu'>did2s</span><span class='op'>(</span>
+<span class='fu'>did2s</span><span class='op'>(</span>
   data <span class='op'>=</span> <span class='va'>castle</span>,
   yname <span class='op'>=</span> <span class='st'>"l_homicide"</span>,
-  first_stage_formula <span class='op'>=</span> <span class='op'>~</span> <span class='fu'>i</span><span class='op'>(</span><span class='va'>sid</span><span class='op'>)</span> <span class='op'>+</span> <span class='fu'>i</span><span class='op'>(</span><span class='va'>year</span><span class='op'>)</span>,
-  treat_formula <span class='op'>=</span> <span class='op'>~</span> <span class='fu'>i</span><span class='op'>(</span><span class='va'>post</span>, ref<span class='op'>=</span><span class='fl'>0</span><span class='op'>)</span>,
-  treat_var <span class='op'>=</span> <span class='st'>"post"</span>,
+  first_stage <span class='op'>=</span> <span class='op'>~</span> <span class='fu'><a href='https://lrberge.github.io/fixest/reference/i.html'>i</a></span><span class='op'>(</span><span class='va'>sid</span><span class='op'>)</span> <span class='op'>+</span> <span class='fu'><a href='https://lrberge.github.io/fixest/reference/i.html'>i</a></span><span class='op'>(</span><span class='va'>year</span><span class='op'>)</span>,
+  second_stage <span class='op'>=</span> <span class='op'>~</span> <span class='fu'><a href='https://lrberge.github.io/fixest/reference/i.html'>i</a></span><span class='op'>(</span><span class='va'>post</span>, ref<span class='op'>=</span><span class='fl'>0</span><span class='op'>)</span>,
+  treatment <span class='op'>=</span> <span class='st'>"post"</span>,
   cluster_var <span class='op'>=</span> <span class='st'>"state"</span>, weights <span class='op'>=</span> <span class='st'>"popwt"</span>
 <span class='op'>)</span>
-</div><div class='output co'>#&gt; </div><div class='output co'>#&gt; <span class='message'><span style='color: #00BBBB;'>──</span> <span style='font-weight: bold;'>Two-stage Difference-in-Differences</span> <span style='color: #00BBBB;'>─────────────────────────────────────────</span></span></div><div class='output co'>#&gt; <span class='message'>→ Running with first stage formula <span style='color: #262626; background-color: #DADADA;'>`~ i(sid) + i(year)`</span> and treat formula <span style='color: #262626; background-color: #DADADA;'>`~ i(post, ref = 0)`</span></span></div><div class='output co'>#&gt; <span class='message'>→ The indicator variable that denotes when treatment is on is <span style='color: #262626; background-color: #DADADA;'>`post`</span></span></div><div class='output co'>#&gt; <span class='message'>→ Standard errors will be clustered by <span style='color: #262626; background-color: #DADADA;'>`state`</span></span></div><div class='output co'>#&gt; </div><div class='output co'>#&gt; <span class='message'><span style='color: #00BBBB;'>ℹ</span> For more information on the methodology, visit <span style='color: #0000BB; font-style: italic;'>&lt;https://www.kylebutts.com/did2s&gt;</span></span></div><div class='output co'>#&gt; </div><div class='output co'>#&gt; OLS estimation, Dep. Var.: l_homicide
+</div><div class='output co'>#&gt; </div><div class='output co'>#&gt; <span class='message'><span style='color: #00BBBB;'>──</span> <span style='font-weight: bold;'>Two-stage Difference-in-Differences</span> <span style='color: #00BBBB;'>─────────────────────────────────────────</span></span></div><div class='output co'>#&gt; <span class='message'>→ Running with first stage formula <span style='color: #262626; background-color: #DADADA;'>`~ i(sid) + i(year)`</span> and second stage formula <span style='color: #262626; background-color: #DADADA;'>`~ i(post, ref = 0)`</span></span></div><div class='output co'>#&gt; <span class='message'>→ The indicator variable that denotes when treatment is on is <span style='color: #262626; background-color: #DADADA;'>`post`</span></span></div><div class='output co'>#&gt; <span class='message'>→ Standard errors will be clustered by <span style='color: #262626; background-color: #DADADA;'>`state`</span></span></div><div class='output co'>#&gt; </div><div class='output co'>#&gt; <span class='message'><span style='color: #00BBBB;'>ℹ</span> For more information on the methodology, visit <span style='color: #0000BB; font-style: italic;'>&lt;https://www.kylebutts.com/did2s&gt;</span></span></div><div class='output co'>#&gt; </div><div class='output co'>#&gt; OLS estimation, Dep. Var.: l_homicide
 #&gt; Observations: 550 
 #&gt; Standard-errors: Custom 
-#&gt;         Estimate Std. Error t value Pr(&gt;|t|)) 
-#&gt; post::1 0.075142   0.057535   1.306  0.192095 
+#&gt;         Estimate Std. Error t value Pr(&gt;|t|))    
+#&gt; post::1 0.075142    0.03538  2.1239  0.034127 *  
 #&gt; ---
 #&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 #&gt; RMSE: 263.4   Adj. R2: 0.052465</div><div class='input'>

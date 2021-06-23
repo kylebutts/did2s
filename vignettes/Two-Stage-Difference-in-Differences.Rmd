@@ -86,9 +86,9 @@ To view the documentation, type `?did2s` into the console.
 The main function is `did2s` which estimates the two-stage did procedure. This function requires the following options:
 
 - `yname`: the outcome variable
-- `first_stage_formula`: formula for first stage, can include fixed effects and covariates, but do not include treatment variable(s)!
-- `treat_formula`: This should be the treatment variable or in the case of event studies, treatment variables.
-- `treat_var`: This has to be the 0/1 treatment variable that marks when treatment turns on for a unit. If you suspect anticipation, see note above for accounting for this.
+- `first_stage`: formula for first stage, can include fixed effects and covariates, but do not include treatment variable(s)! Estimation uses fixest so you can use `i()` for fixed effects or the vertical bar `|`.
+- `second_stage`: This should be the treatment variable or in the case of event studies, treatment variables.
+- `treatment`: This has to be the 0/1 treatment variable that marks when treatment turns on for a unit. If you suspect anticipation, see note above for accounting for this.
 - `cluster_var`: Optional, this tells which variables to cluster on
 
 did2s returns a list with two objects:
@@ -149,8 +149,8 @@ First, lets estimate a static did:
 
 # Static
 static <- did2s(df_het, 
-				yname = "dep_var", first_stage_formula = ~i(state) + i(year), 
-				treat_formula = ~ i(treat, ref = FALSE), treat_var = "treat", 
+				yname = "dep_var", first_stage = ~ 0 | state + year, 
+				second_stage = ~ i(treat, ref = FALSE), treatment = "treat", 
 				cluster_var = "state")
 
 fixest::esttable(static)
@@ -163,8 +163,8 @@ Then, let's estimate an event study did:
 
 # Event Study
 es <- did2s(df_het,
-			yname = "dep_var", first_stage_formula = ~i(state) + i(year), 
-			treat_formula = ~ i(rel_year, ref=c(-1, Inf)), treat_var = "treat", 
+			yname = "dep_var", first_stage = ~ 0 | state + year, 
+			second_stage = ~ i(rel_year, ref=c(-1, Inf)), treatment = "treat", 
 			cluster_var = "state")
 
 fixest::esttable(es)

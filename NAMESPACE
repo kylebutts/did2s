@@ -3,4 +3,6 @@
 export("%>%")
 export(did2s)
 export(gen_data)
+importFrom(Rcpp,sourceCpp)
 importFrom(magrittr,"%>%")
+useDynLib(did2s, .registration = TRUE)

@@ -101,7 +101,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">did2s</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.2.0</span>
       </span>
     </div>
 
@@ -167,11 +167,52 @@
   <span class='va'>gname</span>,
   <span class='va'>tname</span>,
   <span class='va'>idname</span>,
-  <span class='va'>first_stage_formula</span>,
-  <span class='va'>treat_var</span>,
-  <span class='va'>weights</span>
+  <span class='va'>first_stage</span>,
+  weights <span class='op'>=</span> <span class='cn'>NULL</span>,
+  wtr <span class='op'>=</span> <span class='cn'>NULL</span>,
+  horizon <span class='op'>=</span> <span class='cn'>NULL</span>
 <span class='op'>)</span></pre>
 
+    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
+    <table class="ref-arguments">
+    <colgroup><col class="name" /><col class="desc" /></colgroup>
+    <tr>
+      <th>data</th>
+      <td><p>A data frame</p></td>
+    </tr>
+    <tr>
+      <th>yname</th>
+      <td><p>outcome variable</p></td>
+    </tr>
+    <tr>
+      <th>gname</th>
+      <td><p>variable for unit-specific date of treatment (missing = never-treated)</p></td>
+    </tr>
+    <tr>
+      <th>tname</th>
+      <td><p>variable for calendar period</p></td>
+    </tr>
+    <tr>
+      <th>idname</th>
+      <td><p>variable for unique unit id</p></td>
+    </tr>
+    <tr>
+      <th>first_stage</th>
+      <td><p>formula for Y(0)</p></td>
+    </tr>
+    <tr>
+      <th>weights</th>
+      <td><p>estimation weights for observations. This is used in estimating Y(0) and also augments treatment effect weights</p></td>
+    </tr>
+    <tr>
+      <th>wtr</th>
+      <td><p>character vector of treatment weight names (see horizon/allhorizon for standard event study weights)</p></td>
+    </tr>
+    <tr>
+      <th>horizon</th>
+      <td><p>vector of event_time. This only applies if wtr is left as NULL. If both wtr and horizon are null, then all values of event_time will be used.</p></td>
+    </tr>
+    </table>
 
 
   </div>

@@ -41,12 +41,13 @@ did2s <- function(data, yname, first_stage, second_stage, treatment, cluster_var
 	# Check Parameters ---------------------------------------------------------
 
 	# Extract vars from formula
-	if(inherits(first_stage, "formula")) first_stage <- as.character(first_stage)[[2]]
-	if(inherits(second_stage, "formula")) second_stage <- as.character(second_stage)[[2]]
+	if(inherits(first_stage, "formula")) first_stage = as.character(first_stage)[[2]]
+	if(inherits(second_stage, "formula")) second_stage = as.character(second_stage)[[2]]
 
 	# Print --------------------------------------------------------------------
+
 	cli::cli_h1("Two-stage Difference-in-Differences")
-	cli::cli_alert("Running with first stage formula {.var {paste0('~ ', first_stage)}} and treat formula {.var {paste0('~ ', second_stage)}}")
+	cli::cli_alert("Running with first stage formula {.var {paste0('~ ', first_stage)}} and second stage formula {.var {paste0('~ ', second_stage)}}")
 	cli::cli_alert("The indicator variable that denotes when treatment is on is {.var {treatment}}")
 	if(!bootstrap) cli::cli_alert("Standard errors will be clustered by {.var {cluster_var}}")
 	if(bootstrap) cli::cli_alert("Standard errors will be block bootstrapped with cluster {.var {cluster_var}}")
@@ -56,7 +57,7 @@ did2s <- function(data, yname, first_stage, second_stage, treatment, cluster_var
 
 	# Point Estimates ----------------------------------------------------------
 
-	est <- did2s_estimate(
+	est = did2s_estimate(
 		data = data,
 		yname = yname,
 		first_stage = first_stage,
@@ -69,40 +70,61 @@ did2s <- function(data, yname, first_stage, second_stage, treatment, cluster_var
 
 	if(!bootstrap) {
 
-		# Extract first stage
-		first_u <- data[[yname]] - stats::predict(est$first_stage, newdata = data)
-		# Zero out rows with D_it = 1
-		first_u[data[[treatment]] == 1] <- 0
+		# Extract weights
+		if(is.null(weights)) {
+			weights_vector = rep(1, nrow(data))
+		} else {
+			weights_vector = sqrt(data[[weights]])
+		}
 
-		x1 <- stats::model.matrix(est$first_stage, data = data)
+		# Extract first stage
+		first_u = data[[yname]] - stats::predict(est$first_stage, newdata = data)
 		# Zero out rows with D_it = 1
-		x10 <- x1
-		x10[data[[treatment]] == 1] <- 0
+		first_u[data[[treatment]] == 1] = 0
+
+		# x1 is matrix used to predict Y(0)
+		x1 = sparse_model_matrix(est$first_stage, data)
 
 		# Extract second stage
-		second_u <- stats::residuals(est$second_stage)
-		x2 <- stats::model.matrix(est$second_stage, data = data)
+		second_u = stats::residuals(est$second_stage)
+		x2 = sparse_model_matrix(est$second_stage, data)
+
+		# multiply by weights
+		first_u = weights_vector * first_u
+		x1 = weights_vector * x1
+		second_u = weights_vector * second_u
+		x2 = weights_vector * x2
+
+		# x10 is matrix used to estimate fixed effects (zero out rows with D_it = 1)
+		x10 = x1
+		x10[data[[treatment]] == 1] = 0
 
 		# Unique values of cluster variable
-		cl <- unique(data[[cluster_var]])
+		cl = unique(data[[cluster_var]])
 
-		V <- t(x2) %*% x1 %*% solve(t(x10) %*% x10)
+		# x2'x1 (x10'x10)^-1
+		V = make_V(x1, x10, x2)
 
-		meat <- lapply(cl, function(c) {
-				idx <- data[[cluster_var]] == c
+		meat = lapply(cl, function(c) {
+			idx = data[[cluster_var]] == c
 
-				# W_g = X_2g' e_2g - (X_2' X_12) (X_11' X_11)^-1 X_11g' e_1g
-				W <- t(x2[idx,]) %*% second_u[idx] -
-					V %*% t(x10[idx,]) %*% first_u[idx]
+			x2g = Matrix::Matrix(x2[idx,], sparse = TRUE)
+			x10g = Matrix::Matrix(x10[idx,], sparse = TRUE)
+			first_ug = first_u[idx]
+			second_ug = second_u[idx]
 
-				# = W_g W_g'
-				return(W %*% t(W))
-			})
+			# W_g = X_2g' e_2g - (X_2' X_12) (X_11' X_11)^-1 X_11g' e_1g
+			# W_g = X_2g' e_2g - V X_11g' e_1g
+			W = make_W(x2g, x10g, first_ug, second_ug, V)
 
-		meat_sum <- Reduce("+", meat)
+			# = W_g W_g'
+			return(W %*% t(W))
+		})
+
+		meat_sum = Reduce("+", meat)
 
 		# (X_2'X_2)^-1 (sum W_g W_g') (X_2'X_2)^-1
-		cov <- solve(t(x2) %*% x2) %*% meat_sum %*% solve(t(x2) %*% x2)
+		cov = make_cov(x2, meat_sum)
 	}
 
 
@@ -112,13 +134,13 @@ did2s <- function(data, yname, first_stage, second_stage, treatment, cluster_var
 
 		cli::cli_alert("Starting {n_bootstraps} bootstraps at cluster level: {cluster_var}")
 
-		samples <- rsample::bootstraps(data, times = n_bootstraps, strata = all_of(cluster_var), pool = 0)
+		samples = rsample::bootstraps(data, times = n_bootstraps, strata = all_of(cluster_var), pool = 0)
 
 
-		estimates <- purrr::map_dfr(samples$splits, function(x) {
-			data <- rsample::as.data.frame(x)
+		estimates = purrr::map_dfr(samples$splits, function(x) {
+			data = rsample::as.data.frame(x)
 
-			estimate <- did2s_estimate(
+			estimate = did2s_estimate(
 				data = data,
 				yname = yname,
 				first_stage = first_stage,
@@ -130,7 +152,7 @@ did2s <- function(data, yname, first_stage, second_stage, treatment, cluster_var
 			return(coef(estimate$second_stage))
 		})
 
-		cov <- cov(estimates)
+		cov = cov(estimates)
 
 	}
 
@@ -139,37 +161,88 @@ did2s <- function(data, yname, first_stage, second_stage, treatment, cluster_var
 }
 
 
-
-did2s_estimate <- function(data, yname, first_stage, second_stage, treatment, weights = NULL) {
+# Point estimate for did2s
+did2s_estimate = function(data, yname, first_stage, second_stage, treatment, weights = NULL) {
 	# First stage among untreated
-	formula <- stats::as.formula(glue::glue("{yname} ~ 0 + {first_stage}"))
+	formula = stats::as.formula(glue::glue("{yname} ~ 0 + {first_stage}"))
 
-	untreat <- dplyr::filter(data, !!rlang::sym(treatment) == 0)
+	untreat = dplyr::filter(data, !!rlang::sym(treatment) == 0)
 	if(is.null(weights)) {
-		weights_vector <- NULL
+		weights_vector = NULL
 	} else {
-		weights_vector <- untreat[[weights]]
+		weights_vector = untreat[[weights]]
 	}
 
 
-	first_stage <- fixest::feols(formula, data = untreat, weights = weights_vector, warn=FALSE, notes=FALSE)
-	first_stage_cov <- stats::vcov(first_stage)
+	first_stage = fixest::feols(formula, data = untreat, weights = weights_vector, warn=FALSE, notes=FALSE)
 
 	# Residualize outcome variable but keep same yname
-	data[[yname]] <- data[[yname]] - stats::predict(first_stage, newdata = data)
+	data[[yname]] = data[[yname]] - stats::predict(first_stage, newdata = data)
 
 	# Second stage
-	formula <- stats::as.formula(glue::glue("{yname} ~ 0 + {second_stage}"))
+	formula = stats::as.formula(glue::glue("{yname} ~ 0 + {second_stage}"))
 
-	if(!is.null(weights)) weights_vector <- data[[weights]]
+	if(!is.null(weights)) weights_vector = data[[weights]]
 
-	second_stage <- fixest::feols(formula, data = data, weights = weights_vector, warn=FALSE, notes=FALSE)
-	second_stage_cov <- stats::vcov(second_stage)
+	second_stage = fixest::feols(formula, data = data, weights = weights_vector, warn=FALSE, notes=FALSE)
 
 	return(list(
 		first_stage = first_stage,
-		first_stage_cov = first_stage_cov,
-		second_stage = second_stage,
-		second_stage_cov = second_stage_cov
+		second_stage = second_stage
 	))
+}
+
+# Make a sparse_model_matrix for fixest
+sparse_model_matrix = function(fixest, data) {
+	Z = NULL
+
+	# Coefficients
+	coef = names(stats::coef(fixest))
+
+	if(!is.null(coef)) {
+		Z = lapply(coef, function(x) {
+			# intercept
+			if(x == "(Intercept)") {
+				return(Matrix::Matrix(rep(1, times = nrow(data)), ncol = 1, sparse = TRUE))
+			}
+			# factor variables
+			else if(stringr::str_detect(x, "::")) {
+				var = stringr::str_extract(x, ".*(?=::)")
+				val = stringr::str_extract(x, "(?<=::).*")
+
+				return(Matrix::Matrix(as.numeric(data[[var]] == val), ncol = 1, sparse = TRUE))
+			}
+			# covariates
+			else {
+				return(Matrix::Matrix(data[[x]], ncol = 1, sparse = TRUE))
+			}
+		})
+
+		Z = do.call(cbind, Z)
+	}
+
+
+	# Fixed Effects
+	if("fixef_id" %in% names(fixest)) {
+		fixef_list = fixest::fixef(fixest)
+		fixef_names = fixest$fixef_vars
+
+		for(i in 1:length(fixef_names)){
+			var = fixef_names[i]
+
+			fixef_vals = fixef_list[[var]]
+			for(i in 1:length(fixef_vals)) {
+				if(fixef_vals[i] != 0) {
+					val = names(fixef_vals[i])
+
+					Z = cbind(Z, Matrix::Matrix(as.numeric(data[[var]] == val), ncol = 1, sparse = TRUE))
+				}
+			}
+
+
+		}
+
+	}
+
+	return(Z)
 }

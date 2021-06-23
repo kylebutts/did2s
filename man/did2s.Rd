@@ -56,7 +56,7 @@ fixest::esttable(es)
 # Castle Data
 castle <- haven::read_dta("https://github.com/scunning1975/mixtape/raw/master/castle.dta")
 
-did2s::did2s(
+did2s(
 	data = castle,
 	yname = "l_homicide",
 	first_stage = ~ i(sid) + i(year),

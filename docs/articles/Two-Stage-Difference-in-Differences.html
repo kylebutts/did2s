@@ -48,7 +48,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">did2s</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.2.0</span>
       </span>
     </div>
 
@@ -166,11 +166,11 @@ The R package allows you to specify the variable <span class="math inline">\(D_{
 <li>
 <code>yname</code>: the outcome variable</li>
 <li>
-<code>first_stage_formula</code>: formula for first stage, can include fixed effects and covariates, but do not include treatment variable(s)!</li>
+<code>first_stage</code>: formula for first stage, can include fixed effects and covariates, but do not include treatment variable(s)! Estimation uses fixest so you can use <code><a href="https://lrberge.github.io/fixest/reference/i.html">i()</a></code> for fixed effects or the vertical bar <code><a href="https://rdrr.io/r/base/Logic.html">|</a></code>.</li>
 <li>
-<code>treat_formula</code>: This should be the treatment variable or in the case of event studies, treatment variables.</li>
+<code>second_stage</code>: This should be the treatment variable or in the case of event studies, treatment variables.</li>
 <li>
-<code>treat_var</code>: This has to be the 0/1 treatment variable that marks when treatment turns on for a unit. If you suspect anticipation, see note above for accounting for this.</li>
+<code>treatment</code>: This has to be the 0/1 treatment variable that marks when treatment turns on for a unit. If you suspect anticipation, see note above for accounting for this.</li>
 <li>
 <code>cluster_var</code>: Optional, this tells which variables to cluster on</li>
 </ul>
@@ -184,10 +184,10 @@ The R package allows you to specify the variable <span class="math inline">\(D_{
 <p>I will load example data from the package and plot the average outcome among the groups. Here is one unit’s data:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R">
-<span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="http://tidyverse.tidyverse.org">tidyverse</a></span><span class="op">)</span>
-<span class="co">#&gt; ── Attaching packages ─────────────────────────────────────── tidyverse 1.3.0 ──</span>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org">tidyverse</a></span><span class="op">)</span>
+<span class="co">#&gt; ── Attaching packages ─────────────────────────────────────── tidyverse 1.3.1 ──</span>
 <span class="co">#&gt; ✓ ggplot2 3.3.3     ✓ purrr   0.3.4</span>
-<span class="co">#&gt; ✓ tibble  3.1.2     ✓ dplyr   1.0.6</span>
+<span class="co">#&gt; ✓ tibble  3.1.2     ✓ dplyr   1.0.7</span>
 <span class="co">#&gt; ✓ tidyr   1.1.3     ✓ stringr 1.4.0</span>
 <span class="co">#&gt; ✓ readr   1.4.0     ✓ forcats 0.5.1</span>
 <span class="co">#&gt; ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──</span>
@@ -195,10 +195,12 @@ The R package allows you to specify the variable <span class="math inline">\(D_{
 <span class="co">#&gt; x dplyr::lag()    masks stats::lag()</span>
 <span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="http://kylebutts.com/did2s">did2s</a></span><span class="op">)</span>
 <span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://lrberge.github.io/fixest/">fixest</a></span><span class="op">)</span>
-<span class="co">#&gt; fixest 0.9.0, BREAKING changes! </span>
-<span class="co">#&gt; In i():</span>
-<span class="co">#&gt;   a) the first two arguments have been swapped! Now it's i(factor_var, continuous_var) for interactions. </span>
-<span class="co">#&gt;   b) argument 'drop' has been removed (put everything in 'ref' now).</span>
+<span class="co">#&gt; fixest 0.9.0, BREAKING changes! (Permanently remove this message with fixest_startup_msg(FALSE).) </span>
+<span class="co">#&gt; - In i():</span>
+<span class="co">#&gt;     + the first two arguments have been swapped! Now it's i(factor_var, continuous_var) for interactions. </span>
+<span class="co">#&gt;     + argument 'drop' has been removed (put everything in 'ref' now).</span>
+<span class="co">#&gt; - In feglm(): </span>
+<span class="co">#&gt;     + the default family becomes 'gaussian' to be in line with glm(). Hence, for Poisson estimations, please use fepois() instead.</span>
 <span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/rstudio/rmarkdown">rmarkdown</a></span><span class="op">)</span>
 
 <span class="co"># Load theme</span>
@@ -252,12 +254,12 @@ Example data with heterogeneous treatment effects
 <code class="sourceCode R">
 <span class="co"># Static</span>
 <span class="va">static</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/did2s.html">did2s</a></span><span class="op">(</span><span class="va">df_het</span>, 
-                yname <span class="op">=</span> <span class="st">"dep_var"</span>, first_stage_formula <span class="op">=</span> <span class="op">~</span><span class="fu"><a href="https://lrberge.github.io/fixest/reference/i.html">i</a></span><span class="op">(</span><span class="va">state</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://lrberge.github.io/fixest/reference/i.html">i</a></span><span class="op">(</span><span class="va">year</span><span class="op">)</span>, 
-                treat_formula <span class="op">=</span> <span class="op">~</span> <span class="fu"><a href="https://lrberge.github.io/fixest/reference/i.html">i</a></span><span class="op">(</span><span class="va">treat</span>, ref <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span>, treat_var <span class="op">=</span> <span class="st">"treat"</span>, 
+                yname <span class="op">=</span> <span class="st">"dep_var"</span>, first_stage <span class="op">=</span> <span class="op">~</span> <span class="fl">0</span> <span class="op">|</span> <span class="va">state</span> <span class="op">+</span> <span class="va">year</span>, 
+                second_stage <span class="op">=</span> <span class="op">~</span> <span class="fu"><a href="https://lrberge.github.io/fixest/reference/i.html">i</a></span><span class="op">(</span><span class="va">treat</span>, ref <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span>, treatment <span class="op">=</span> <span class="st">"treat"</span>, 
                 cluster_var <span class="op">=</span> <span class="st">"state"</span><span class="op">)</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; ── Two-stage Difference-in-Differences ─────────────────────────────────────────</span>
-<span class="co">#&gt; → Running with first stage formula `~ i(state) + i(year)` and treat formula `~ i(treat, ref = FALSE)`</span>
+<span class="co">#&gt; → Running with first stage formula `~ 0 | state + year` and second stage formula `~ i(treat, ref = FALSE)`</span>
 <span class="co">#&gt; → The indicator variable that denotes when treatment is on is `treat`</span>
 <span class="co">#&gt; → Standard errors will be clustered by `state`</span>
 <span class="co">#&gt; ℹ For more information on the methodology, visit &lt;https://www.kylebutts.com/did2s&gt;</span>
@@ -277,12 +279,12 @@ Example data with heterogeneous treatment effects
 <code class="sourceCode R">
 <span class="co"># Event Study</span>
 <span class="va">es</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/did2s.html">did2s</a></span><span class="op">(</span><span class="va">df_het</span>,
-            yname <span class="op">=</span> <span class="st">"dep_var"</span>, first_stage_formula <span class="op">=</span> <span class="op">~</span><span class="fu"><a href="https://lrberge.github.io/fixest/reference/i.html">i</a></span><span class="op">(</span><span class="va">state</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://lrberge.github.io/fixest/reference/i.html">i</a></span><span class="op">(</span><span class="va">year</span><span class="op">)</span>, 
-            treat_formula <span class="op">=</span> <span class="op">~</span> <span class="fu"><a href="https://lrberge.github.io/fixest/reference/i.html">i</a></span><span class="op">(</span><span class="va">rel_year</span>, ref<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">1</span>, <span class="cn">Inf</span><span class="op">)</span><span class="op">)</span>, treat_var <span class="op">=</span> <span class="st">"treat"</span>, 
+            yname <span class="op">=</span> <span class="st">"dep_var"</span>, first_stage <span class="op">=</span> <span class="op">~</span> <span class="fl">0</span> <span class="op">|</span> <span class="va">state</span> <span class="op">+</span> <span class="va">year</span>, 
+            second_stage <span class="op">=</span> <span class="op">~</span> <span class="fu"><a href="https://lrberge.github.io/fixest/reference/i.html">i</a></span><span class="op">(</span><span class="va">rel_year</span>, ref<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">1</span>, <span class="cn">Inf</span><span class="op">)</span><span class="op">)</span>, treatment <span class="op">=</span> <span class="st">"treat"</span>, 
             cluster_var <span class="op">=</span> <span class="st">"state"</span><span class="op">)</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; ── Two-stage Difference-in-Differences ─────────────────────────────────────────</span>
-<span class="co">#&gt; → Running with first stage formula `~ i(state) + i(year)` and treat formula `~ i(rel_year, ref = c(-1, Inf))`</span>
+<span class="co">#&gt; → Running with first stage formula `~ 0 | state + year` and second stage formula `~ i(rel_year, ref = c(-1, Inf))`</span>
 <span class="co">#&gt; → The indicator variable that denotes when treatment is on is `treat`</span>
 <span class="co">#&gt; → Standard errors will be clustered by `state`</span>
 <span class="co">#&gt; ℹ For more information on the methodology, visit &lt;https://www.kylebutts.com/did2s&gt;</span>
