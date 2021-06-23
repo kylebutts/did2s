@@ -267,21 +267,22 @@ pts <- broom::tidy(es) %>%
     filter(str_detect(term, "rel_year::")) %>%
     select(rel_year = term, estimate, se = std.error) %>%
     mutate(
-        rel_year = as.numeric(str_remove(rel_year, "rel_year::")) + 0.05,
+        rel_year = as.numeric(str_remove(rel_year, "rel_year::")),
         ci_lower = estimate - 1.96 * se,
         ci_upper = estimate + 1.96 * se,
-        group = "Estimated Effect"
+        group = "Two-Stage Estimate"
     ) %>%
-    filter(rel_year <= 8 & rel_year >= -8)
+    filter(rel_year <= 8 & rel_year >= -8) %>% 
+    mutate(rel_year = rel_year + 0.1)
 
 te_true <- df_het %>%
     # Keep only treated units
     filter(g > 0) %>%
     group_by(rel_year) %>%
     summarize(estimate = mean(te + te_dynamic)) %>%
-    mutate(group = "True Effect") %>%
-    filter(rel_year >= -8 & rel_year <= 8) %>%
-    mutate(rel_year = rel_year - 0.05)
+      mutate(group = "True Effect") %>%
+    filter(rel_year >= -8 & rel_year <= 8) %>% 
+    mutate(rel_year = rel_year)
 
 pts <- bind_rows(pts, te_true)
 
@@ -300,10 +301,7 @@ ggplot() +
                mapping = aes(x = x, y = y, label = label), size = 5.5, hjust = 1, fontface = 2, inherit.aes = FALSE) +
     scale_x_continuous(breaks = -8:8, minor_breaks = NULL) +
     scale_y_continuous(minor_breaks = NULL) +
-    scale_color_manual(values = c("Estimated Effect" = "#013ef5", "True Effect" = "#eb3f25")) +
-    labs(x = "Relative Time", y = "Estimate", color = NULL, title = NULL) +
-    theme_kyle(base_size = 16) +
-    theme(legend.position = "bottom")
+    scale_color_manual(values = c("Two-Stage Estimate" = "steelblue", "True Effect" = "#b44682", "TWFE Estimate" = "#82b446"))
 #> Warning: Removed 17 rows containing missing values (geom_segment).
 ```
 
@@ -316,7 +314,67 @@ Event-study plot with example data
 
 </div>
 
-## References
+``` r
+    labs(x = "Relative Time", y = "Estimate", color = NULL, title = NULL) +
+    theme_kyle(base_size = 16) +
+    theme(legend.position = "bottom")
+#> NULL
+```
+
+### Comparison to TWFE
+
+``` r
+# TWFE
+twfe <- fixest::feols(dep_var ~ i(rel_year, ref=c(-1, Inf)) | unit + year, data = df_het) %>%
+    broom::tidy() %>%
+    filter(str_detect(term, "rel_year::")) %>%
+    select(rel_year = term, estimate, se = std.error) %>%
+    mutate(
+        rel_year = as.numeric(str_remove(rel_year, "rel_year::")),
+        ci_lower = estimate - 1.96 * se,
+        ci_upper = estimate + 1.96 * se,
+        group = "TWFE Estimate"
+    ) %>%
+    filter(rel_year <= 8 & rel_year >= -8) %>% 
+    mutate(rel_year = rel_year - 0.1)
+
+# Add TWFE Points
+both_pts <- pts %>% mutate(
+        group = if_else(group == "Estimated Effect", "Two-Stage Estimate", group)
+    ) %>% 
+    bind_rows(., twfe)
+
+
+ggplot() +
+    # 0 effect
+    geom_hline(yintercept = 0, linetype = "dashed") +
+    geom_vline(xintercept = -0.5, linetype = "dashed") +
+    # Confidence Intervals
+    geom_linerange(data = both_pts, mapping = aes(x = rel_year, ymin = ci_lower, ymax = ci_upper), color = "grey30") +
+    # Estimates
+    geom_point(data = both_pts, mapping = aes(x = rel_year, y = estimate, color = group), size = 2) +
+    # Label
+    geom_label(data = data.frame(x = -0.5 - 0.1, y = max_y + 0.25, label = "Treatment Starts ▶"), label.size=NA,
+               mapping = aes(x = x, y = y, label = label), size = 5.5, hjust = 1, fontface = 2, inherit.aes = FALSE) +
+    scale_x_continuous(breaks = -8:8, minor_breaks = NULL) +
+    scale_y_continuous(minor_breaks = NULL) +
+    scale_color_manual(values = c("Two-Stage Estimate" = "steelblue", "True Effect" = "#b44682", "TWFE Estimate" = "#82b446")) +
+    labs(x = "Relative Time", y = "Estimate", color = NULL, title = NULL) +
+    theme_kyle(base_size = 16) +
+    theme(legend.position = "bottom")
+#> Warning: Removed 17 rows containing missing values (geom_segment).
+```
+
+<div class="figure">
+
+<img src="man/figures/README-plot-compare-1.png" alt="TWFE and Two-Stage estimates of Event-Study" width="100%" />
+<p class="caption">
+TWFE and Two-Stage estimates of Event-Study
+</p>
+
+</div>
+
+# References
 
 <div id="refs" class="references csl-bib-body hanging-indent">
 

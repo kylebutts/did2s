@@ -91,6 +91,7 @@
 
       </header><div class="row">
   <div class="contents col-md-9">
+
 <div id="did2s" class="section level1">
 <div class="page-header"><h1 class="hasAnchor">
 <a href="#did2s" class="anchor"></a>did2s</h1></div>
@@ -557,21 +558,22 @@ Example data with heterogeneous treatment effects
     <span class="fu"><a href="https://rdrr.io/r/stats/filter.html">filter</a></span><span class="op">(</span><span class="fu">str_detect</span><span class="op">(</span><span class="va">term</span>, <span class="st">"rel_year::"</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span>
     <span class="fu">select</span><span class="op">(</span>rel_year <span class="op">=</span> <span class="va">term</span>, <span class="va">estimate</span>, se <span class="op">=</span> <span class="va">std.error</span><span class="op">)</span> <span class="op">%&gt;%</span>
     <span class="fu">mutate</span><span class="op">(</span>
-        rel_year <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html">as.numeric</a></span><span class="op">(</span><span class="fu">str_remove</span><span class="op">(</span><span class="va">rel_year</span>, <span class="st">"rel_year::"</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> <span class="fl">0.05</span>,
+        rel_year <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html">as.numeric</a></span><span class="op">(</span><span class="fu">str_remove</span><span class="op">(</span><span class="va">rel_year</span>, <span class="st">"rel_year::"</span><span class="op">)</span><span class="op">)</span>,
         ci_lower <span class="op">=</span> <span class="va">estimate</span> <span class="op">-</span> <span class="fl">1.96</span> <span class="op">*</span> <span class="va">se</span>,
         ci_upper <span class="op">=</span> <span class="va">estimate</span> <span class="op">+</span> <span class="fl">1.96</span> <span class="op">*</span> <span class="va">se</span>,
-        group <span class="op">=</span> <span class="st">"Estimated Effect"</span>
+        group <span class="op">=</span> <span class="st">"Two-Stage Estimate"</span>
     <span class="op">)</span> <span class="op">%&gt;%</span>
-    <span class="fu"><a href="https://rdrr.io/r/stats/filter.html">filter</a></span><span class="op">(</span><span class="va">rel_year</span> <span class="op">&lt;=</span> <span class="fl">8</span> <span class="op">&amp;</span> <span class="va">rel_year</span> <span class="op">&gt;=</span> <span class="op">-</span><span class="fl">8</span><span class="op">)</span>
+    <span class="fu"><a href="https://rdrr.io/r/stats/filter.html">filter</a></span><span class="op">(</span><span class="va">rel_year</span> <span class="op">&lt;=</span> <span class="fl">8</span> <span class="op">&amp;</span> <span class="va">rel_year</span> <span class="op">&gt;=</span> <span class="op">-</span><span class="fl">8</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+    <span class="fu">mutate</span><span class="op">(</span>rel_year <span class="op">=</span> <span class="va">rel_year</span> <span class="op">+</span> <span class="fl">0.1</span><span class="op">)</span>
 
 <span class="va">te_true</span> <span class="op">&lt;-</span> <span class="va">df_het</span> <span class="op">%&gt;%</span>
     <span class="co"># Keep only treated units</span>
     <span class="fu"><a href="https://rdrr.io/r/stats/filter.html">filter</a></span><span class="op">(</span><span class="va">g</span> <span class="op">&gt;</span> <span class="fl">0</span><span class="op">)</span> <span class="op">%&gt;%</span>
     <span class="fu">group_by</span><span class="op">(</span><span class="va">rel_year</span><span class="op">)</span> <span class="op">%&gt;%</span>
     <span class="fu">summarize</span><span class="op">(</span>estimate <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span><span class="op">(</span><span class="va">te</span> <span class="op">+</span> <span class="va">te_dynamic</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span>
-    <span class="fu">mutate</span><span class="op">(</span>group <span class="op">=</span> <span class="st">"True Effect"</span><span class="op">)</span> <span class="op">%&gt;%</span>
-    <span class="fu"><a href="https://rdrr.io/r/stats/filter.html">filter</a></span><span class="op">(</span><span class="va">rel_year</span> <span class="op">&gt;=</span> <span class="op">-</span><span class="fl">8</span> <span class="op">&amp;</span> <span class="va">rel_year</span> <span class="op">&lt;=</span> <span class="fl">8</span><span class="op">)</span> <span class="op">%&gt;%</span>
-    <span class="fu">mutate</span><span class="op">(</span>rel_year <span class="op">=</span> <span class="va">rel_year</span> <span class="op">-</span> <span class="fl">0.05</span><span class="op">)</span>
+      <span class="fu">mutate</span><span class="op">(</span>group <span class="op">=</span> <span class="st">"True Effect"</span><span class="op">)</span> <span class="op">%&gt;%</span>
+    <span class="fu"><a href="https://rdrr.io/r/stats/filter.html">filter</a></span><span class="op">(</span><span class="va">rel_year</span> <span class="op">&gt;=</span> <span class="op">-</span><span class="fl">8</span> <span class="op">&amp;</span> <span class="va">rel_year</span> <span class="op">&lt;=</span> <span class="fl">8</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+    <span class="fu">mutate</span><span class="op">(</span>rel_year <span class="op">=</span> <span class="va">rel_year</span><span class="op">)</span>
 
 <span class="va">pts</span> <span class="op">&lt;-</span> <span class="fu">bind_rows</span><span class="op">(</span><span class="va">pts</span>, <span class="va">te_true</span><span class="op">)</span>
 
@@ -590,28 +592,80 @@ Example data with heterogeneous treatment effects
                mapping <span class="op">=</span> <span class="fu">aes</span><span class="op">(</span>x <span class="op">=</span> <span class="va">x</span>, y <span class="op">=</span> <span class="va">y</span>, label <span class="op">=</span> <span class="va">label</span><span class="op">)</span>, size <span class="op">=</span> <span class="fl">5.5</span>, hjust <span class="op">=</span> <span class="fl">1</span>, fontface <span class="op">=</span> <span class="fl">2</span>, inherit.aes <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span> <span class="op">+</span>
     <span class="fu">scale_x_continuous</span><span class="op">(</span>breaks <span class="op">=</span> <span class="op">-</span><span class="fl">8</span><span class="op">:</span><span class="fl">8</span>, minor_breaks <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span> <span class="op">+</span>
     <span class="fu">scale_y_continuous</span><span class="op">(</span>minor_breaks <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span> <span class="op">+</span>
-    <span class="fu">scale_color_manual</span><span class="op">(</span>values <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Estimated Effect"</span> <span class="op">=</span> <span class="st">"#013ef5"</span>, <span class="st">"True Effect"</span> <span class="op">=</span> <span class="st">"#eb3f25"</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span>
-    <span class="fu">labs</span><span class="op">(</span>x <span class="op">=</span> <span class="st">"Relative Time"</span>, y <span class="op">=</span> <span class="st">"Estimate"</span>, color <span class="op">=</span> <span class="cn">NULL</span>, title <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span> <span class="op">+</span>
-    <span class="fu">theme_kyle</span><span class="op">(</span>base_size <span class="op">=</span> <span class="fl">16</span><span class="op">)</span> <span class="op">+</span>
-    <span class="fu">theme</span><span class="op">(</span>legend.position <span class="op">=</span> <span class="st">"bottom"</span><span class="op">)</span>
+    <span class="fu">scale_color_manual</span><span class="op">(</span>values <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Two-Stage Estimate"</span> <span class="op">=</span> <span class="st">"steelblue"</span>, <span class="st">"True Effect"</span> <span class="op">=</span> <span class="st">"#b44682"</span>, <span class="st">"TWFE Estimate"</span> <span class="op">=</span> <span class="st">"#82b446"</span><span class="op">)</span><span class="op">)</span>
 <span class="co">#&gt; Warning: Removed 17 rows containing missing values (geom_segment).</span></code></pre></div>
 <div class="figure">
 <img src="reference/figures/README-plot-es-1.png" alt="Event-study plot with example data" width="100%"><p class="caption">
 Event-study plot with example data
 </p>
 </div>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R">    <span class="fu">labs</span><span class="op">(</span>x <span class="op">=</span> <span class="st">"Relative Time"</span>, y <span class="op">=</span> <span class="st">"Estimate"</span>, color <span class="op">=</span> <span class="cn">NULL</span>, title <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span> <span class="op">+</span>
+    <span class="fu">theme_kyle</span><span class="op">(</span>base_size <span class="op">=</span> <span class="fl">16</span><span class="op">)</span> <span class="op">+</span>
+    <span class="fu">theme</span><span class="op">(</span>legend.position <span class="op">=</span> <span class="st">"bottom"</span><span class="op">)</span>
+<span class="co">#&gt; NULL</span></code></pre></div>
+</div>
+<div id="comparison-to-twfe" class="section level3">
+<h3 class="hasAnchor">
+<a href="#comparison-to-twfe" class="anchor"></a>Comparison to TWFE</h3>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># TWFE</span>
+<span class="va">twfe</span> <span class="op">&lt;-</span> <span class="fu">fixest</span><span class="fu">::</span><span class="fu"><a href="https://lrberge.github.io/fixest/reference/feols.html">feols</a></span><span class="op">(</span><span class="va">dep_var</span> <span class="op">~</span> <span class="fu"><a href="https://lrberge.github.io/fixest/reference/i.html">i</a></span><span class="op">(</span><span class="va">rel_year</span>, ref<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">1</span>, <span class="cn">Inf</span><span class="op">)</span><span class="op">)</span> <span class="op">|</span> <span class="va">unit</span> <span class="op">+</span> <span class="va">year</span>, data <span class="op">=</span> <span class="va">df_het</span><span class="op">)</span> <span class="op">%&gt;%</span>
+    <span class="fu">broom</span><span class="fu">::</span><span class="fu"><a href="https://generics.r-lib.org/reference/tidy.html">tidy</a></span><span class="op">(</span><span class="op">)</span> <span class="op">%&gt;%</span>
+    <span class="fu"><a href="https://rdrr.io/r/stats/filter.html">filter</a></span><span class="op">(</span><span class="fu">str_detect</span><span class="op">(</span><span class="va">term</span>, <span class="st">"rel_year::"</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span>
+    <span class="fu">select</span><span class="op">(</span>rel_year <span class="op">=</span> <span class="va">term</span>, <span class="va">estimate</span>, se <span class="op">=</span> <span class="va">std.error</span><span class="op">)</span> <span class="op">%&gt;%</span>
+    <span class="fu">mutate</span><span class="op">(</span>
+        rel_year <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html">as.numeric</a></span><span class="op">(</span><span class="fu">str_remove</span><span class="op">(</span><span class="va">rel_year</span>, <span class="st">"rel_year::"</span><span class="op">)</span><span class="op">)</span>,
+        ci_lower <span class="op">=</span> <span class="va">estimate</span> <span class="op">-</span> <span class="fl">1.96</span> <span class="op">*</span> <span class="va">se</span>,
+        ci_upper <span class="op">=</span> <span class="va">estimate</span> <span class="op">+</span> <span class="fl">1.96</span> <span class="op">*</span> <span class="va">se</span>,
+        group <span class="op">=</span> <span class="st">"TWFE Estimate"</span>
+    <span class="op">)</span> <span class="op">%&gt;%</span>
+    <span class="fu"><a href="https://rdrr.io/r/stats/filter.html">filter</a></span><span class="op">(</span><span class="va">rel_year</span> <span class="op">&lt;=</span> <span class="fl">8</span> <span class="op">&amp;</span> <span class="va">rel_year</span> <span class="op">&gt;=</span> <span class="op">-</span><span class="fl">8</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+    <span class="fu">mutate</span><span class="op">(</span>rel_year <span class="op">=</span> <span class="va">rel_year</span> <span class="op">-</span> <span class="fl">0.1</span><span class="op">)</span>
+
+<span class="co"># Add TWFE Points</span>
+<span class="va">both_pts</span> <span class="op">&lt;-</span> <span class="va">pts</span> <span class="op">%&gt;%</span> <span class="fu">mutate</span><span class="op">(</span>
+        group <span class="op">=</span> <span class="fu">if_else</span><span class="op">(</span><span class="va">group</span> <span class="op">==</span> <span class="st">"Estimated Effect"</span>, <span class="st">"Two-Stage Estimate"</span>, <span class="va">group</span><span class="op">)</span>
+    <span class="op">)</span> <span class="op">%&gt;%</span> 
+    <span class="fu">bind_rows</span><span class="op">(</span><span class="va">.</span>, <span class="va">twfe</span><span class="op">)</span>
+
+
+<span class="fu">ggplot</span><span class="op">(</span><span class="op">)</span> <span class="op">+</span>
+    <span class="co"># 0 effect</span>
+    <span class="fu">geom_hline</span><span class="op">(</span>yintercept <span class="op">=</span> <span class="fl">0</span>, linetype <span class="op">=</span> <span class="st">"dashed"</span><span class="op">)</span> <span class="op">+</span>
+    <span class="fu">geom_vline</span><span class="op">(</span>xintercept <span class="op">=</span> <span class="op">-</span><span class="fl">0.5</span>, linetype <span class="op">=</span> <span class="st">"dashed"</span><span class="op">)</span> <span class="op">+</span>
+    <span class="co"># Confidence Intervals</span>
+    <span class="fu">geom_linerange</span><span class="op">(</span>data <span class="op">=</span> <span class="va">both_pts</span>, mapping <span class="op">=</span> <span class="fu">aes</span><span class="op">(</span>x <span class="op">=</span> <span class="va">rel_year</span>, ymin <span class="op">=</span> <span class="va">ci_lower</span>, ymax <span class="op">=</span> <span class="va">ci_upper</span><span class="op">)</span>, color <span class="op">=</span> <span class="st">"grey30"</span><span class="op">)</span> <span class="op">+</span>
+    <span class="co"># Estimates</span>
+    <span class="fu">geom_point</span><span class="op">(</span>data <span class="op">=</span> <span class="va">both_pts</span>, mapping <span class="op">=</span> <span class="fu">aes</span><span class="op">(</span>x <span class="op">=</span> <span class="va">rel_year</span>, y <span class="op">=</span> <span class="va">estimate</span>, color <span class="op">=</span> <span class="va">group</span><span class="op">)</span>, size <span class="op">=</span> <span class="fl">2</span><span class="op">)</span> <span class="op">+</span>
+    <span class="co"># Label</span>
+    <span class="fu">geom_label</span><span class="op">(</span>data <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span><span class="op">(</span>x <span class="op">=</span> <span class="op">-</span><span class="fl">0.5</span> <span class="op">-</span> <span class="fl">0.1</span>, y <span class="op">=</span> <span class="va">max_y</span> <span class="op">+</span> <span class="fl">0.25</span>, label <span class="op">=</span> <span class="st">"Treatment Starts ▶"</span><span class="op">)</span>, label.size<span class="op">=</span><span class="cn">NA</span>,
+               mapping <span class="op">=</span> <span class="fu">aes</span><span class="op">(</span>x <span class="op">=</span> <span class="va">x</span>, y <span class="op">=</span> <span class="va">y</span>, label <span class="op">=</span> <span class="va">label</span><span class="op">)</span>, size <span class="op">=</span> <span class="fl">5.5</span>, hjust <span class="op">=</span> <span class="fl">1</span>, fontface <span class="op">=</span> <span class="fl">2</span>, inherit.aes <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span> <span class="op">+</span>
+    <span class="fu">scale_x_continuous</span><span class="op">(</span>breaks <span class="op">=</span> <span class="op">-</span><span class="fl">8</span><span class="op">:</span><span class="fl">8</span>, minor_breaks <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span> <span class="op">+</span>
+    <span class="fu">scale_y_continuous</span><span class="op">(</span>minor_breaks <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span> <span class="op">+</span>
+    <span class="fu">scale_color_manual</span><span class="op">(</span>values <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Two-Stage Estimate"</span> <span class="op">=</span> <span class="st">"steelblue"</span>, <span class="st">"True Effect"</span> <span class="op">=</span> <span class="st">"#b44682"</span>, <span class="st">"TWFE Estimate"</span> <span class="op">=</span> <span class="st">"#82b446"</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span>
+    <span class="fu">labs</span><span class="op">(</span>x <span class="op">=</span> <span class="st">"Relative Time"</span>, y <span class="op">=</span> <span class="st">"Estimate"</span>, color <span class="op">=</span> <span class="cn">NULL</span>, title <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span> <span class="op">+</span>
+    <span class="fu">theme_kyle</span><span class="op">(</span>base_size <span class="op">=</span> <span class="fl">16</span><span class="op">)</span> <span class="op">+</span>
+    <span class="fu">theme</span><span class="op">(</span>legend.position <span class="op">=</span> <span class="st">"bottom"</span><span class="op">)</span>
+<span class="co">#&gt; Warning: Removed 17 rows containing missing values (geom_segment).</span></code></pre></div>
+<div class="figure">
+<img src="reference/figures/README-plot-compare-1.png" alt="TWFE and Two-Stage estimates of Event-Study" width="100%"><p class="caption">
+TWFE and Two-Stage estimates of Event-Study
+</p>
 </div>
 </div>
-<div id="references" class="section level2">
-<h2 class="hasAnchor">
-<a href="#references" class="anchor"></a>References</h2>
+</div>
+</div>
+<div id="references" class="section level1">
+<h1 class="hasAnchor">
+<a href="#references" class="anchor"></a>References</h1>
 <div id="refs" class="references csl-bib-body hanging-indent">
 <div id="ref-Gardner_2021" class="csl-entry">
 Gardner, John. 2021. “<span class="nocase">Two-Stage Difference-in-Differences</span>.” Working Paper. <a href="https://jrgcmu.github.io/2sdd_current.pdf" class="uri">https://jrgcmu.github.io/2sdd_current.pdf</a>.
 </div>
 </div>
 </div>
-</div>
+
   </div>
 
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

@@ -254,12 +254,12 @@ Example data with heterogeneous treatment effects
 <code class="sourceCode R">
 <span class="co"># Static</span>
 <span class="va">static</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/did2s.html">did2s</a></span><span class="op">(</span><span class="va">df_het</span>, 
-                yname <span class="op">=</span> <span class="st">"dep_var"</span>, first_stage <span class="op">=</span> <span class="op">~</span> <span class="fl">0</span> <span class="op">|</span> <span class="va">state</span> <span class="op">+</span> <span class="va">year</span>, 
+                yname <span class="op">=</span> <span class="st">"dep_var"</span>, first_stage <span class="op">=</span> <span class="op">~</span> <span class="fl">0</span> <span class="op">|</span> <span class="va">unit</span> <span class="op">+</span> <span class="va">year</span>, 
                 second_stage <span class="op">=</span> <span class="op">~</span> <span class="fu"><a href="https://lrberge.github.io/fixest/reference/i.html">i</a></span><span class="op">(</span><span class="va">treat</span>, ref <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span>, treatment <span class="op">=</span> <span class="st">"treat"</span>, 
                 cluster_var <span class="op">=</span> <span class="st">"state"</span><span class="op">)</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; ── Two-stage Difference-in-Differences ─────────────────────────────────────────</span>
-<span class="co">#&gt; → Running with first stage formula `~ 0 | state + year` and second stage formula `~ i(treat, ref = FALSE)`</span>
+<span class="co">#&gt; → Running with first stage formula `~ 0 | unit + year` and second stage formula `~ i(treat, ref = FALSE)`</span>
 <span class="co">#&gt; → The indicator variable that denotes when treatment is on is `treat`</span>
 <span class="co">#&gt; → Standard errors will be clustered by `state`</span>
 <span class="co">#&gt; ℹ For more information on the methodology, visit &lt;https://www.kylebutts.com/did2s&gt;</span>
@@ -268,76 +268,76 @@ Example data with heterogeneous treatment effects
 <span class="co">#&gt;                            static</span>
 <span class="co">#&gt; Dependent Var.:           dep_var</span>
 <span class="co">#&gt;                                  </span>
-<span class="co">#&gt; treat = TRUE    2.380*** (0.0614)</span>
+<span class="co">#&gt; treat = TRUE    2.266*** (0.0360)</span>
 <span class="co">#&gt; _______________ _________________</span>
 <span class="co">#&gt; S.E. type                  Custom</span>
 <span class="co">#&gt; Observations               31,000</span>
-<span class="co">#&gt; R2                        0.28955</span>
-<span class="co">#&gt; Adj. R2                   0.28955</span></code></pre></div>
+<span class="co">#&gt; R2                        0.35180</span>
+<span class="co">#&gt; Adj. R2                   0.35180</span></code></pre></div>
 <p>Then, let’s estimate an event study did:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R">
 <span class="co"># Event Study</span>
 <span class="va">es</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/did2s.html">did2s</a></span><span class="op">(</span><span class="va">df_het</span>,
-            yname <span class="op">=</span> <span class="st">"dep_var"</span>, first_stage <span class="op">=</span> <span class="op">~</span> <span class="fl">0</span> <span class="op">|</span> <span class="va">state</span> <span class="op">+</span> <span class="va">year</span>, 
+            yname <span class="op">=</span> <span class="st">"dep_var"</span>, first_stage <span class="op">=</span> <span class="op">~</span> <span class="fl">0</span> <span class="op">|</span> <span class="va">unit</span> <span class="op">+</span> <span class="va">year</span>, 
             second_stage <span class="op">=</span> <span class="op">~</span> <span class="fu"><a href="https://lrberge.github.io/fixest/reference/i.html">i</a></span><span class="op">(</span><span class="va">rel_year</span>, ref<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">1</span>, <span class="cn">Inf</span><span class="op">)</span><span class="op">)</span>, treatment <span class="op">=</span> <span class="st">"treat"</span>, 
             cluster_var <span class="op">=</span> <span class="st">"state"</span><span class="op">)</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; ── Two-stage Difference-in-Differences ─────────────────────────────────────────</span>
-<span class="co">#&gt; → Running with first stage formula `~ 0 | state + year` and second stage formula `~ i(rel_year, ref = c(-1, Inf))`</span>
+<span class="co">#&gt; → Running with first stage formula `~ 0 | unit + year` and second stage formula `~ i(rel_year, ref = c(-1, Inf))`</span>
 <span class="co">#&gt; → The indicator variable that denotes when treatment is on is `treat`</span>
 <span class="co">#&gt; → Standard errors will be clustered by `state`</span>
 <span class="co">#&gt; ℹ For more information on the methodology, visit &lt;https://www.kylebutts.com/did2s&gt;</span>
 
 <span class="fu">fixest</span><span class="fu">::</span><span class="fu"><a href="https://lrberge.github.io/fixest/reference/etable.html">esttable</a></span><span class="op">(</span><span class="va">es</span><span class="op">)</span>
-<span class="co">#&gt;                                 es</span>
-<span class="co">#&gt; Dependent Var.:            dep_var</span>
-<span class="co">#&gt;                                   </span>
-<span class="co">#&gt; rel_year = -20     0.0495 (0.0795)</span>
-<span class="co">#&gt; rel_year = -19    0.1550. (0.0793)</span>
-<span class="co">#&gt; rel_year = -18     0.0429 (0.0862)</span>
-<span class="co">#&gt; rel_year = -17     0.0798 (0.0805)</span>
-<span class="co">#&gt; rel_year = -16     0.1023 (0.0882)</span>
-<span class="co">#&gt; rel_year = -15    0.2164* (0.0948)</span>
-<span class="co">#&gt; rel_year = -14    0.1708* (0.0839)</span>
-<span class="co">#&gt; rel_year = -13     0.0940 (0.0806)</span>
-<span class="co">#&gt; rel_year = -12     0.0899 (0.0840)</span>
-<span class="co">#&gt; rel_year = -11    0.1976* (0.0800)</span>
-<span class="co">#&gt; rel_year = -10     0.0953 (0.0619)</span>
-<span class="co">#&gt; rel_year = -9      0.0513 (0.0586)</span>
-<span class="co">#&gt; rel_year = -8     0.0878* (0.0403)</span>
-<span class="co">#&gt; rel_year = -7   0.1542*** (0.0440)</span>
-<span class="co">#&gt; rel_year = -6      0.0221 (0.0510)</span>
-<span class="co">#&gt; rel_year = -5      0.0351 (0.0490)</span>
-<span class="co">#&gt; rel_year = -4     -0.0508 (0.0505)</span>
-<span class="co">#&gt; rel_year = -3     -0.0094 (0.0496)</span>
-<span class="co">#&gt; rel_year = -2      0.0089 (0.0565)</span>
-<span class="co">#&gt; rel_year = 0     1.727*** (0.0827)</span>
-<span class="co">#&gt; rel_year = 1     1.752*** (0.0798)</span>
-<span class="co">#&gt; rel_year = 2     1.871*** (0.0930)</span>
-<span class="co">#&gt; rel_year = 3     1.918*** (0.0755)</span>
-<span class="co">#&gt; rel_year = 4     1.940*** (0.0842)</span>
-<span class="co">#&gt; rel_year = 5     2.146*** (0.0847)</span>
-<span class="co">#&gt; rel_year = 6     2.180*** (0.0920)</span>
-<span class="co">#&gt; rel_year = 7     2.348*** (0.0818)</span>
-<span class="co">#&gt; rel_year = 8     2.413*** (0.0764)</span>
-<span class="co">#&gt; rel_year = 9     2.620*** (0.1075)</span>
-<span class="co">#&gt; rel_year = 10    2.681*** (0.0954)</span>
-<span class="co">#&gt; rel_year = 11    2.712*** (0.1204)</span>
-<span class="co">#&gt; rel_year = 12    2.672*** (0.1533)</span>
-<span class="co">#&gt; rel_year = 13    2.656*** (0.1225)</span>
-<span class="co">#&gt; rel_year = 14    2.755*** (0.1293)</span>
-<span class="co">#&gt; rel_year = 15    2.823*** (0.1341)</span>
-<span class="co">#&gt; rel_year = 16    2.694*** (0.1200)</span>
-<span class="co">#&gt; rel_year = 17    2.897*** (0.1266)</span>
-<span class="co">#&gt; rel_year = 18    3.130*** (0.1160)</span>
-<span class="co">#&gt; rel_year = 19    3.231*** (0.1235)</span>
-<span class="co">#&gt; rel_year = 20    3.308*** (0.1120)</span>
-<span class="co">#&gt; _______________ __________________</span>
-<span class="co">#&gt; S.E. type                   Custom</span>
-<span class="co">#&gt; Observations                31,000</span>
-<span class="co">#&gt; R2                         0.30589</span>
-<span class="co">#&gt; Adj. R2                    0.30501</span></code></pre></div>
+<span class="co">#&gt;                                es</span>
+<span class="co">#&gt; Dependent Var.:           dep_var</span>
+<span class="co">#&gt;                                  </span>
+<span class="co">#&gt; rel_year = -20   -0.0498 (0.0667)</span>
+<span class="co">#&gt; rel_year = -19    0.0558 (0.0607)</span>
+<span class="co">#&gt; rel_year = -18   -0.0563 (0.0637)</span>
+<span class="co">#&gt; rel_year = -17   -0.0194 (0.0601)</span>
+<span class="co">#&gt; rel_year = -16    0.0031 (0.0718)</span>
+<span class="co">#&gt; rel_year = -15    0.1172 (0.0732)</span>
+<span class="co">#&gt; rel_year = -14    0.0716 (0.0635)</span>
+<span class="co">#&gt; rel_year = -13   -0.0053 (0.0612)</span>
+<span class="co">#&gt; rel_year = -12   -0.0094 (0.0666)</span>
+<span class="co">#&gt; rel_year = -11    0.0984 (0.0665)</span>
+<span class="co">#&gt; rel_year = -10    0.0339 (0.0465)</span>
+<span class="co">#&gt; rel_year = -9    -0.0101 (0.0488)</span>
+<span class="co">#&gt; rel_year = -8     0.0264 (0.0366)</span>
+<span class="co">#&gt; rel_year = -7   0.0929** (0.0295)</span>
+<span class="co">#&gt; rel_year = -6    -0.0392 (0.0380)</span>
+<span class="co">#&gt; rel_year = -5    -0.0262 (0.0408)</span>
+<span class="co">#&gt; rel_year = -4   -0.1122* (0.0437)</span>
+<span class="co">#&gt; rel_year = -3    -0.0707 (0.0430)</span>
+<span class="co">#&gt; rel_year = -2    -0.0524 (0.0444)</span>
+<span class="co">#&gt; rel_year = 0    1.617*** (0.0729)</span>
+<span class="co">#&gt; rel_year = 1    1.642*** (0.0750)</span>
+<span class="co">#&gt; rel_year = 2    1.761*** (0.0784)</span>
+<span class="co">#&gt; rel_year = 3    1.808*** (0.0691)</span>
+<span class="co">#&gt; rel_year = 4    1.830*** (0.0812)</span>
+<span class="co">#&gt; rel_year = 5    2.036*** (0.0672)</span>
+<span class="co">#&gt; rel_year = 6    2.070*** (0.0774)</span>
+<span class="co">#&gt; rel_year = 7    2.238*** (0.0782)</span>
+<span class="co">#&gt; rel_year = 8    2.303*** (0.0703)</span>
+<span class="co">#&gt; rel_year = 9    2.510*** (0.0848)</span>
+<span class="co">#&gt; rel_year = 10   2.525*** (0.0707)</span>
+<span class="co">#&gt; rel_year = 11   2.597*** (0.1141)</span>
+<span class="co">#&gt; rel_year = 12   2.556*** (0.1306)</span>
+<span class="co">#&gt; rel_year = 13   2.540*** (0.1150)</span>
+<span class="co">#&gt; rel_year = 14   2.639*** (0.1103)</span>
+<span class="co">#&gt; rel_year = 15   2.708*** (0.1085)</span>
+<span class="co">#&gt; rel_year = 16   2.578*** (0.1148)</span>
+<span class="co">#&gt; rel_year = 17   2.781*** (0.0994)</span>
+<span class="co">#&gt; rel_year = 18   3.015*** (0.1027)</span>
+<span class="co">#&gt; rel_year = 19   3.115*** (0.1068)</span>
+<span class="co">#&gt; rel_year = 20   3.192*** (0.0786)</span>
+<span class="co">#&gt; _______________ _________________</span>
+<span class="co">#&gt; S.E. type                  Custom</span>
+<span class="co">#&gt; Observations               31,000</span>
+<span class="co">#&gt; R2                        0.37283</span>
+<span class="co">#&gt; Adj. R2                   0.37204</span></code></pre></div>
 <p>And plot the results:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R">
@@ -351,7 +351,7 @@ Example data with heterogeneous treatment effects
         group <span class="op">=</span> <span class="st">"Estimated Effect"</span>
     <span class="op">)</span> <span class="op">%&gt;%</span>
     <span class="fu"><a href="https://rdrr.io/r/stats/filter.html">filter</a></span><span class="op">(</span><span class="va">rel_year</span> <span class="op">&lt;=</span> <span class="fl">8</span> <span class="op">&amp;</span> <span class="va">rel_year</span> <span class="op">&gt;=</span> <span class="op">-</span><span class="fl">8</span><span class="op">)</span> <span class="op">%&gt;%</span> 
-    <span class="fu">mutate</span><span class="op">(</span>rel_year <span class="op">=</span> <span class="va">rel_year</span> <span class="op">+</span> <span class="fl">0.05</span><span class="op">)</span>
+    <span class="fu">mutate</span><span class="op">(</span>rel_year <span class="op">=</span> <span class="va">rel_year</span> <span class="op">+</span> <span class="fl">0.1</span><span class="op">)</span>
 
 <span class="va">te_true</span> <span class="op">&lt;-</span> <span class="va">df_het</span> <span class="op">%&gt;%</span>
     <span class="co"># Keep only treated units</span>
@@ -360,7 +360,7 @@ Example data with heterogeneous treatment effects
     <span class="fu">summarize</span><span class="op">(</span>estimate <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span><span class="op">(</span><span class="va">te</span> <span class="op">+</span> <span class="va">te_dynamic</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span>
       <span class="fu">mutate</span><span class="op">(</span>group <span class="op">=</span> <span class="st">"True Effect"</span><span class="op">)</span> <span class="op">%&gt;%</span>
     <span class="fu"><a href="https://rdrr.io/r/stats/filter.html">filter</a></span><span class="op">(</span><span class="va">rel_year</span> <span class="op">&gt;=</span> <span class="op">-</span><span class="fl">8</span> <span class="op">&amp;</span> <span class="va">rel_year</span> <span class="op">&lt;=</span> <span class="fl">8</span><span class="op">)</span> <span class="op">%&gt;%</span> 
-    <span class="fu">mutate</span><span class="op">(</span>rel_year <span class="op">=</span> <span class="va">rel_year</span> <span class="op">-</span> <span class="fl">0.05</span><span class="op">)</span>
+    <span class="fu">mutate</span><span class="op">(</span>rel_year <span class="op">=</span> <span class="va">rel_year</span><span class="op">)</span>
 
 <span class="va">pts</span> <span class="op">&lt;-</span> <span class="fu">bind_rows</span><span class="op">(</span><span class="va">pts</span>, <span class="va">te_true</span><span class="op">)</span>
 
@@ -379,14 +379,65 @@ Example data with heterogeneous treatment effects
                mapping <span class="op">=</span> <span class="fu">aes</span><span class="op">(</span>x <span class="op">=</span> <span class="va">x</span>, y <span class="op">=</span> <span class="va">y</span>, label <span class="op">=</span> <span class="va">label</span><span class="op">)</span>, size <span class="op">=</span> <span class="fl">5.5</span>, hjust <span class="op">=</span> <span class="fl">1</span>, fontface <span class="op">=</span> <span class="fl">2</span>, inherit.aes <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span> <span class="op">+</span>
     <span class="fu">scale_x_continuous</span><span class="op">(</span>breaks <span class="op">=</span> <span class="op">-</span><span class="fl">8</span><span class="op">:</span><span class="fl">8</span>, minor_breaks <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span> <span class="op">+</span>
     <span class="fu">scale_y_continuous</span><span class="op">(</span>minor_breaks <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span> <span class="op">+</span>
-    <span class="fu">scale_color_manual</span><span class="op">(</span>values <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Estimated Effect"</span> <span class="op">=</span> <span class="st">"#013ef5"</span>, <span class="st">"True Effect"</span> <span class="op">=</span> <span class="st">"#eb3f25"</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span>
+    <span class="fu">scale_color_manual</span><span class="op">(</span>values <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Two-Stage Estimate"</span> <span class="op">=</span> <span class="st">"steelblue"</span>, <span class="st">"True Effect"</span> <span class="op">=</span> <span class="st">"#b44682"</span>, <span class="st">"TWFE Estimate"</span> <span class="op">=</span> <span class="st">"#82b446"</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span>
     <span class="fu">labs</span><span class="op">(</span>x <span class="op">=</span> <span class="st">"Relative Time"</span>, y <span class="op">=</span> <span class="st">"Estimate"</span>, color <span class="op">=</span> <span class="cn">NULL</span>, title <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span> <span class="op">+</span>
     <span class="fu">theme_kyle</span><span class="op">(</span>base_size <span class="op">=</span> <span class="fl">16</span><span class="op">)</span> <span class="op">+</span>
     <span class="fu">theme</span><span class="op">(</span>legend.position <span class="op">=</span> <span class="st">"bottom"</span><span class="op">)</span>
-<span class="co">#&gt; Warning: Removed 17 rows containing missing values (geom_segment).</span></code></pre></div>
+<span class="co">#&gt; Warning: Removed 17 rows containing missing values (geom_segment).</span>
+<span class="co">#&gt; Warning: Removed 16 rows containing missing values (geom_point).</span></code></pre></div>
 <div class="figure">
 <img src="Two-Stage-Difference-in-Differences_files/figure-html/plot-es-1.png" alt="Event-study plot with example data" width="768"><p class="caption">
 Event-study plot with example data
+</p>
+</div>
+</div>
+<div id="comparison-to-twfe" class="section level3">
+<h3 class="hasAnchor">
+<a href="#comparison-to-twfe" class="anchor"></a>Comparison to TWFE</h3>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R">
+<span class="co"># TWFE</span>
+<span class="va">twfe</span> <span class="op">&lt;-</span> <span class="fu">fixest</span><span class="fu">::</span><span class="fu"><a href="https://lrberge.github.io/fixest/reference/feols.html">feols</a></span><span class="op">(</span><span class="va">dep_var</span> <span class="op">~</span> <span class="fu"><a href="https://lrberge.github.io/fixest/reference/i.html">i</a></span><span class="op">(</span><span class="va">rel_year</span>, ref<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">1</span>, <span class="cn">Inf</span><span class="op">)</span><span class="op">)</span> <span class="op">|</span> <span class="va">unit</span> <span class="op">+</span> <span class="va">year</span>, data <span class="op">=</span> <span class="va">df_het</span><span class="op">)</span> <span class="op">%&gt;%</span>
+    <span class="fu">broom</span><span class="fu">::</span><span class="fu"><a href="https://generics.r-lib.org/reference/tidy.html">tidy</a></span><span class="op">(</span><span class="op">)</span> <span class="op">%&gt;%</span>
+    <span class="fu"><a href="https://rdrr.io/r/stats/filter.html">filter</a></span><span class="op">(</span><span class="fu">str_detect</span><span class="op">(</span><span class="va">term</span>, <span class="st">"rel_year::"</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span>
+    <span class="fu">select</span><span class="op">(</span>rel_year <span class="op">=</span> <span class="va">term</span>, <span class="va">estimate</span>, se <span class="op">=</span> <span class="va">std.error</span><span class="op">)</span> <span class="op">%&gt;%</span>
+    <span class="fu">mutate</span><span class="op">(</span>
+        rel_year <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html">as.numeric</a></span><span class="op">(</span><span class="fu">str_remove</span><span class="op">(</span><span class="va">rel_year</span>, <span class="st">"rel_year::"</span><span class="op">)</span><span class="op">)</span>,
+        ci_lower <span class="op">=</span> <span class="va">estimate</span> <span class="op">-</span> <span class="fl">1.96</span> <span class="op">*</span> <span class="va">se</span>,
+        ci_upper <span class="op">=</span> <span class="va">estimate</span> <span class="op">+</span> <span class="fl">1.96</span> <span class="op">*</span> <span class="va">se</span>,
+        group <span class="op">=</span> <span class="st">"TWFE Estimate"</span>
+    <span class="op">)</span> <span class="op">%&gt;%</span>
+    <span class="fu"><a href="https://rdrr.io/r/stats/filter.html">filter</a></span><span class="op">(</span><span class="va">rel_year</span> <span class="op">&lt;=</span> <span class="fl">8</span> <span class="op">&amp;</span> <span class="va">rel_year</span> <span class="op">&gt;=</span> <span class="op">-</span><span class="fl">8</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+    <span class="fu">mutate</span><span class="op">(</span>rel_year <span class="op">=</span> <span class="va">rel_year</span> <span class="op">-</span> <span class="fl">0.1</span><span class="op">)</span>
+
+<span class="co"># Add TWFE Points</span>
+<span class="va">both_pts</span> <span class="op">&lt;-</span> <span class="va">pts</span> <span class="op">%&gt;%</span> <span class="fu">mutate</span><span class="op">(</span>
+        group <span class="op">=</span> <span class="fu">if_else</span><span class="op">(</span><span class="va">group</span> <span class="op">==</span> <span class="st">"Estimated Effect"</span>, <span class="st">"Two-Stage Estimate"</span>, <span class="va">group</span><span class="op">)</span>
+    <span class="op">)</span> <span class="op">%&gt;%</span> 
+    <span class="fu">bind_rows</span><span class="op">(</span><span class="va">.</span>, <span class="va">twfe</span><span class="op">)</span>
+
+
+<span class="fu">ggplot</span><span class="op">(</span><span class="op">)</span> <span class="op">+</span>
+    <span class="co"># 0 effect</span>
+    <span class="fu">geom_hline</span><span class="op">(</span>yintercept <span class="op">=</span> <span class="fl">0</span>, linetype <span class="op">=</span> <span class="st">"dashed"</span><span class="op">)</span> <span class="op">+</span>
+    <span class="fu">geom_vline</span><span class="op">(</span>xintercept <span class="op">=</span> <span class="op">-</span><span class="fl">0.5</span>, linetype <span class="op">=</span> <span class="st">"dashed"</span><span class="op">)</span> <span class="op">+</span>
+    <span class="co"># Confidence Intervals</span>
+    <span class="fu">geom_linerange</span><span class="op">(</span>data <span class="op">=</span> <span class="va">both_pts</span>, mapping <span class="op">=</span> <span class="fu">aes</span><span class="op">(</span>x <span class="op">=</span> <span class="va">rel_year</span>, ymin <span class="op">=</span> <span class="va">ci_lower</span>, ymax <span class="op">=</span> <span class="va">ci_upper</span><span class="op">)</span>, color <span class="op">=</span> <span class="st">"grey30"</span><span class="op">)</span> <span class="op">+</span>
+    <span class="co"># Estimates</span>
+    <span class="fu">geom_point</span><span class="op">(</span>data <span class="op">=</span> <span class="va">both_pts</span>, mapping <span class="op">=</span> <span class="fu">aes</span><span class="op">(</span>x <span class="op">=</span> <span class="va">rel_year</span>, y <span class="op">=</span> <span class="va">estimate</span>, color <span class="op">=</span> <span class="va">group</span><span class="op">)</span>, size <span class="op">=</span> <span class="fl">2</span><span class="op">)</span> <span class="op">+</span>
+    <span class="co"># Label</span>
+    <span class="fu">geom_label</span><span class="op">(</span>data <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span><span class="op">(</span>x <span class="op">=</span> <span class="op">-</span><span class="fl">0.5</span> <span class="op">-</span> <span class="fl">0.1</span>, y <span class="op">=</span> <span class="va">max_y</span> <span class="op">+</span> <span class="fl">0.25</span>, label <span class="op">=</span> <span class="st">"Treatment Starts ▶"</span><span class="op">)</span>, label.size<span class="op">=</span><span class="cn">NA</span>,
+               mapping <span class="op">=</span> <span class="fu">aes</span><span class="op">(</span>x <span class="op">=</span> <span class="va">x</span>, y <span class="op">=</span> <span class="va">y</span>, label <span class="op">=</span> <span class="va">label</span><span class="op">)</span>, size <span class="op">=</span> <span class="fl">5.5</span>, hjust <span class="op">=</span> <span class="fl">1</span>, fontface <span class="op">=</span> <span class="fl">2</span>, inherit.aes <span class="op">=</span> <span class="cn">FALSE</span>, fill <span class="op">=</span> <span class="st">"#ECECEC"</span><span class="op">)</span> <span class="op">+</span>
+    <span class="fu">scale_x_continuous</span><span class="op">(</span>breaks <span class="op">=</span> <span class="op">-</span><span class="fl">8</span><span class="op">:</span><span class="fl">8</span>, minor_breaks <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span> <span class="op">+</span>
+    <span class="fu">scale_y_continuous</span><span class="op">(</span>minor_breaks <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span> <span class="op">+</span>
+    <span class="fu">scale_color_manual</span><span class="op">(</span>values <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Two-Stage Estimate"</span> <span class="op">=</span> <span class="st">"steelblue"</span>, <span class="st">"True Effect"</span> <span class="op">=</span> <span class="st">"#b44682"</span>, <span class="st">"TWFE Estimate"</span> <span class="op">=</span> <span class="st">"#82b446"</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span>
+    <span class="fu">labs</span><span class="op">(</span>x <span class="op">=</span> <span class="st">"Relative Time"</span>, y <span class="op">=</span> <span class="st">"Estimate"</span>, color <span class="op">=</span> <span class="cn">NULL</span>, title <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span> <span class="op">+</span>
+    <span class="fu">theme_kyle</span><span class="op">(</span>base_size <span class="op">=</span> <span class="fl">24</span><span class="op">)</span> <span class="op">+</span>
+    <span class="fu">theme</span><span class="op">(</span>legend.position <span class="op">=</span> <span class="st">"bottom"</span><span class="op">)</span>
+<span class="co">#&gt; Warning: Removed 17 rows containing missing values (geom_segment).</span></code></pre></div>
+<div class="figure">
+<img src="Two-Stage-Difference-in-Differences_files/figure-html/plot-compare-1.png" alt="TWFE and Two-Stage estimates of Event-Study" width="768"><p class="caption">
+TWFE and Two-Stage estimates of Event-Study
 </p>
 </div>
 </div>
