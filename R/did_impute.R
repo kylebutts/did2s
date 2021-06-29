@@ -1,105 +1,246 @@
-#' Treatment effect estimation and pre-trend testing in staggered adoption diff-in-diff designs with an imputation approach of Borusyak, Jaravel, and Spiess (2021)
-did_impute <- function(data, yname, gname, tname, idname, first_stage_formula, treat_var, weights){
+#' **Work in Progress** Treatment effect estimation and pre-trend testing in staggered adoption diff-in-diff designs with an imputation approach of Borusyak, Jaravel, and Spiess (2021)
+#'
+#' @param data A data frame
+#' @param yname outcome variable
+#' @param idname variable for unique unit id
+#' @param gname variable for unit-specific date of treatment (never-treated should be zero or NA)
+#' @param tname variable for calendar period
+#' @param first_stage formula for Y(0)
+#' @param weights estimation weights for observations. This is used in estimating Y(0) and also augments treatment effect weights
+#' @param wtr character vector of treatment weight names (see horizon/allhorizon for standard event study weights)
+#' @param horizon vector of event_time. This only applies if wtr is left as NULL. If both wtr and horizon are null, then all values of event_time will be used.
+did_imputation = function(data, yname, gname, tname, idname, first_stage, weights = NULL, wtr = NULL, horizon = NULL){
+
+# Set-up Parameters ------------------------------------------------------------
+
+	# Extract vars from formula
+	if(inherits(first_stage, "formula")) first_stage = as.character(first_stage)[[2]]
+
 	# Treat
-	treat <- data[data[[treat_var]] == 1,]
+	data$zz000treat = 1 * (data[[tname]] >= data[[gname]]) * (data[[gname]] > 0)
+	data[is.na(data$zz000treat), "zz000treat"] = 0
+
+	# Create event time
+	data = data %>% dplyr::mutate(
+			zz000event_time = dplyr::if_else(
+				is.na(!!rlang::sym(gname)) | !!rlang::sym(gname) == 0,
+				NA_real_,
+				as.numeric(!!rlang::sym(tname) - !!rlang::sym(gname))
+			)
+		)
+
+	# horizon/allhorizon options
+	if(is.null(wtr)) {
+		# create event time weights
+		event_time = unique(data$zz000event_time)
+		event_time = event_time[!is.na(event_time)]
+		wtr = c()
+
+		# allhorizon
+		if(is.null(horizon)) horizon = event_time
+
+		for(e in event_time) {
+			if(e %in% horizon) {
+				if(e >= 0) {
+					var = paste0("zz000wtr", e)
+
+					wtr = c(wtr, var)
+
+					data = data %>% dplyr::mutate(
+							!!rlang::sym(var) := 1*(zz000event_time == e & !is.na(zz000event_time)),
+							!!rlang::sym(var) := !!rlang::sym(var)/sum(!!rlang::sym(var))
+						)
+				}
+			}
+		}
+	}
+
+	# Weights specified or not
+	if(is.null(weights)) {
+		weights_vector = NULL
+	} else {
+		weights_vector = data[[weights]]
+
+		# Estimation weights * wtr weights
+		for(w in wtr) {
+			data[[w]] = data[[w]] * weights_vector
+			data[[w]] = data[[w]]/sum(data[[w]])
+		}
+
+		# only treated
+		weights_vector = weights_vector[data$zz000treat == 0]
+	}
+
+# First Stage estimate ---------------------------------------------------------
 
 	# First stage among untreated
-	formula <- stats::as.formula(glue::glue("{yname} ~ 0 + {first_stage_formula}"))
-	first_stage <- fixest::feols(formula, se = "standard", dplyr::filter(data, !!rlang::sym(treat_var) == 0), warn=FALSE, notes=FALSE)
+	formula = stats::as.formula(glue::glue("{yname} ~ {first_stage}"))
+
+	# Estimate Y(0) using untreated observations
+	first_stage_est = fixest::feols(formula, se = "standard", dplyr::filter(data, zz000treat == 0), weights = weights_vector, warn=FALSE, notes=FALSE)
+
 
 	# Residualize outcome variable
-	data$zz000adj <- data[[yname]] - stats::predict(first_stage, newdata = data)
+	data$zz000adj = data[[yname]] - stats::predict(first_stage_est, newdata = data)
 
-	# Point estimate for weights
-	est <- c()
-	for(weight in weights) {
+	# Point estimate for wtr
+	est = c()
+	for(w in wtr) {
 		# \sum w_{it} * \tau_{it}
-		est = c(est, sum(data[data[[treat_var]] == 1,][[weight]] * data[data[[treat_var]] == 1,][["zz000adj"]]))
+		est = c(est, sum(data[data$zz000treat == 1,][[w]] * data[data$zz000treat == 1,][["zz000adj"]]))
 	}
 
 
-	# Create Zs
-	Z_0 <- create_Z(0)
-	Z_1 <- create_Z(1)
-	Z <- create_Z(c(0,1))
-	v_proj <- - Z %*% solve(t(Z_0) %*% Z_0) %*% t(Z_1)
+# Standard Errors --------------------------------------------------------------
 
-	se <- c()
-	for(weight in weights) {
+	# Create Zs
+	Z = sparse_model_matrix(data, first_stage_est)
+
+	# - Z (Z_0' Z_0)^{-1} Z_1' wtr_1
+	v_star = make_V_star(
+		Z,
+		Z[data$zz000treat == 0, ],
+		Z[data$zz000treat == 1, ],
+		Matrix::Matrix(as.matrix(data[data$zz000treat == 1, wtr]), sparse = TRUE)
+	)
+
+	se = c()
+	for(i in 1:length(wtr)) {
 
 		# Equation (6) of Borusyak et. al. 2021
-		# Calculate v_it^*
-		data$zz000v <- v_proj %*% w
+		# Calculate v_it^* = - Z (Z_0' Z_0)^{-1} Z_1' * w_1
+		data$zz000v = v_star[, i]
+
+		# fix v_it^* = w for treated observations
+		data[data$zz000treat == 1, "zz000v"] = data[data$zz000treat == 1,][[wtr[i]]]
 
 		# Equation (10) of Borusyak et. al. 2021
 		# Calculate tau_it - \bar{\tau}_{et}
-		data <- data %>%
-			# Create event time
-			dplyr::mutate(
-				zz000event_time = !!rlang::sym(tname) - !!rlang::sym(gname)
-			)
+		data = data %>%
 			# group_by Event Group and Event Time
 			dplyr::group_by(!!rlang::sym(gname), zz000event_time)  %>%
 			dplyr::mutate(
-				zz000tau_et = if_else(!!rlang::sym(treat_var) == 1,
-									  sum(zz000v^2 * zz000adj)/sum(zz000v^2) * treat,
+				zz000tau_et = if_else(zz000treat == 1,
+									  sum(zz000v^2 * zz000adj)/sum(zz000v^2) * zz000treat,
 									  0),
+				zz000tau_et = if_else(is.nan(zz000tau_et), 0, zz000tau_et),
 				zz000tau_centered = zz000adj - zz000tau_et
 			) %>%
 			dplyr::ungroup()
 
+
 		# Equation (8)
 		# Calculate variance of estimate
-		variance <- data %>%
-			dplyr::group_by(!!rlang::sym(id_name)) %>%
+		variance = data %>%
+			dplyr::group_by(!!rlang::sym(idname)) %>%
 			dplyr::summarize(zz000temp = sum(zz000v * zz000tau_centered)^2) %>%
 			dplyr::pull(zz000temp) %>%
-			mean()
+			sum()
 
-		se <- c(se, sqrt(variance))
+		se = c(se, sqrt(variance))
 	}
 
-	return(list(estimate = est, se = sqrt(variance)))
+
+# Create dataframe of results in tidy format -----------------------------------
+
+	# Fix term for horizon option
+	wtr = stringr::str_replace(wtr, "zz000wtr", "tau")
+
+	out <- dplyr::tibble(
+		term      = wtr,
+		estimate  = est,
+		std.error = se,
+		conf.low  = est - 1.96 * se,
+		conf.high = est + 1.96 * se
+	)
+	out
+
+	return(out)
 }
 
-create_Z <- function(treat_val) {
-	data <- dplyr::filter(data, !!rlang::sym(treat_var) == treat_val)
+# Make a sparse_model_matrix for fixest ----------------------------------------
+sparse_model_matrix = function(data, fixest) {
+	Z = NULL
 
-	Z <- lapply(names(stats::coef(first_stage)), function(x) {
-		# intercept
-		if(x == "(Intercept)") {
-			return(rep(1, times = nrow(data)))
-		}
-		# factor variables
-		else if(stringr::str_detect(x, "::")) {
-			var <- stringr::str_extract(x, ".*(?=::)")
-			val <- stringr::str_extract(x, "(?<=::).*")
+	# Coefficients
+	coef = names(stats::coef(fixest))
 
-			return(data[[var]] == val)
-		}
-		# covariates
-		else {
-			return(data[[x]])
-		}
-	})
+	if(!is.null(coef)) {
+		Z = lapply(coef, function(x) {
+			# intercept
+			if(x == "(Intercept)") {
+				return(Matrix::Matrix(rep(1, times = nrow(data)), ncol = 1, sparse = TRUE))
+			}
+			# factor variables
+			else if(stringr::str_detect(x, "::")) {
+				var = stringr::str_extract(x, ".*(?=::)")
+				val = stringr::str_extract(x, "(?<=::).*")
 
-	Z <- matrix(unlist(Z), nrow = nrow(data))
+				return(Matrix::Matrix(as.numeric(data[[var]] == val), ncol = 1, sparse = TRUE))
+			}
+			# covariates
+			else {
+				return(Matrix::Matrix(data[[x]], ncol = 1, sparse = TRUE))
+			}
+		})
+
+		Z = do.call(cbind, Z)
+	}
+
+
+	# Fixed Effects
+	if("fixef_id" %in% names(fixest)) {
+		fixef_list = fixest::fixef(fixest)
+		fixef_names = fixest$fixef_vars
+
+		for(i in 1:length(fixef_names)){
+			var = fixef_names[i]
+
+			fixef_vals = fixef_list[[var]]
+			for(i in 1:length(fixef_vals)) {
+				if(fixef_vals[i] != 0) {
+					val = names(fixef_vals[i])
+
+					Z = cbind(Z, Matrix::Matrix(as.numeric(data[[var]] == val), ncol = 1, sparse = TRUE))
+				}
+			}
+
+
+		}
+
+	}
+
 	return(Z)
 }
 
 
-
-
 ## Testing ---------------------------------------------------------------------
+
+# library(tidyverse)
+#
 # data("df_hom")
 #
-# # weight = 1/n
-# data = df_hom %>% group_by(treat) %>% mutate(weight = 1/n() * treat)
+# # w = 1/n
+# data = df_hom %>%
+# 	dplyr::group_by(treat) %>%
+# 	dplyr::mutate(weight = 1/n() * treat, g = if_else(g == 0, NA_real_, g)) %>%
+# 	ungroup()
 # yname = "dep_var"
-# group_name = "group"
-# rel_year_name = "rel_year"
-# id_name = "unit"
-# first_stage_formula = "i(state) + i(year)"
-# treat_var = "treat"
-# weights = "weight"
+# tname = "year"
+# gname = "g"
+# idname = "unit"
+# first_stage = "i(state) + i(year)"
+# weights = NULL
+# # wtr = "weight"
+# wtr = NULL
+# horizon = seq(-5, 5)
+#
+# # Static
+# did_impute(data, yname = "dep_var", gname = "g", tname = "year", idname = "unit", first_stage = "i(state) + i(year)", wtr = "weight")
+#
+# # ES
+# did_impute(data, yname = "dep_var", gname = "g", tname = "year", idname = "unit", first_stage = "i(state) + i(year)", horizon = seq(-5, 5))
+
+
+
 
