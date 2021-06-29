@@ -9,21 +9,42 @@
 #' @param weights Optional variable to run a weighted first- and second-stage regressions
 #' @param bootstrap Should standard errors be calculated using bootstrap? Default is FALSE.
 #' @param n_bootstraps How many bootstraps to run. Default is 250
+#' @param verbose Whether to print information as the code runs. Default is True.
 #'
 #' @return fixest::feols point estimate with adjusted standard errors (either by formula or by bootstrap)
 #' @export
-#' @examples
+#' @section Examples:
+#'
+#'
+#' Load example dataset which has two treatment groups and homogeneous treatment effects
+#'
+#' ```{r, comment = "#>", collapse = TRUE}
 #' # Load Example Dataset
 #' data("df_hom")
+#' ```
 #'
-#' # Static
-#' static <- did2s(df_hom, yname = "dep_var", first_stage = "i(state) + i(year)", second_stage = "i(treat, ref=FALSE)", treatment = "treat", cluster_var = "state")
+#' You can run a static TWFE fixed effect model for a simple treatment indicator
+#' ```{r, comment = "#>", collapse = TRUE}
+#' static <- did2s(df_hom,
+#'     yname = "dep_var", treatment = "treat", cluster_var = "state",
+#'     first_stage = "i(state) + i(year)",
+#'     second_stage = "i(treat, ref=FALSE)")
+#'
 #' fixest::esttable(static)
+#' ```
 #'
-#' # Event-Study
-#' es <- did2s(df_hom, yname = "dep_var", first_stage = "i(state) + i(year)", second_stage = "i(rel_year, ref=c(-1, Inf))", treatment = "treat", cluster_var = "state")
+#' Or you can use relative-treatment indicators to estimate an event study estimate
+#' ```{r, comment = "#>", collapse = TRUE}
+#' es <- did2s(df_hom,
+#'     yname = "dep_var", treatment = "treat", cluster_var = "state",
+#'     first_stage = "i(state) + i(year)",
+#'     second_stage = "i(rel_year, ref=c(-1, Inf))")
+#'
 #' fixest::esttable(es)
+#' ```
 #'
+#' Here's an example using data from Castle (2013)
+#' ```{r, comment = "#>", collapse = TRUE}
 #' # Castle Data
 #' castle <- haven::read_dta("https://github.com/scunning1975/mixtape/raw/master/castle.dta")
 #'
@@ -35,8 +56,9 @@
 #' 	treatment = "post",
 #' 	cluster_var = "state", weights = "popwt"
 #' )
+#' ```
 #'
-did2s <- function(data, yname, first_stage, second_stage, treatment, cluster_var, weights = NULL, bootstrap = FALSE, n_bootstraps = 250) {
+did2s <- function(data, yname, first_stage, second_stage, treatment, cluster_var, weights = NULL, bootstrap = FALSE, n_bootstraps = 250, verbose = TRUE) {
 
 	# Check Parameters ---------------------------------------------------------
 
@@ -46,6 +68,7 @@ did2s <- function(data, yname, first_stage, second_stage, treatment, cluster_var
 
 	# Print --------------------------------------------------------------------
 
+	if(verbose){
 	cli::cli_h1("Two-stage Difference-in-Differences")
 	cli::cli_alert("Running with first stage formula {.var {paste0('~ ', first_stage)}} and second stage formula {.var {paste0('~ ', second_stage)}}")
 	cli::cli_alert("The indicator variable that denotes when treatment is on is {.var {treatment}}")
@@ -54,6 +77,7 @@ did2s <- function(data, yname, first_stage, second_stage, treatment, cluster_var
 	cli::cat_line()
 	cli::cli_alert_info("For more information on the methodology, visit {.url https://www.kylebutts.com/did2s}")
 	cli::cat_line()
+	}
 
 	# Point Estimates ----------------------------------------------------------
 
@@ -83,11 +107,11 @@ did2s <- function(data, yname, first_stage, second_stage, treatment, cluster_var
 		first_u[data[[treatment]] == 1] = 0
 
 		# x1 is matrix used to predict Y(0)
-		x1 = sparse_model_matrix(est$first_stage, data)
+		x1 = sparse_model_matrix(data, est$first_stage)
 
 		# Extract second stage
 		second_u = stats::residuals(est$second_stage)
-		x2 = sparse_model_matrix(est$second_stage, data)
+		x2 = sparse_model_matrix(data, est$second_stage)
 
 		# multiply by weights
 		first_u = weights_vector * first_u
@@ -193,7 +217,7 @@ did2s_estimate = function(data, yname, first_stage, second_stage, treatment, wei
 }
 
 # Make a sparse_model_matrix for fixest
-sparse_model_matrix = function(fixest, data) {
+sparse_model_matrix = function(data, fixest) {
 	Z = NULL
 
 	# Coefficients
