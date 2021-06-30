@@ -119,7 +119,7 @@ did2s <- function(data, yname, first_stage, second_stage, treatment, cluster_var
 		second_u = weights_vector * second_u
 		x2 = weights_vector * x2
 
-		# x10 is matrix used to estimate fixed effects (zero out rows with D_it = 1)
+		# x10 is matrix used to estimate first stage (zero out rows with D_it = 1)
 		x10 = x1
 		x10[data[[treatment]] == 1] = 0
 
@@ -221,51 +221,24 @@ sparse_model_matrix = function(data, fixest) {
 	Z = NULL
 
 	# Coefficients
-	coef = names(stats::coef(fixest))
-
-	if(!is.null(coef)) {
-		Z = lapply(coef, function(x) {
-			# intercept
-			if(x == "(Intercept)") {
-				return(Matrix::Matrix(rep(1, times = nrow(data)), ncol = 1, sparse = TRUE))
-			}
-			# factor variables
-			else if(stringr::str_detect(x, "::")) {
-				var = stringr::str_extract(x, ".*(?=::)")
-				val = stringr::str_extract(x, "(?<=::).*")
-
-				return(Matrix::Matrix(as.numeric(data[[var]] == val), ncol = 1, sparse = TRUE))
-			}
-			# covariates
-			else {
-				return(Matrix::Matrix(data[[x]], ncol = 1, sparse = TRUE))
-			}
-		})
-
-		Z = do.call(cbind, Z)
-	}
-
+	if("coefficients" %in% names(fixest)) Z = as(model.matrix(fixest, data = data), "sparseMatrix")
 
 	# Fixed Effects
 	if("fixef_id" %in% names(fixest)) {
 		fixef_list = fixest::fixef(fixest)
-		fixef_names = fixest$fixef_vars
 
-		for(i in 1:length(fixef_names)){
-			var = fixef_names[i]
+		mats = lapply(seq_along(fixef_list), function(i) {
+			var = names(fixef_list)[i]
+			vals = names(fixef_list[[i]])
 
-			fixef_vals = fixef_list[[var]]
-			for(i in 1:length(fixef_vals)) {
-				if(fixef_vals[i] != 0) {
-					val = names(fixef_vals[i])
+			ind = lapply(vals, function(val){
+				Matrix::Matrix(as.numeric(data[[var]] == val), ncol = 1, sparse = TRUE)
+			})
 
-					Z = cbind(Z, Matrix::Matrix(as.numeric(data[[var]] == val), ncol = 1, sparse = TRUE))
-				}
-			}
+			do.call("cbind", ind)
+		})
 
-
-		}
-
+		Z = cbind(Z, do.call("cbind", mats))
 	}
 
 	return(Z)

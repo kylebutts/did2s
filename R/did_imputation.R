@@ -9,6 +9,8 @@
 #' @param weights estimation weights for observations. This is used in estimating Y(0) and also augments treatment effect weights
 #' @param wtr character vector of treatment weight names (see horizon/allhorizon for standard event study weights)
 #' @param horizon vector of event_time. This only applies if wtr is left as NULL. If both wtr and horizon are null, then all values of event_time will be used.
+#'
+#' @export
 did_imputation = function(data, yname, gname, tname, idname, first_stage, weights = NULL, wtr = NULL, horizon = NULL){
 
 # Set-up Parameters ------------------------------------------------------------
@@ -24,20 +26,24 @@ did_imputation = function(data, yname, gname, tname, idname, first_stage, weight
 	data = data %>% dplyr::mutate(
 			zz000event_time = dplyr::if_else(
 				is.na(!!rlang::sym(gname)) | !!rlang::sym(gname) == 0,
-				NA_real_,
+				-Inf,
 				as.numeric(!!rlang::sym(tname) - !!rlang::sym(gname))
 			)
 		)
 
 	# horizon/allhorizon options
 	if(is.null(wtr)) {
+		use_horizon = TRUE
+
 		# create event time weights
 		event_time = unique(data$zz000event_time)
-		event_time = event_time[!is.na(event_time)]
+		event_time = event_time[is.finite(event_time)]
 		wtr = c()
 
 		# allhorizon
-		if(is.null(horizon)) horizon = event_time
+		if(is.null(horizon)) {
+			horizon = event_time
+		}
 
 		for(e in event_time) {
 			if(e %in% horizon) {
@@ -141,106 +147,72 @@ did_imputation = function(data, yname, gname, tname, idname, first_stage, weight
 	}
 
 
+# Pre-event Estimates ----------------------------------------------------------
+
+	if(use_horizon) {
+		pre_formula <- stats::as.formula(glue::glue(glue::glue("{yname} ~ i(zz000event_time) | {idname} + {tname}")))
+		pre_est <- fixest::feols(pre_formula, data %>% dplyr::filter(zz000treat == 0), weights = weights_vector, warn=FALSE, notes=FALSE)
+	}
+
+
 # Create dataframe of results in tidy format -----------------------------------
 
 	# Fix term for horizon option
-	wtr = stringr::str_replace(wtr, "zz000wtr", "tau")
+	wtr = stringr::str_replace(wtr, "zz000wtr", "")
 
 	out <- dplyr::tibble(
-		term      = wtr,
+		term      = as.numeric(wtr),
 		estimate  = est,
 		std.error = se,
 		conf.low  = est - 1.96 * se,
 		conf.high = est + 1.96 * se
 	)
-	out
+
+	if(use_horizon) {
+		pre_out <- broom::tidy(pre_est) %>%
+			dplyr::mutate(
+				term = stringr::str_remove(term, "zz000event_time::"),
+				term = as.numeric(term),
+				conf.low = estimate - 1.96 * std.error,
+				conf.high = estimate + 1.96 * std.error
+			) %>%
+			dplyr::filter(term %in% horizon) %>%
+			dplyr::select(term, estimate, std.error, conf.low, conf.high)
+
+		out = dplyr::bind_rows(pre_out, out)
+	}
 
 	return(out)
 }
 
+
+
 # Make a sparse_model_matrix for fixest ----------------------------------------
+
+# Make a sparse_model_matrix for fixest
 sparse_model_matrix = function(data, fixest) {
 	Z = NULL
 
 	# Coefficients
-	coef = names(stats::coef(fixest))
-
-	if(!is.null(coef)) {
-		Z = lapply(coef, function(x) {
-			# intercept
-			if(x == "(Intercept)") {
-				return(Matrix::Matrix(rep(1, times = nrow(data)), ncol = 1, sparse = TRUE))
-			}
-			# factor variables
-			else if(stringr::str_detect(x, "::")) {
-				var = stringr::str_extract(x, ".*(?=::)")
-				val = stringr::str_extract(x, "(?<=::).*")
-
-				return(Matrix::Matrix(as.numeric(data[[var]] == val), ncol = 1, sparse = TRUE))
-			}
-			# covariates
-			else {
-				return(Matrix::Matrix(data[[x]], ncol = 1, sparse = TRUE))
-			}
-		})
-
-		Z = do.call(cbind, Z)
-	}
-
+	if("coefficients" %in% names(fixest)) Z = as(model.matrix(fixest, data = data), "sparseMatrix")
 
 	# Fixed Effects
 	if("fixef_id" %in% names(fixest)) {
 		fixef_list = fixest::fixef(fixest)
-		fixef_names = fixest$fixef_vars
 
-		for(i in 1:length(fixef_names)){
-			var = fixef_names[i]
+		mats = lapply(seq_along(fixef_list), function(i) {
+			var = names(fixef_list)[i]
+			vals = names(fixef_list[[i]])
 
-			fixef_vals = fixef_list[[var]]
-			for(i in 1:length(fixef_vals)) {
-				if(fixef_vals[i] != 0) {
-					val = names(fixef_vals[i])
+			ind = lapply(vals, function(val){
+				Matrix::Matrix(as.numeric(data[[var]] == val), ncol = 1, sparse = TRUE)
+			})
 
-					Z = cbind(Z, Matrix::Matrix(as.numeric(data[[var]] == val), ncol = 1, sparse = TRUE))
-				}
-			}
+			do.call("cbind", ind)
+		})
 
-
-		}
-
+		Z = cbind(Z, do.call("cbind", mats))
 	}
 
 	return(Z)
 }
-
-
-## Testing ---------------------------------------------------------------------
-
-# library(tidyverse)
-#
-# data("df_hom")
-#
-# # w = 1/n
-# data = df_hom %>%
-# 	dplyr::group_by(treat) %>%
-# 	dplyr::mutate(weight = 1/n() * treat, g = if_else(g == 0, NA_real_, g)) %>%
-# 	ungroup()
-# yname = "dep_var"
-# tname = "year"
-# gname = "g"
-# idname = "unit"
-# first_stage = "i(state) + i(year)"
-# weights = NULL
-# # wtr = "weight"
-# wtr = NULL
-# horizon = seq(-5, 5)
-#
-# # Static
-# did_impute(data, yname = "dep_var", gname = "g", tname = "year", idname = "unit", first_stage = "i(state) + i(year)", wtr = "weight")
-#
-# # ES
-# did_impute(data, yname = "dep_var", gname = "g", tname = "year", idname = "unit", first_stage = "i(state) + i(year)", horizon = seq(-5, 5))
-
-
-
-
