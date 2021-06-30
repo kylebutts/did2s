@@ -14,18 +14,38 @@
 #'
 #' @return fixest::feols point estimate with adjusted standard errors (either by formula or by bootstrap)
 #' @export
-#' @examples
+#' @section Examples:
+#'
+#'
+#' Load example dataset which has two treatment groups and homogeneous treatment effects
+#'
+#' ```{r, comment = "#>", collapse = TRUE}
 #' # Load Example Dataset
 #' data("df_hom")
+#' ```
 #'
-#' # Static
-#' static <- did2s(df_hom, yname = "dep_var", first_stage = "i(state) + i(year)", second_stage = "i(treat, ref=FALSE)", treatment = "treat", cluster_var = "state")
+#' You can run a static TWFE fixed effect model for a simple treatment indicator
+#' ```{r, comment = "#>", collapse = TRUE}
+#' static <- did2s(df_hom,
+#'     yname = "dep_var", treatment = "treat", cluster_var = "state",
+#'     first_stage = "i(state) + i(year)",
+#'     second_stage = "i(treat, ref=FALSE)")
+#'
 #' fixest::esttable(static)
+#' ```
 #'
-#' # Event-Study
-#' es <- did2s(df_hom, yname = "dep_var", first_stage = "i(state) + i(year)", second_stage = "i(rel_year, ref=c(-1, Inf))", treatment = "treat", cluster_var = "state")
+#' Or you can use relative-treatment indicators to estimate an event study estimate
+#' ```{r, comment = "#>", collapse = TRUE}
+#' es <- did2s(df_hom,
+#'     yname = "dep_var", treatment = "treat", cluster_var = "state",
+#'     first_stage = "i(state) + i(year)",
+#'     second_stage = "i(rel_year, ref=c(-1, Inf))")
+#'
 #' fixest::esttable(es)
+#' ```
 #'
+#' Here's an example using data from Castle (2013)
+#' ```{r, comment = "#>", collapse = TRUE}
 #' # Castle Data
 #' castle <- haven::read_dta("https://github.com/scunning1975/mixtape/raw/master/castle.dta")
 #'
@@ -37,6 +57,7 @@
 #' 	treatment = "post",
 #' 	cluster_var = "state", weights = "popwt"
 #' )
+#' ```
 #'
 did2s <- function(data, yname, first_stage, second_stage, treatment, cluster_var,
 				  weights = NULL, bootstrap = FALSE, n_bootstraps = 250,
@@ -49,14 +70,13 @@ did2s <- function(data, yname, first_stage, second_stage, treatment, cluster_var
 	if(inherits(second_stage, "formula")) second_stage = as.character(second_stage)[[2]]
 
 	# Print --------------------------------------------------------------------
-
-	if (verbose) {
-		cli::cli_h1("Two-stage Difference-in-Differences")
-		cli::cli_alert("Running with first stage formula {.var {paste0('~ ', first_stage)}} and second stage formula {.var {paste0('~ ', second_stage)}}")
-		cli::cli_alert("The indicator variable that denotes when treatment is on is {.var {treatment}}")
-		if(!bootstrap) cli::cli_alert("Standard errors will be clustered by {.var {cluster_var}}")
-		if(bootstrap) cli::cli_alert("Standard errors will be block bootstrapped with cluster {.var {cluster_var}}")
-		cli::cat_line()
+	if(verbose){
+    cli::cli_h1("Two-stage Difference-in-Differences")
+    cli::cli_alert("Running with first stage formula {.var {paste0('~ ', first_stage)}} and second stage formula {.var {paste0('~ ', second_stage)}}")
+    cli::cli_alert("The indicator variable that denotes when treatment is on is {.var {treatment}}")
+    if(!bootstrap) cli::cli_alert("Standard errors will be clustered by {.var {cluster_var}}")
+    if(bootstrap) cli::cli_alert("Standard errors will be block bootstrapped with cluster {.var {cluster_var}}")
+    cli::cat_line()
 	}
 
 	# Point Estimates ----------------------------------------------------------
@@ -86,11 +106,11 @@ did2s <- function(data, yname, first_stage, second_stage, treatment, cluster_var
 		first_u = est$first_u
 
 		# x1 is matrix used to predict Y(0)
-		x1 = sparse_model_matrix(est$first_stage, data)
+		x1 = sparse_model_matrix(data, est$first_stage)
 
 		# Extract second stage
 		second_u = stats::residuals(est$second_stage)
-		x2 = sparse_model_matrix(est$second_stage, data)
+		x2 = sparse_model_matrix(data, est$second_stage)
 
 		# multiply by weights
 		first_u = weights_vector * first_u
@@ -98,7 +118,7 @@ did2s <- function(data, yname, first_stage, second_stage, treatment, cluster_var
 		second_u = weights_vector * second_u
 		x2 = weights_vector * x2
 
-		# x10 is matrix used to estimate fixed effects (zero out rows with D_it = 1)
+		# x10 is matrix used to estimate first stage (zero out rows with D_it = 1)
 		x10 = x1
 		x10[data[[treatment]] == 1L] = 0
 
@@ -214,55 +234,28 @@ did2s_estimate = function(data, yname, first_stage, second_stage, treatment,
 }
 
 # Make a sparse_model_matrix for fixest
-sparse_model_matrix = function(fixest, data) {
+sparse_model_matrix = function(data, fixest) {
 	Z = NULL
 
 	# Coefficients
-	coef = names(stats::coef(fixest))
-
-	if(!is.null(coef)) {
-		Z = lapply(coef, function(x) {
-			# intercept
-			if(x == "(Intercept)") {
-				return(Matrix::Matrix(rep(1, times = nrow(data)), ncol = 1, sparse = TRUE))
-			}
-			# factor variables
-			else if(stringr::str_detect(x, "::")) {
-				var = stringr::str_extract(x, ".*(?=::)")
-				val = stringr::str_extract(x, "(?<=::).*")
-
-				return(Matrix::Matrix(as.numeric(data[[var]] == val), ncol = 1, sparse = TRUE))
-			}
-			# covariates
-			else {
-				return(Matrix::Matrix(data[[x]], ncol = 1, sparse = TRUE))
-			}
-		})
-
-		Z = do.call(cbind, Z)
-	}
-
+	if("coefficients" %in% names(fixest)) Z = as(model.matrix(fixest, data = data), "sparseMatrix")
 
 	# Fixed Effects
 	if("fixef_id" %in% names(fixest)) {
 		fixef_list = fixest::fixef(fixest)
-		fixef_names = fixest$fixef_vars
 
-		for(i in 1:length(fixef_names)){
-			var = fixef_names[i]
+		mats = lapply(seq_along(fixef_list), function(i) {
+			var = names(fixef_list)[i]
+			vals = names(fixef_list[[i]])
 
-			fixef_vals = fixef_list[[var]]
-			for(i in 1:length(fixef_vals)) {
-				if(fixef_vals[i] != 0) {
-					val = names(fixef_vals[i])
+			ind = lapply(vals, function(val){
+				Matrix::Matrix(as.numeric(data[[var]] == val), ncol = 1, sparse = TRUE)
+			})
 
-					Z = cbind(Z, Matrix::Matrix(as.numeric(data[[var]] == val), ncol = 1, sparse = TRUE))
-				}
-			}
+			do.call("cbind", ind)
+		})
 
-
-		}
-
+		Z = cbind(Z, do.call("cbind", mats))
 	}
 
 	return(Z)

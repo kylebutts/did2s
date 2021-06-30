@@ -13,7 +13,8 @@ did2s(
   cluster_var,
   weights = NULL,
   bootstrap = FALSE,
-  n_bootstraps = 250
+  n_bootstraps = 250,
+  verbose = TRUE
 )
 }
 \arguments{
@@ -34,6 +35,8 @@ did2s(
 \item{bootstrap}{Should standard errors be calculated using bootstrap? Default is FALSE.}
 
 \item{n_bootstraps}{How many bootstraps to run. Default is 250}
+
+\item{verbose}{Whether to print information as the code runs. Default is True.}
 }
 \value{
 fixest::feols point estimate with adjusted standard errors (either by formula or by bootstrap)
@@ -41,19 +44,99 @@ fixest::feols point estimate with adjusted standard errors (either by formula or
 \description{
 Calculate two-stage difference-in-differences following Gardner (2021)
 }
-\examples{
-# Load Example Dataset
+\section{Examples}{
+
+
+Load example dataset which has two treatment groups and homogeneous treatment effects\if{html}{\out{<div class="r">}}\preformatted{# Load Example Dataset
 data("df_hom")
+}\if{html}{\out{</div>}}
 
-# Static
-static <- did2s(df_hom, yname = "dep_var", first_stage = "i(state) + i(year)", second_stage = "i(treat, ref=FALSE)", treatment = "treat", cluster_var = "state")
+You can run a static TWFE fixed effect model for a simple treatment indicator\if{html}{\out{<div class="r">}}\preformatted{static <- did2s(df_hom,
+    yname = "dep_var", treatment = "treat", cluster_var = "state",
+    first_stage = "i(state) + i(year)",
+    second_stage = "i(treat, ref=FALSE)")
+#> 
+#> ── Two-stage Difference-in-Differences ─────────────────────────────────────────
+#> → Running with first stage formula `~ i(state) + i(year)` and second stage formula `~ i(treat, ref=FALSE)`
+#> → The indicator variable that denotes when treatment is on is `treat`
+#> → Standard errors will be clustered by `state`
+#> ℹ For more information on the methodology, visit <https://www.kylebutts.com/did2s>
+
 fixest::esttable(static)
+#>                            static
+#> Dependent Var.:           dep_var
+#>                                  
+#> treat = TRUE    1.983*** (0.0750)
+#> _______________ _________________
+#> S.E. type                  Custom
+#> Observations               31,000
+#> R2                        0.22784
+#> Adj. R2                   0.22784
+}\if{html}{\out{</div>}}
 
-# Event-Study
-es <- did2s(df_hom, yname = "dep_var", first_stage = "i(state) + i(year)", second_stage = "i(rel_year, ref=c(-1, Inf))", treatment = "treat", cluster_var = "state")
+Or you can use relative-treatment indicators to estimate an event study estimate\if{html}{\out{<div class="r">}}\preformatted{es <- did2s(df_hom,
+    yname = "dep_var", treatment = "treat", cluster_var = "state",
+    first_stage = "i(state) + i(year)",
+    second_stage = "i(rel_year, ref=c(-1, Inf))")
+#> 
+#> ── Two-stage Difference-in-Differences ─────────────────────────────────────────
+#> → Running with first stage formula `~ i(state) + i(year)` and second stage formula `~ i(rel_year, ref=c(-1, Inf))`
+#> → The indicator variable that denotes when treatment is on is `treat`
+#> → Standard errors will be clustered by `state`
+#> ℹ For more information on the methodology, visit <https://www.kylebutts.com/did2s>
+
 fixest::esttable(es)
+#>                                 es
+#> Dependent Var.:            dep_var
+#>                                   
+#> rel_year = -20   -0.1469* (0.0632)
+#> rel_year = -19     0.0135 (0.0751)
+#> rel_year = -18   -0.1143. (0.0691)
+#> rel_year = -17    -0.0704 (0.0927)
+#> rel_year = -16    -0.0222 (0.0675)
+#> rel_year = -15  -0.1942** (0.0678)
+#> rel_year = -14    -0.0915 (0.0586)
+#> rel_year = -13    -0.0333 (0.0668)
+#> rel_year = -12    -0.0995 (0.0644)
+#> rel_year = -11    -0.0499 (0.0668)
+#> rel_year = -10     0.0032 (0.0536)
+#> rel_year = -9     -0.0770 (0.0540)
+#> rel_year = -8     -0.0265 (0.0627)
+#> rel_year = -7      0.0024 (0.0629)
+#> rel_year = -6     -0.0252 (0.0488)
+#> rel_year = -5      0.0336 (0.0549)
+#> rel_year = -4      0.0042 (0.0520)
+#> rel_year = -3     -0.0587 (0.0553)
+#> rel_year = -2      0.0216 (0.0637)
+#> rel_year = 0     1.860*** (0.0952)
+#> rel_year = 1     2.220*** (0.0910)
+#> rel_year = 2     1.950*** (0.0938)
+#> rel_year = 3     1.854*** (0.0988)
+#> rel_year = 4     1.931*** (0.0977)
+#> rel_year = 5     2.110*** (0.0926)
+#> rel_year = 6     1.961*** (0.0848)
+#> rel_year = 7     1.939*** (0.0835)
+#> rel_year = 8     2.005*** (0.0689)
+#> rel_year = 9     1.856*** (0.0729)
+#> rel_year = 10    1.790*** (0.1210)
+#> rel_year = 11    2.055*** (0.1335)
+#> rel_year = 12    2.024*** (0.1623)
+#> rel_year = 13    1.914*** (0.1399)
+#> rel_year = 14    2.081*** (0.1376)
+#> rel_year = 15    2.180*** (0.1257)
+#> rel_year = 16    2.261*** (0.1347)
+#> rel_year = 17    2.163*** (0.1122)
+#> rel_year = 18    2.014*** (0.1264)
+#> rel_year = 19    1.868*** (0.1402)
+#> rel_year = 20    1.934*** (0.1769)
+#> _______________ __________________
+#> S.E. type                   Custom
+#> Observations                31,000
+#> R2                         0.22960
+#> Adj. R2                    0.22863
+}\if{html}{\out{</div>}}
 
-# Castle Data
+Here's an example using data from Castle (2013)\if{html}{\out{<div class="r">}}\preformatted{# Castle Data
 castle <- haven::read_dta("https://github.com/scunning1975/mixtape/raw/master/castle.dta")
 
 did2s(
@@ -64,5 +147,20 @@ did2s(
 	treatment = "post",
 	cluster_var = "state", weights = "popwt"
 )
-
+#> 
+#> ── Two-stage Difference-in-Differences ─────────────────────────────────────────
+#> → Running with first stage formula `~ i(sid) + i(year)` and second stage formula `~ i(post, ref = 0)`
+#> → The indicator variable that denotes when treatment is on is `post`
+#> → Standard errors will be clustered by `state`
+#> ℹ For more information on the methodology, visit <https://www.kylebutts.com/did2s>
+#> OLS estimation, Dep. Var.: l_homicide
+#> Observations: 550 
+#> Standard-errors: Custom 
+#>         Estimate Std. Error t value Pr(>|t|))    
+#> post::1 0.075142    0.03538  2.1239  0.034127 *  
+#> ---
+#> Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+#> RMSE: 263.4   Adj. R2: 0.052465
+}\if{html}{\out{</div>}}
 }
+

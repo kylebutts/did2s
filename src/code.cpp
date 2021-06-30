@@ -5,7 +5,7 @@
 using namespace Rcpp;
 using namespace arma;
 
-// Helper Functions ------------------------------------------------------------
+// did2s -----------------------------------------------------------------------
 
 // x2'x1 (x10'x10)^-1
 // [[Rcpp::export]]
@@ -38,8 +38,12 @@ arma::mat make_W(arma::sp_mat x2g, arma::sp_mat x10g, arma::vec first_ug, arma::
 }
 
 
+// did_impute ------------------------------------------------------------------
 
-
-
+// V_proj = - Z (Z_0' Z_0)^{-1} Z_1
+// [[Rcpp::export]]
+arma::sp_mat make_V_star(arma::sp_mat Z, arma::sp_mat Z0, arma::sp_mat Z1, arma::sp_mat wtr) {
+	return arma::sp_mat(- Z * arma::inv(arma::mat(Z0.t() * Z0)) * (Z1.t() * wtr));
+}
 
 

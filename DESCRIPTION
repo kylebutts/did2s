@@ -30,11 +30,11 @@ Imports:
     tidyr,
     rsample,
     purrr,
-    future,
-    furrr,
     cli,
     Matrix,
-    Rcpp
+    Rcpp,
+    did,
+    staggered
 Depends: 
     R (>= 2.10)
 URL: http://kylebutts.com/did2s

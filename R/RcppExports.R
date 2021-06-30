@@ -13,3 +13,7 @@ make_W <- function(x2g, x10g, first_ug, second_ug, V) {
     .Call(`_did2s_make_W`, x2g, x10g, first_ug, second_ug, V)
 }
 
+make_V_star <- function(Z, Z0, Z1, wtr) {
+    .Call(`_did2s_make_V_star`, Z, Z0, Z1, wtr)
+}
+

@@ -46,11 +46,26 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// make_V_star
+arma::sp_mat make_V_star(arma::sp_mat Z, arma::sp_mat Z0, arma::sp_mat Z1, arma::sp_mat wtr);
+RcppExport SEXP _did2s_make_V_star(SEXP ZSEXP, SEXP Z0SEXP, SEXP Z1SEXP, SEXP wtrSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::sp_mat >::type Z(ZSEXP);
+    Rcpp::traits::input_parameter< arma::sp_mat >::type Z0(Z0SEXP);
+    Rcpp::traits::input_parameter< arma::sp_mat >::type Z1(Z1SEXP);
+    Rcpp::traits::input_parameter< arma::sp_mat >::type wtr(wtrSEXP);
+    rcpp_result_gen = Rcpp::wrap(make_V_star(Z, Z0, Z1, wtr));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_did2s_make_V", (DL_FUNC) &_did2s_make_V, 3},
     {"_did2s_make_cov", (DL_FUNC) &_did2s_make_cov, 2},
     {"_did2s_make_W", (DL_FUNC) &_did2s_make_W, 5},
+    {"_did2s_make_V_star", (DL_FUNC) &_did2s_make_V_star, 4},
     {NULL, NULL, 0}
 };
 
