@@ -54,9 +54,7 @@ Optional options:
 -   `n_bootstraps`: How many clustered bootstraps to perform for
     standard errors. Default is 250.
 
-did2s returns a list with two objects:
-
-1.  fixest estimate for the second stage with corrected standard errors.
+did2s returns a fixest estimate for the second stage with corrected standard errors.
 
 ### TWFE vs. Two-Stage DID Example
 
