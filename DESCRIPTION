@@ -19,7 +19,6 @@ LazyData: true
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.1
 Imports: 
-    fixest,
     dplyr,
     magrittr,
     glue,
@@ -36,7 +35,8 @@ Imports:
     did,
     staggered
 Depends: 
-    R (>= 2.10)
+    R (>= 2.10),
+    fixest
 URL: http://kylebutts.com/did2s
 Suggests: 
     rmarkdown,

@@ -36,7 +36,8 @@ did2s(
 
 \item{n_bootstraps}{How many bootstraps to run. Default is 250}
 
-\item{verbose}{Whether to print information as the code runs. Default is True.}
+\item{verbose}{Logical. Should information about the two-stage procedure be
+printed back to the user? Default is TRUE.}
 }
 \value{
 fixest::feols point estimate with adjusted standard errors (either by formula or by bootstrap)
@@ -60,7 +61,6 @@ You can run a static TWFE fixed effect model for a simple treatment indicator\if
 #> → Running with first stage formula `~ i(state) + i(year)` and second stage formula `~ i(treat, ref=FALSE)`
 #> → The indicator variable that denotes when treatment is on is `treat`
 #> → Standard errors will be clustered by `state`
-#> ℹ For more information on the methodology, visit <https://www.kylebutts.com/did2s>
 
 fixest::esttable(static)
 #>                            static
@@ -83,7 +83,6 @@ Or you can use relative-treatment indicators to estimate an event study estimate
 #> → Running with first stage formula `~ i(state) + i(year)` and second stage formula `~ i(rel_year, ref=c(-1, Inf))`
 #> → The indicator variable that denotes when treatment is on is `treat`
 #> → Standard errors will be clustered by `state`
-#> ℹ For more information on the methodology, visit <https://www.kylebutts.com/did2s>
 
 fixest::esttable(es)
 #>                                 es
@@ -152,7 +151,6 @@ did2s(
 #> → Running with first stage formula `~ i(sid) + i(year)` and second stage formula `~ i(post, ref = 0)`
 #> → The indicator variable that denotes when treatment is on is `post`
 #> → Standard errors will be clustered by `state`
-#> ℹ For more information on the methodology, visit <https://www.kylebutts.com/did2s>
 #> OLS estimation, Dep. Var.: l_homicide
 #> Observations: 550 
 #> Standard-errors: Custom 
