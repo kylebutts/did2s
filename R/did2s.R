@@ -195,7 +195,7 @@ did2s_estimate = function(data, yname, first_stage, second_stage, treatment,
 
 
 	# First stage among untreated
-	untreat = data[data[, treatment][[1]]==0, ]
+	untreat = data[data[[treatment]]==0, ]
 	if(is.null(weights)) {
 		weights_vector = NULL
 	} else {
