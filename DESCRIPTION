@@ -2,11 +2,16 @@ Package: did2s
 Title: Estimate Two-Stage Difference-in-Differences following Gardner (2021)
 Version: 0.2.0
 Authors@R: 
-    person(given = "Kyle",
-           family = "Butts",
-           role = "cre",
-           email = "kyle.butts@colorado.edu",
-           comment = c(ORCID = "0000-0002-9048-8059"))
+    c(person(given = "Kyle",
+             family = "Butts",
+             role = "cre",
+             email = "kyle.butts@colorado.edu",
+             comment = c(ORCID = "0000-0002-9048-8059")),
+      person(given = "Grant",
+             family = "McDermott",
+             role = "ctb",
+             email = "grantmcd@uoregon.edu",
+             comment = c(ORCID = "0000-0001-7883-8573")))
 Description: This package creates the funciton `did2s` which allows you to estimate TWFE diff-in-diff/event-study models. To avoid the problems caused by OLS estimation of the TWFE model, this function first estimates the fixed effects and covariates using untreated observations and then in a second stage, estimates the treatment effects.
 License: MIT + file LICENSE
 Encoding: UTF-8
