@@ -9,7 +9,8 @@
 #' @param weights Optional variable to run a weighted first- and second-stage regressions
 #' @param bootstrap Should standard errors be calculated using bootstrap? Default is FALSE.
 #' @param n_bootstraps How many bootstraps to run. Default is 250
-#' @param verbose Whether to print information as the code runs. Default is True.
+#' @param verbose Logical. Should information about the two-stage procedure be
+#'   printed back to the user? Default is TRUE.
 #'
 #' @return fixest::feols point estimate with adjusted standard errors (either by formula or by bootstrap)
 #' @export
@@ -58,7 +59,9 @@
 #' )
 #' ```
 #'
-did2s <- function(data, yname, first_stage, second_stage, treatment, cluster_var, weights = NULL, bootstrap = FALSE, n_bootstraps = 250, verbose = TRUE) {
+did2s <- function(data, yname, first_stage, second_stage, treatment, cluster_var,
+				  weights = NULL, bootstrap = FALSE, n_bootstraps = 250,
+				  verbose = TRUE) {
 
 	# Check Parameters ---------------------------------------------------------
 
@@ -67,16 +70,13 @@ did2s <- function(data, yname, first_stage, second_stage, treatment, cluster_var
 	if(inherits(second_stage, "formula")) second_stage = as.character(second_stage)[[2]]
 
 	# Print --------------------------------------------------------------------
-
 	if(verbose){
-	cli::cli_h1("Two-stage Difference-in-Differences")
-	cli::cli_alert("Running with first stage formula {.var {paste0('~ ', first_stage)}} and second stage formula {.var {paste0('~ ', second_stage)}}")
-	cli::cli_alert("The indicator variable that denotes when treatment is on is {.var {treatment}}")
-	if(!bootstrap) cli::cli_alert("Standard errors will be clustered by {.var {cluster_var}}")
-	if(bootstrap) cli::cli_alert("Standard errors will be block bootstrapped with cluster {.var {cluster_var}}")
-	cli::cat_line()
-	cli::cli_alert_info("For more information on the methodology, visit {.url https://www.kylebutts.com/did2s}")
-	cli::cat_line()
+    cli::cli_h1("Two-stage Difference-in-Differences")
+    cli::cli_alert("Running with first stage formula {.var {paste0('~ ', first_stage)}} and second stage formula {.var {paste0('~ ', second_stage)}}")
+    cli::cli_alert("The indicator variable that denotes when treatment is on is {.var {treatment}}")
+    if(!bootstrap) cli::cli_alert("Standard errors will be clustered by {.var {cluster_var}}")
+    if(bootstrap) cli::cli_alert("Standard errors will be block bootstrapped with cluster {.var {cluster_var}}")
+    cli::cat_line()
 	}
 
 	# Point Estimates ----------------------------------------------------------
@@ -87,7 +87,8 @@ did2s <- function(data, yname, first_stage, second_stage, treatment, cluster_var
 		first_stage = first_stage,
 		second_stage = second_stage,
 		treatment = treatment,
-		weights = weights
+		weights = weights,
+		bootstrap = bootstrap
 	)
 
 	# Analytic Standard Errors -------------------------------------------------
@@ -96,15 +97,13 @@ did2s <- function(data, yname, first_stage, second_stage, treatment, cluster_var
 
 		# Extract weights
 		if(is.null(weights)) {
-			weights_vector = rep(1, nrow(data))
+			weights_vector = rep.int(1L, nrow(data))
 		} else {
 			weights_vector = sqrt(data[[weights]])
 		}
 
 		# Extract first stage
-		first_u = data[[yname]] - stats::predict(est$first_stage, newdata = data)
-		# Zero out rows with D_it = 1
-		first_u[data[[treatment]] == 1] = 0
+		first_u = est$first_u
 
 		# x1 is matrix used to predict Y(0)
 		x1 = sparse_model_matrix(data, est$first_stage)
@@ -121,7 +120,7 @@ did2s <- function(data, yname, first_stage, second_stage, treatment, cluster_var
 
 		# x10 is matrix used to estimate first stage (zero out rows with D_it = 1)
 		x10 = x1
-		x10[data[[treatment]] == 1] = 0
+		x10[data[[treatment]] == 1L] = 0
 
 		# Unique values of cluster variable
 		cl = unique(data[[cluster_var]])
@@ -142,7 +141,7 @@ did2s <- function(data, yname, first_stage, second_stage, treatment, cluster_var
 			W = make_W(x2g, x10g, first_ug, second_ug, V)
 
 			# = W_g W_g'
-			return(W %*% t(W))
+			return(tcrossprod(W))
 		})
 
 		meat_sum = Reduce("+", meat)
@@ -162,7 +161,7 @@ did2s <- function(data, yname, first_stage, second_stage, treatment, cluster_var
 
 
 		estimates = purrr::map_dfr(samples$splits, function(x) {
-			data = rsample::as.data.frame(x)
+			data = rsample:::as.data.frame.rsplit(x)
 
 			estimate = did2s_estimate(
 				data = data,
@@ -170,7 +169,8 @@ did2s <- function(data, yname, first_stage, second_stage, treatment, cluster_var
 				first_stage = first_stage,
 				second_stage = second_stage,
 				treatment = treatment,
-				weights = weights
+				weights = weights,
+				bootstrap = TRUE
 			)
 
 			return(coef(estimate$second_stage))
@@ -186,34 +186,51 @@ did2s <- function(data, yname, first_stage, second_stage, treatment, cluster_var
 
 
 # Point estimate for did2s
-did2s_estimate = function(data, yname, first_stage, second_stage, treatment, weights = NULL) {
-	# First stage among untreated
-	formula = stats::as.formula(glue::glue("{yname} ~ 0 + {first_stage}"))
+did2s_estimate = function(data, yname, first_stage, second_stage, treatment,
+						  weights = NULL, bootstrap = FALSE) {
+	## We'll use fixest's formula expansion macros to swap out first and second
+	## stages (see: ?fixest::xpd)
+	fixest::setFixest_fml(..first_stage = first_stage,
+						  ..second_stage = second_stage)
 
-	untreat = dplyr::filter(data, !!rlang::sym(treatment) == 0)
+
+	# First stage among untreated
+	untreat = data[data[, treatment][[1]]==0, ]
 	if(is.null(weights)) {
 		weights_vector = NULL
 	} else {
 		weights_vector = untreat[[weights]]
 	}
 
-
-	first_stage = fixest::feols(formula, data = untreat, weights = weights_vector, warn=FALSE, notes=FALSE)
+	first_stage = fixest::feols(fixest::xpd(~ 0 + ..first_stage, lhs = yname),
+								data = untreat,
+								weights = weights_vector,
+								warn=FALSE,
+								notes=FALSE)
 
 	# Residualize outcome variable but keep same yname
-	data[[yname]] = data[[yname]] - stats::predict(first_stage, newdata = data)
+	first_u = data[[yname]] - stats::predict(first_stage, newdata = data)
+	data[[yname]] = first_u
+
+	# Zero out residual rows with D_it = 1 (for analytical SEs later on)
+	if (!bootstrap)	first_u[data[[treatment]] == 1] = 0
 
 	# Second stage
-	formula = stats::as.formula(glue::glue("{yname} ~ 0 + {second_stage}"))
 
 	if(!is.null(weights)) weights_vector = data[[weights]]
 
-	second_stage = fixest::feols(formula, data = data, weights = weights_vector, warn=FALSE, notes=FALSE)
+	second_stage = fixest::feols(fixest::xpd(~ 0 + ..second_stage, lhs = yname),
+								 data = data,
+								 weights = weights_vector,
+								 warn=FALSE,
+								 notes=FALSE)
 
-	return(list(
-		first_stage = first_stage,
-		second_stage = second_stage
-	))
+	ret = list(first_stage = first_stage,
+			   second_stage = second_stage)
+
+	if (!bootstrap) ret$first_u = first_u
+
+	return(ret)
 }
 
 # Make a sparse_model_matrix for fixest
