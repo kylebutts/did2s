@@ -194,13 +194,15 @@ The R package allows you to specify the variable <span class="math inline">\(D_{
 <span class="co">#&gt; x dplyr::filter() masks stats::filter()</span>
 <span class="co">#&gt; x dplyr::lag()    masks stats::lag()</span>
 <span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="http://kylebutts.com/did2s">did2s</a></span><span class="op">)</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://lrberge.github.io/fixest/">fixest</a></span><span class="op">)</span>
+<span class="co">#&gt; Loading required package: fixest</span>
 <span class="co">#&gt; fixest 0.9.0, BREAKING changes! (Permanently remove this message with fixest_startup_msg(FALSE).) </span>
 <span class="co">#&gt; - In i():</span>
 <span class="co">#&gt;     + the first two arguments have been swapped! Now it's i(factor_var, continuous_var) for interactions. </span>
 <span class="co">#&gt;     + argument 'drop' has been removed (put everything in 'ref' now).</span>
 <span class="co">#&gt; - In feglm(): </span>
 <span class="co">#&gt;     + the default family becomes 'gaussian' to be in line with glm(). Hence, for Poisson estimations, please use fepois() instead.</span>
+<span class="co">#&gt; ℹ did2s (v0.2.0). For more information on the methodology, visit &lt;https://www.kylebutts.com/did2s&gt;</span>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://lrberge.github.io/fixest/">fixest</a></span><span class="op">)</span>
 <span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/rstudio/rmarkdown">rmarkdown</a></span><span class="op">)</span>
 
 <span class="co"># Load theme</span>
@@ -235,7 +237,7 @@ The R package allows you to specify the variable <span class="math inline">\(D_{
 <span class="fu">ggplot</span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> 
     <span class="fu">geom_line</span><span class="op">(</span>data <span class="op">=</span> <span class="va">df_avg</span>, mapping <span class="op">=</span> <span class="fu">aes</span><span class="op">(</span>y <span class="op">=</span> <span class="va">dep_var</span>, x <span class="op">=</span> <span class="va">year</span>, color <span class="op">=</span> <span class="va">group</span><span class="op">)</span>, size <span class="op">=</span> <span class="fl">1.5</span><span class="op">)</span> <span class="op">+</span>
     <span class="fu">geom_vline</span><span class="op">(</span>xintercept <span class="op">=</span> <span class="va">gs</span> <span class="op">-</span> <span class="fl">0.5</span>, linetype <span class="op">=</span> <span class="st">"dashed"</span><span class="op">)</span> <span class="op">+</span> 
-    <span class="fu">theme_kyle</span><span class="op">(</span>base_size <span class="op">=</span> <span class="fl">16</span><span class="op">)</span> <span class="op">+</span>
+    <span class="fu"><a href="../reference/theme_kyle.html">theme_kyle</a></span><span class="op">(</span>base_size <span class="op">=</span> <span class="fl">16</span><span class="op">)</span> <span class="op">+</span>
     <span class="fu">theme</span><span class="op">(</span>legend.position <span class="op">=</span> <span class="st">"bottom"</span><span class="op">)</span> <span class="op">+</span>
     <span class="fu">labs</span><span class="op">(</span>y <span class="op">=</span> <span class="st">"Outcome"</span>, x <span class="op">=</span> <span class="st">"Year"</span>, color <span class="op">=</span> <span class="st">"Treatment Cohort"</span><span class="op">)</span> <span class="op">+</span> 
     <span class="fu">scale_y_continuous</span><span class="op">(</span>expand <span class="op">=</span> <span class="fu">expansion</span><span class="op">(</span>add <span class="op">=</span> <span class="fl">.5</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> 
@@ -262,7 +264,6 @@ Example data with heterogeneous treatment effects
 <span class="co">#&gt; → Running with first stage formula `~ 0 | unit + year` and second stage formula `~ i(treat, ref = FALSE)`</span>
 <span class="co">#&gt; → The indicator variable that denotes when treatment is on is `treat`</span>
 <span class="co">#&gt; → Standard errors will be clustered by `state`</span>
-<span class="co">#&gt; ℹ For more information on the methodology, visit &lt;https://www.kylebutts.com/did2s&gt;</span>
 
 <span class="fu">fixest</span><span class="fu">::</span><span class="fu"><a href="https://lrberge.github.io/fixest/reference/etable.html">esttable</a></span><span class="op">(</span><span class="va">static</span><span class="op">)</span>
 <span class="co">#&gt;                            static</span>
@@ -287,7 +288,6 @@ Example data with heterogeneous treatment effects
 <span class="co">#&gt; → Running with first stage formula `~ 0 | unit + year` and second stage formula `~ i(rel_year, ref = c(-1, Inf))`</span>
 <span class="co">#&gt; → The indicator variable that denotes when treatment is on is `treat`</span>
 <span class="co">#&gt; → Standard errors will be clustered by `state`</span>
-<span class="co">#&gt; ℹ For more information on the methodology, visit &lt;https://www.kylebutts.com/did2s&gt;</span>
 
 <span class="fu">fixest</span><span class="fu">::</span><span class="fu"><a href="https://lrberge.github.io/fixest/reference/etable.html">esttable</a></span><span class="op">(</span><span class="va">es</span><span class="op">)</span>
 <span class="co">#&gt;                                es</span>
@@ -381,7 +381,7 @@ Example data with heterogeneous treatment effects
     <span class="fu">scale_y_continuous</span><span class="op">(</span>minor_breaks <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span> <span class="op">+</span>
     <span class="fu">scale_color_manual</span><span class="op">(</span>values <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Two-Stage Estimate"</span> <span class="op">=</span> <span class="st">"steelblue"</span>, <span class="st">"True Effect"</span> <span class="op">=</span> <span class="st">"#b44682"</span>, <span class="st">"TWFE Estimate"</span> <span class="op">=</span> <span class="st">"#82b446"</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span>
     <span class="fu">labs</span><span class="op">(</span>x <span class="op">=</span> <span class="st">"Relative Time"</span>, y <span class="op">=</span> <span class="st">"Estimate"</span>, color <span class="op">=</span> <span class="cn">NULL</span>, title <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span> <span class="op">+</span>
-    <span class="fu">theme_kyle</span><span class="op">(</span>base_size <span class="op">=</span> <span class="fl">16</span><span class="op">)</span> <span class="op">+</span>
+    <span class="fu"><a href="../reference/theme_kyle.html">theme_kyle</a></span><span class="op">(</span>base_size <span class="op">=</span> <span class="fl">16</span><span class="op">)</span> <span class="op">+</span>
     <span class="fu">theme</span><span class="op">(</span>legend.position <span class="op">=</span> <span class="st">"bottom"</span><span class="op">)</span>
 <span class="co">#&gt; Warning: Removed 17 rows containing missing values (geom_segment).</span></code></pre></div>
 <div class="figure">
@@ -431,7 +431,7 @@ Event-study plot with example data
     <span class="fu">scale_y_continuous</span><span class="op">(</span>minor_breaks <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span> <span class="op">+</span>
     <span class="fu">scale_color_manual</span><span class="op">(</span>values <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Two-Stage Estimate"</span> <span class="op">=</span> <span class="st">"steelblue"</span>, <span class="st">"True Effect"</span> <span class="op">=</span> <span class="st">"#b44682"</span>, <span class="st">"TWFE Estimate"</span> <span class="op">=</span> <span class="st">"#82b446"</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span>
     <span class="fu">labs</span><span class="op">(</span>x <span class="op">=</span> <span class="st">"Relative Time"</span>, y <span class="op">=</span> <span class="st">"Estimate"</span>, color <span class="op">=</span> <span class="cn">NULL</span>, title <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span> <span class="op">+</span>
-    <span class="fu">theme_kyle</span><span class="op">(</span>base_size <span class="op">=</span> <span class="fl">24</span><span class="op">)</span> <span class="op">+</span>
+    <span class="fu"><a href="../reference/theme_kyle.html">theme_kyle</a></span><span class="op">(</span>base_size <span class="op">=</span> <span class="fl">24</span><span class="op">)</span> <span class="op">+</span>
     <span class="fu">theme</span><span class="op">(</span>legend.position <span class="op">=</span> <span class="st">"bottom"</span><span class="op">)</span>
 <span class="co">#&gt; Warning: Removed 17 rows containing missing values (geom_segment).</span></code></pre></div>
 <div class="figure">

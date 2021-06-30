@@ -7,13 +7,22 @@
     <loc>http://kylebutts.com/did2s/reference/did2s.html</loc>
   </url>
   <url>
-    <loc>http://kylebutts.com/did2s/reference/did_impute.html</loc>
+    <loc>http://kylebutts.com/did2s/reference/did_imputation.html</loc>
+  </url>
+  <url>
+    <loc>http://kylebutts.com/did2s/reference/event_study.html</loc>
   </url>
   <url>
     <loc>http://kylebutts.com/did2s/reference/gen_data.html</loc>
   </url>
   <url>
     <loc>http://kylebutts.com/did2s/reference/pipe.html</loc>
+  </url>
+  <url>
+    <loc>http://kylebutts.com/did2s/reference/plot_event_study.html</loc>
+  </url>
+  <url>
+    <loc>http://kylebutts.com/did2s/reference/theme_kyle.html</loc>
   </url>
   <url>
     <loc>http://kylebutts.com/did2s/articles/Two-Stage-Difference-in-Differences.html</loc>

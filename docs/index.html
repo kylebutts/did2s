@@ -135,10 +135,7 @@
 <li>
 <code>n_bootstraps</code>: How many clustered bootstraps to perform for standard errors. Default is 250.</li>
 </ul>
-<p>did2s returns a list with two objects:</p>
-<ol>
-<li>fixest estimate for the second stage with corrected standard errors.</li>
-</ol>
+<p>did2s returns a fixest estimate for the second stage with corrected standard errors.</p>
 <div id="twfe-vs-two-stage-did-example" class="section level3">
 <h3 class="hasAnchor">
 <a href="#twfe-vs-two-stage-did-example" class="anchor"></a>TWFE vs. Two-Stage DID Example</h3>
@@ -450,7 +447,7 @@
 <span class="fu">ggplot</span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> 
     <span class="fu">geom_line</span><span class="op">(</span>data <span class="op">=</span> <span class="va">df_avg</span>, mapping <span class="op">=</span> <span class="fu">aes</span><span class="op">(</span>y <span class="op">=</span> <span class="va">dep_var</span>, x <span class="op">=</span> <span class="va">year</span>, color <span class="op">=</span> <span class="va">group</span><span class="op">)</span>, size <span class="op">=</span> <span class="fl">1.5</span><span class="op">)</span> <span class="op">+</span>
     <span class="fu">geom_vline</span><span class="op">(</span>xintercept <span class="op">=</span> <span class="va">gs</span> <span class="op">-</span> <span class="fl">0.5</span>, linetype <span class="op">=</span> <span class="st">"dashed"</span><span class="op">)</span> <span class="op">+</span> 
-    <span class="fu">theme_kyle</span><span class="op">(</span>base_size <span class="op">=</span> <span class="fl">16</span><span class="op">)</span> <span class="op">+</span>
+    <span class="fu"><a href="reference/theme_kyle.html">theme_kyle</a></span><span class="op">(</span>base_size <span class="op">=</span> <span class="fl">16</span><span class="op">)</span> <span class="op">+</span>
     <span class="fu">theme</span><span class="op">(</span>legend.position <span class="op">=</span> <span class="st">"bottom"</span><span class="op">)</span> <span class="op">+</span>
     <span class="fu">labs</span><span class="op">(</span>y <span class="op">=</span> <span class="st">"Outcome"</span>, x <span class="op">=</span> <span class="st">"Year"</span>, color <span class="op">=</span> <span class="st">"Treatment Cohort"</span><span class="op">)</span> <span class="op">+</span> 
     <span class="fu">scale_y_continuous</span><span class="op">(</span>expand <span class="op">=</span> <span class="fu">expansion</span><span class="op">(</span>add <span class="op">=</span> <span class="fl">.5</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> 
@@ -601,7 +598,7 @@ Event-study plot with example data
 </div>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R">    <span class="fu">labs</span><span class="op">(</span>x <span class="op">=</span> <span class="st">"Relative Time"</span>, y <span class="op">=</span> <span class="st">"Estimate"</span>, color <span class="op">=</span> <span class="cn">NULL</span>, title <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span> <span class="op">+</span>
-    <span class="fu">theme_kyle</span><span class="op">(</span>base_size <span class="op">=</span> <span class="fl">16</span><span class="op">)</span> <span class="op">+</span>
+    <span class="fu"><a href="reference/theme_kyle.html">theme_kyle</a></span><span class="op">(</span>base_size <span class="op">=</span> <span class="fl">16</span><span class="op">)</span> <span class="op">+</span>
     <span class="fu">theme</span><span class="op">(</span>legend.position <span class="op">=</span> <span class="st">"bottom"</span><span class="op">)</span>
 <span class="co">#&gt; NULL</span></code></pre></div>
 </div>
@@ -645,7 +642,7 @@ Event-study plot with example data
     <span class="fu">scale_y_continuous</span><span class="op">(</span>minor_breaks <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span> <span class="op">+</span>
     <span class="fu">scale_color_manual</span><span class="op">(</span>values <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Two-Stage Estimate"</span> <span class="op">=</span> <span class="st">"steelblue"</span>, <span class="st">"True Effect"</span> <span class="op">=</span> <span class="st">"#b44682"</span>, <span class="st">"TWFE Estimate"</span> <span class="op">=</span> <span class="st">"#82b446"</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span>
     <span class="fu">labs</span><span class="op">(</span>x <span class="op">=</span> <span class="st">"Relative Time"</span>, y <span class="op">=</span> <span class="st">"Estimate"</span>, color <span class="op">=</span> <span class="cn">NULL</span>, title <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span> <span class="op">+</span>
-    <span class="fu">theme_kyle</span><span class="op">(</span>base_size <span class="op">=</span> <span class="fl">16</span><span class="op">)</span> <span class="op">+</span>
+    <span class="fu"><a href="reference/theme_kyle.html">theme_kyle</a></span><span class="op">(</span>base_size <span class="op">=</span> <span class="fl">16</span><span class="op">)</span> <span class="op">+</span>
     <span class="fu">theme</span><span class="op">(</span>legend.position <span class="op">=</span> <span class="st">"bottom"</span><span class="op">)</span>
 <span class="co">#&gt; Warning: Removed 17 rows containing missing values (geom_segment).</span></code></pre></div>
 <div class="figure">
@@ -680,6 +677,7 @@ Gardner, John. 2021. “<span class="nocase">Two-Stage Difference-in-Differences
 <h2>Developers</h2>
 <ul class="list-unstyled">
 <li>Kyle Butts <br><small class="roles"> Maintainer </small> <a href="https://orcid.org/0000-0002-9048-8059" target="orcid.widget" aria-label="ORCID"><span class="fab fa-orcid orcid" aria-hidden="true"></span></a> </li>
+<li><a href="authors.html">All authors...</a></li>
 </ul>
 </div>
 
