@@ -18,6 +18,9 @@ Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.1
+Depends: 
+    R (>= 2.10),
+    fixest (>= 0.9.0)
 Imports: 
     dplyr,
     magrittr,
@@ -32,11 +35,8 @@ Imports:
     cli,
     Matrix,
     Rcpp,
-    did,
-    staggered
-Depends: 
-    R (>= 2.10),
-    fixest
+    did
+Remotes: jonathandroth/staggered
 URL: http://kylebutts.com/did2s
 Suggests: 
     rmarkdown,
