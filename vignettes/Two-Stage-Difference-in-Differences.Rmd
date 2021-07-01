@@ -1,5 +1,5 @@
 ---
-title: "Two-Stage-Difference-in-Differences"
+title: "Two-Stage Difference-in-Differences"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Two-Stage-Difference-in-Differences}
@@ -16,14 +16,15 @@ knitr::opts_chunk$set(
 
 ## Two-stage Difference-in-differences, [Gardner (2021)](https://jrgcmu.github.io/2sdd_current.pdf)
 
-Researchers often want to estimate either a static TWFE model,
+Researchers often want to a difference-in-differences (DiD) model in a regression setting. Typically, these have made use of the so-called _twoway fixed effects_ (TWFE) framework. For example, in a static setting:
 
 \begin{equation}
   y_{it} = \mu_i + \mu_t + \tau D_{it} + \varepsilon_{it},
 \end{equation}
 
-where $\mu_i$ are unit fixed effects, $\mu_t$ are time fixed effects, and $D_{it}$ is an indicator for receiving treatment, or an event-study TWFE model
+where $\mu_i$ are unit fixed effects, $\mu_t$ are time fixed effects, and $D_{it}$ is an indicator for receiving treatment.
 
+Similarly, a (dynamic) event-study TWFE model could be written as:
 
 \begin{equation}
 y_{it} = \mu_i + \mu_t + \sum_{k = -L}^{-2} \tau^k D_{it}^k + \sum_{k = 1}^{K} \tau^k D_{it}^k + \varepsilon_{it},
@@ -31,11 +32,11 @@ y_{it} = \mu_i + \mu_t + \sum_{k = -L}^{-2} \tau^k D_{it}^k + \sum_{k = 1}^{K} \
 
 where $D_{it}^k$ are lag/leads of treatment (k periods from initial treatment date).
 
-<aside>Sometimes researches use variants of this model where they bin or drop leads and lags</aside>
+<aside>Aside: Sometimes researches use variants of this model where they bin or drop leads and lags.</aside>
 
-However, running OLS to estimate either model has been shown to not recover an average treatment effect and has the potential to be severely misleading in cases of treatment effect heterogeneity [[Borusyak et. al. (2021)](https://sites.google.com/view/borusyak/research); [Callaway and Sant'Anna (2020)]((https://authors.elsevier.com/a/1cFzc15Dji4pnC)); [de Chaisemartin and d'Haultfoeuille (2020)](https://doi.org/10.1257/aer.20181169); [Goodman-Bacon (2020)](http://goodman-bacon.com/pdfs/ddtiming.pdf); [Sun and Abraham (2020)](http://economics.mit.edu/files/14964)]. 
+However, running OLS to estimate either model has been shown to not recover an average treatment effect and has the potential to be severely misleading in cases of treatment effect heterogeneity [Borusyak et. al. (2021)](https://www.dropbox.com/s/y92mmyndlbkufo1/Draft_RobustAndEfficient.pdf?raw=true); [Callaway and Sant'Anna (2020)](https://www.sciencedirect.com/science/article/pii/S0304407621001445#b18); [de Chaisemartin and d'Haultfoeuille (2020)](https://doi.org/10.1257/aer.20181169); [Goodman-Bacon (2021)](https://www.sciencedirect.com/science/article/pii/S0304407621001445); [Sun and Abraham (2020)](https://www.sciencedirect.com/science/article/pii/S030440762030378X)]. 
 
-One way of thinking about this problem is through the FWL theorem. When estimating the unit and time fixed effects, you create a residualized $\tilde{Y}_{it}$ which is commonly said to be "the outcome variable after removing time shocks and fixed units characteristics", but you also create a residulaized $\tilde{D}_{it}$ or $\tilde{D}_{it}^k$. To simplify the literature, this residualized treatment indicators is what creates the problem of interpreting $\tau$ or $\tau^k$, especially when treatment effects are heterogeneous.
+One way of thinking about this problem is through the [Frisch–Waugh–Lovell (FWL) theorem](https://en.wikipedia.org/wiki/Frisch%E2%80%93Waugh%E2%80%93Lovell_theorem). When estimating the unit and time fixed effects, you create a residualized $\tilde{Y}_{it}$ which is commonly said to be "the outcome variable after removing time shocks and fixed units characteristics", but you also create a residulaized $\tilde{D}_{it}$ or $\tilde{D}_{it}^k$. To simplify the literature, this residualized treatment indicators is what creates the problem of interpreting $\tau$ or $\tau^k$, especially when treatment effects are heterogeneous.
 
 That's where [Gardner (2021)](https://jrgcmu.github.io/2sdd_current.pdf) comes in. What Gardner does to fix the problem is quite simple: estimate $\mu_i$ and $\mu_t$ seperately so you don't residualize the treatment indicators. In the absence of treatment, the TWFE model gives you a model for (potentially unobserved) untreated outcomes 
 
@@ -43,7 +44,7 @@ $$y_{it}(0) = \mu_i + \mu_t + \varepsilon_{it}.$$
 
 Therefore, if you can ***consistently*** estimate $y_{it}(0)$, you can impute the untreated outcome and remove that from the observed outcome $y_{it}$. The value of $y_{it} - \hat{y}_{it}(0)$ should be close to zero for control units and should be close to $\tau_{it}$ for treated observations. Then, regressing $y_{it} - \hat{y}_{it}(0)$ on the treatment variables should give unbiased estimates of treatment effects (either static or dynamic/event-study).
 
-<aside>This is the same logic as the new paper @Borusyak_Jaravel_Spiess_2021</aside>
+<aside>Aside: This is the same logic as the new paper by [[Borusyak et. al. (2021)](https://sites.google.com/view/borusyak/research).</aside>
 
 The steps of the two-step estimator are:
 
@@ -57,7 +58,7 @@ Some notes:
 
 First, the standard errors on $\tau$ or $\tau^k$'s will be incorrect as the dependent variable is itself an estimate. This is referred to the generated regressor problem in econometrics parlance. Therefore, [Gardner (2021)](https://jrgcmu.github.io/2sdd_current.pdf) has developed a GMM estimator that will give asymptotically correct standard errors. 
 
-<aside>Details are left to the paper, but are implemented in the R package</aside>
+<aside>Details are left to the paper, but are implemented in this R package</aside>
 
 ### Anticipation
 
@@ -65,226 +66,157 @@ Second, this procedure works so long as $\mu_i$ and $\mu_t$ are ***consistently*
 
 The fixed effects could be biased/inconsistent if there are anticipation effects, i.e. units respond before treatment starts. The fix is fairly simple, simply "shift" treatment date earlier by as many years as you suspect anticipation to occur (e.g. 2 years before treatment starts) and estimate on the subsample where the shifted treatment equals zero.
 
-<aside>The R package allows you to specify the variable $D_{it}$, if you suspect anticipation, provide the shifted variable to this option.</aside>
+<aside>This R package allows you to specify the variable $D_{it}$, if you suspect anticipation, provide the shifted variable to this option.</aside>
 
 ### Covariates
 
 This method works with pre-determined covariates as well. Augment the above step 1. to include $X_i$ and remove that from $y_{it}$ along with the fixed effects to get $\tilde{y}_{it}$. 
 
 
-## R Package
+## did2s R Package
 
-I have created an R package with the help of John Gardner to estimate the two-stage procedure. To install the package, run the following:
+**did2s** is an R package that implements the two-stage DiD procedure described above. To install the package, run the following:
 
 ```{r, eval = FALSE}
-devtools::install_github("kylebutts/did2s")
+remotes::install_github("kylebutts/did2s")
 ```
 
-To view the documentation, type `?did2s` into the console.
+> Note: Windows users should install [Rtools](https://cran.r-project.org/bin/windows/Rtools/) before running the above command, since they will need to compile some C++ code from source.
 
+The main function is **`did2s()`**, which estimates the two-stage DiD procedure. The function is really a convenience wrapper (plus some important transformations) around [`fixest::feols()`](https://lrberge.github.io/fixest/reference/feols.html) and will return a **fixest** object. This is important for several reasons that will become clear in the examples that follow. 
 
-The main function is `did2s` which estimates the two-stage did procedure. This function requires the following options:
+**`did2s()`** requires the following arguments:
 
-- `yname`: the outcome variable
-- `first_stage`: formula for first stage, can include fixed effects and covariates, but do not include treatment variable(s)! Estimation uses fixest so you can use `i()` for fixed effects or the vertical bar `|`.
-- `second_stage`: This should be the treatment variable or in the case of event studies, treatment variables.
-- `treatment`: This has to be the 0/1 treatment variable that marks when treatment turns on for a unit. If you suspect anticipation, see note above for accounting for this.
-- `cluster_var`: Optional, this tells which variables to cluster on
+- `yname`: The outcome variable. For example, `"y"`.
+- `first_stage`: Formula indicating the first stage. This can include fixed effects and covariates, but do not include treatment variable(s)! For efficiency, it is recommended to use the **fixest** convention of specifying fixed effects after a vertical bar. For example, `~ x1 + x2 | fe1 + fe2`.
+- `second_stage`: Formula indicating the treatment variable or, in the case of event studies, treatment variables. Again, following **fixest** conventions, it is recommended to use the [`i()`](https://lrberge.github.io/fixest/reference/i.html) syntax. For example, `~ i(time_to_treatment, ref = 0)`.
+- `treatment`: A binary (1/0) or logical (TRUE/FALSE) variable demarcating when treatment turns on for a unit. For example, `"treated"`.
 
-did2s returns a list with two objects:
+Optional arguments include the ability to implement weighted regressions and whether to cluster or bootstrap standard errors.
 
-1. fixest estimate for the second stage with corrected standard errors.
+### Example
 
-### Example Usage
-
-I will load example data from the package and plot the average outcome among the groups. Here is one unit's data:
+Let's walk through an example dataset from the package. 
 
 ```{r load-data, code_folding=TRUE,}
+library(did2s) ## The main package. Will automatically load fixest as well.
+library(ggplot2)
 
-library(tidyverse)
-library(did2s)
-library(fixest)
-library(rmarkdown)
-
-# Load theme
-source("https://raw.githubusercontent.com/kylebutts/templates/master/ggplot_theme/theme_kyle.R")
-
-# Load Data from R package
+## Load heterogeneous treatment dataset from the package
 data("df_het")
-
-# One observation
-df_het %>% head(n = 31) %>% rmarkdown::paged_table()
+head(df_het)
 ```
 
 Here is a plot of the average outcome variable for each of the groups:
 
-```{r plot-df-het, fig.width=8, fig.height=4, fig.cap="Example data with heterogeneous treatment effects", code_folding=TRUE, layout="l-body-outset"}
-# Plot Data 
-df_avg <- df_het %>% 
-  group_by(group, year) %>% 
-  summarize(dep_var = mean(dep_var), .groups = 'drop')
+```{r plot-df-het, fig.width=8, fig.height=5, fig.cap="Example data with heterogeneous treatment effects", code_folding=TRUE, layout="l-body-outset"}
+# Mean outcome by group and year
+df_avg = aggregate(df_het[, "dep_var"], 
+				   list(group = df_het$group, year = df_het$year), 
+				   mean)
 
-# Get treatment years for plotting
-gs <- df_het %>% 
-  filter(treat == TRUE) %>% 
-  pull(g) %>% unique()
-	
-	
-ggplot() + 
-	geom_line(data = df_avg, mapping = aes(y = dep_var, x = year, color = group), size = 1.5) +
-	geom_vline(xintercept = gs - 0.5, linetype = "dashed") + 
-	theme_kyle(base_size = 16) +
-	theme(legend.position = "bottom") +
-	labs(y = "Outcome", x = "Year", color = "Treatment Cohort") + 
-	scale_y_continuous(expand = expansion(add = .5)) + 
-	scale_color_manual(values = c("Group 1" = "#d2382c", "Group 2" = "#497eb3", "Group 3" = "#8e549f")) 
+# Treatment years
+tyears = unique(subset(df_het, treat==TRUE)$g)
+
+# Plot
+ggplot(df_avg) +
+	geom_line(aes(y = dep_var, x = year, color = group), size = 1.5) +
+	geom_vline(xintercept = tyears - 0.5, linetype = "dashed") +
+	labs(y = "Outcome", x = "Year", color = "Treatment Cohort") +
+	scale_y_continuous(expand = expansion(add = .5)) +
+	scale_color_manual(values = c("Group 1" = "#d2382c",
+								  "Group 2" = "#497eb3",
+								  "Group 3" = "#8e549f")) +
+	theme_minimal(base_size = 12) +
+	theme(legend.position = "bottom")
 ```
 
 
-### Estimate Two-stage Difference-in-Differences 
+### Estimate Two-stage difference-in-differences 
 
-First, lets estimate a static did:
+First, let's estimate a simple, static DiD:
 
 ```{r static}
-
-# Static
-static <- did2s(df_het, 
-				yname = "dep_var", first_stage = ~ 0 | unit + year, 
-				second_stage = ~ i(treat, ref = FALSE), treatment = "treat", 
-				cluster_var = "state")
-
-fixest::esttable(static)
-
+static = did2s(df_het,
+			   yname = "dep_var", 
+			   first_stage = ~ 0 | unit + year, 
+			   second_stage = ~ i(treat, ref = FALSE), 
+			   treatment = "treat", 
+			   cluster_var = "state")
 ```
 
-Then, let's estimate an event study did:
+Again, note that `did2s` will return a **fixest** object, so all of the regular methods for table exports and plotting will work. For example:
+
+```{r static_etable}
+etable(static)
+```
+
+Next, let's estimate an event study DiD:
 
 ```{r event-study}
+es = did2s(df_het,
+		   yname = "dep_var", 
+		   first_stage = ~ 0 | unit + year, 
+		   second_stage = ~ i(rel_year, ref=c(-1, Inf)), 
+		   treatment = "treat", 
+		   cluster_var = "state")
 
-# Event Study
-es <- did2s(df_het,
-			yname = "dep_var", first_stage = ~ 0 | unit + year, 
-			second_stage = ~ i(rel_year, ref=c(-1, Inf)), treatment = "treat", 
-			cluster_var = "state")
-
-fixest::esttable(es)
+## Regression table (we'll only show results for relative years -9 to 9 here)
+etable(es, drop = "[[:digit:]]{2}")
 
 ```
 
-And plot the results:
+Being a regular **fixest** object, we can use `iplot()` to quickly plot the results.
 
-```{r plot-es, fig.width=8, fig.height=4, fig.cap="Event-study plot with example data", code_folding=TRUE, layout="l-body-outset"}
+```{r plot-es, fig.width=8, fig.height=5, fig.cap="Event-study plot with example data", code_folding=TRUE, layout="l-body-outset"}
+par(family = "HersheySans") # Nicer fonts for base R plots
 
-pts <- broom::tidy(es) %>%
-    filter(str_detect(term, "rel_year::")) %>%
-	select(rel_year = term, estimate, se = std.error) %>%
-    mutate(
-        rel_year = as.numeric(str_remove(rel_year, "rel_year::")),
-        ci_lower = estimate - 1.96 * se,
-        ci_upper = estimate + 1.96 * se,
-        group = "Estimated Effect"
-    ) %>%
-    filter(rel_year <= 8 & rel_year >= -8) %>% 
-    mutate(rel_year = rel_year + 0.1)
-
-te_true <- df_het %>%
-    # Keep only treated units
-    filter(g > 0) %>%
-    group_by(rel_year) %>%
-    summarize(estimate = mean(te + te_dynamic)) %>%
-	  mutate(group = "True Effect") %>%
-    filter(rel_year >= -8 & rel_year <= 8) %>% 
-    mutate(rel_year = rel_year)
-
-pts <- bind_rows(pts, te_true)
-
-max_y <- max(pts$estimate)
-
-ggplot() +
-    # 0 effect
-    geom_hline(yintercept = 0, linetype = "dashed") +
-    geom_vline(xintercept = -0.5, linetype = "dashed") +
-    # Confidence Intervals
-    geom_linerange(data = pts, mapping = aes(x = rel_year, ymin = ci_lower, ymax = ci_upper), color = "grey30") +
-    # Estimates
-    geom_point(data = pts, mapping = aes(x = rel_year, y = estimate, color = group), size = 2) +
-    # Label
-    geom_label(data = data.frame(x = -0.5 - 0.1, y = max_y + 0.25, label = "Treatment Starts ▶"), label.size=NA,
-               mapping = aes(x = x, y = y, label = label), size = 5.5, hjust = 1, fontface = 2, inherit.aes = FALSE) +
-    scale_x_continuous(breaks = -8:8, minor_breaks = NULL) +
-    scale_y_continuous(minor_breaks = NULL) +
-    scale_color_manual(values = c("Two-Stage Estimate" = "steelblue", "True Effect" = "#b44682", "TWFE Estimate" = "#82b446")) +
-    labs(x = "Relative Time", y = "Estimate", color = NULL, title = NULL) +
-    theme_kyle(base_size = 16) +
-    theme(legend.position = "bottom")
-
+iplot(es, 
+	  ref.line = -0.5, 
+	  col = "steelblue",
+	  xlab = "Relative time to treatment",
+	  main = "Event study: Staggered treatment")
+# Add the (mean) true effects
+true_effects = head(tapply((df_het$te + df_het$te_dynamic), df_het$rel_year, mean), -1)
+points(-20:20, true_effects, pch = 0, col = "#b44682")
+# Legend
+legend("topleft", col = c("steelblue", "#b44682"), pch = c(20, 0), 
+       legend = c("Two-stage estimate", "True effect"))
 ```
 
 
 ### Comparison to TWFE
 
-```{r plot-compare, fig.width=8, fig.height=4, fig.cap="TWFE and Two-Stage estimates of Event-Study", code_folding=TRUE, layout="l-body-outset"}
-
+```{r plot-compare, fig.width=8, fig.height=5, fig.cap="TWFE and Two-Stage estimates of Event-Study", code_folding=TRUE, layout="l-body-outset"}
 # TWFE
-twfe <- fixest::feols(dep_var ~ i(rel_year, ref=c(-1, Inf)) | unit + year, data = df_het) %>%
-	broom::tidy() %>%
-    filter(str_detect(term, "rel_year::")) %>%
-	select(rel_year = term, estimate, se = std.error) %>%
-    mutate(
-        rel_year = as.numeric(str_remove(rel_year, "rel_year::")),
-        ci_lower = estimate - 1.96 * se,
-        ci_upper = estimate + 1.96 * se,
-        group = "TWFE Estimate"
-    ) %>%
-    filter(rel_year <= 8 & rel_year >= -8) %>% 
-    mutate(rel_year = rel_year - 0.1)
+twfe = feols(dep_var ~ i(rel_year, ref=c(-1, Inf)) | unit + year, data = df_het) 
 
-# Add TWFE Points
-both_pts <- pts %>% mutate(
-		group = if_else(group == "Estimated Effect", "Two-Stage Estimate", group)
-	) %>% 
-	bind_rows(., twfe)
+par(family = "HersheySans") # Nicer fonts for base R plots
 
-
-ggplot() +
-    # 0 effect
-    geom_hline(yintercept = 0, linetype = "dashed") +
-    geom_vline(xintercept = -0.5, linetype = "dashed") +
-    # Confidence Intervals
-    geom_linerange(data = both_pts, mapping = aes(x = rel_year, ymin = ci_lower, ymax = ci_upper), color = "grey30") +
-    # Estimates
-    geom_point(data = both_pts, mapping = aes(x = rel_year, y = estimate, color = group), size = 2) +
-    # Label
-    geom_label(data = data.frame(x = -0.5 - 0.1, y = max_y + 0.25, label = "Treatment Starts ▶"), label.size=NA,
-               mapping = aes(x = x, y = y, label = label), size = 5.5, hjust = 1, fontface = 2, inherit.aes = FALSE, fill = "#ECECEC") +
-    scale_x_continuous(breaks = -8:8, minor_breaks = NULL) +
-    scale_y_continuous(minor_breaks = NULL) +
-    scale_color_manual(values = c("Two-Stage Estimate" = "steelblue", "True Effect" = "#b44682", "TWFE Estimate" = "#82b446")) +
-    labs(x = "Relative Time", y = "Estimate", color = NULL, title = NULL) +
-    theme_kyle(base_size = 24) +
-    theme(legend.position = "bottom")
-
+iplot(list(es, twfe), 
+	  sep = 0.2, 
+	  ref.line = -0.5,
+	  col = c("steelblue", "#82b446"),
+	  xlab = "Relative time to treatment",
+	  main = "Event study: Staggered treatment (comparison)")
+# Add the true effects
+points(-20:20, true_effects, pch = 0, col = "#b44682")
+# Legend
+legend("topleft", col = c("steelblue", "#b44682", "#82b446"), pch = c(20, 0, 17), 
+       legend = c("Two-stage estimate", "True effect", "TWFE"))
 ```
-
-
 
 
 # References
 
-* [Borusyak, Kirill, Xavier Jaravel, and Jann Spiess. 2021. “Revisiting Event Study Designs: Robust and Efficient Estimation,” 48.]()
+* Borusyak, Kirill, Xavier Jaravel, and Jann Spiess (2021). ["Revisiting Event Study Designs: Robust and Efficient Estimation"](https://www.dropbox.com/s/y92mmyndlbkufo1/Draft_RobustAndEfficient.pdf?raw=true), Working Paper.
 
-* [Callaway, Brantly, and Pedro H. C. Sant'Anna. "Difference-in-differences with multiple time periods." Forthcoming at the Journal of Econometrics (2020)](https://authors.elsevier.com/a/1cFzc15Dji4pnC).
+* Callaway, Brantly, and Pedro H. C. Sant'Anna (2020). ["Difference-in-differences with multiple time periods."](https://www.sciencedirect.com/science/article/pii/S0304407621001445#b18), _Journal of Econometrics_.
 
-* [de Chaisemartin, Clement, and Xavier d'Haultfoeuille. "Two-way fixed effects estimators with heterogeneous treatment effects." American Economic Review 110.9 (2020): 2964-96.](https://doi.org/10.1257/aer.20181169)
+* de Chaisemartin, Clement, and Xavier d'Haultfoeuille (2020). ["Two-way fixed effects estimators with heterogeneous treatment effects."](https://doi.org/10.1257/aer.20181169), _American Economic Review_.
 
-* [Gardner, John. 2021. “Two-Stage Difference-in-Differences.” Working Paper](https://jrgcmu.github.io/2sdd_current.pdf)
+* Gardner, John (2021). ["Two-Stage Difference-in-Differences."](https://jrgcmu.github.io/2sdd_current.pdf), Working Paper.
 
-* [Goodman-Bacon, Andrew. Difference-in-differences with variation in treatment timing." Working Paper, 2020](http://goodman-bacon.com/pdfs/ddtiming.pdf)
+* Goodman-Bacon, Andrew (2021). ["Difference-in-differences with variation in treatment timing."](https://www.sciencedirect.com/science/article/pii/S0304407621001445), _Journal of Econometrics_.
 
-* [Sun, Liyang, and Sarah Abraham. "Estimating dynamic treatment effects in event studies with heterogeneous treatment effects." Forthcoming at the Journal of Econometrics (2020).](http://economics.mit.edu/files/14964)
-
-
-
-
-
-
+* Sun, Liyang, and Sarah Abraham (2020). ["Estimating dynamic treatment effects in event studies with heterogeneous treatment effects."](https://www.sciencedirect.com/science/article/pii/S030440762030378X), _Journal of Econometrics_.
