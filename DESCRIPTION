@@ -12,12 +12,15 @@ Authors@R:
              role = "ctb",
              email = "grantmcd@uoregon.edu",
              comment = c(ORCID = "0000-0001-7883-8573")))
-Description: This package creates the funciton `did2s` which allows you to estimate TWFE diff-in-diff/event-study models. To avoid the problems caused by OLS estimation of the TWFE model, this function first estimates the fixed effects and covariates using untreated observations and then in a second stage, estimates the treatment effects.
+Description: This package creates the function `did2s` which allows you to estimate TWFE diff-in-diff/event-study models. To avoid the problems caused by OLS estimation of the TWFE model, this function first estimates the fixed effects and covariates using untreated observations and then in a second stage, estimates the treatment effects.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.1
+Depends: 
+    R (>= 2.10),
+    fixest (>= 0.9.0)
 Imports: 
     dplyr,
     magrittr,
@@ -33,11 +36,8 @@ Imports:
     Matrix,
     Rcpp,
     did,
-    staggered,
     broom
-Depends: 
-    R (>= 2.10),
-    fixest
+Remotes: jonathandroth/staggered
 URL: http://kylebutts.com/did2s
 Suggests: 
     rmarkdown,
