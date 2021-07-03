@@ -63,18 +63,15 @@ did_imputation = function(data, yname, gname, tname, idname, first_stage, weight
 
 	# Weights specified or not
 	if(is.null(weights)) {
-		weights_vector = NULL
+		weights_vector = rep(1, nrow(data))
 	} else {
 		weights_vector = data[[weights]]
 
-		# Estimation weights * wtr weights
+		# treatment weights * weights_vector
 		for(w in wtr) {
 			data[[w]] = data[[w]] * weights_vector
 			data[[w]] = data[[w]]/sum(data[[w]])
 		}
-
-		# only treated
-		weights_vector = weights_vector[data$zz000treat == 0]
 	}
 
 # First Stage estimate ---------------------------------------------------------
@@ -83,8 +80,10 @@ did_imputation = function(data, yname, gname, tname, idname, first_stage, weight
 	formula = stats::as.formula(glue::glue("{yname} ~ {first_stage}"))
 
 	# Estimate Y(0) using untreated observations
-	first_stage_est = fixest::feols(formula, se = "standard", dplyr::filter(data, zz000treat == 0), weights = weights_vector, warn=FALSE, notes=FALSE)
-
+	first_stage_est = fixest::feols(formula, se = "standard",
+									data[data$zz000treat == 0,],
+									weights = weights_vector[data$zz000treat == 0],
+									warn=FALSE, notes=FALSE)
 
 	# Residualize outcome variable
 	data$zz000adj = data[[yname]] - stats::predict(first_stage_est, newdata = data)
@@ -93,7 +92,10 @@ did_imputation = function(data, yname, gname, tname, idname, first_stage, weight
 	est = c()
 	for(w in wtr) {
 		# \sum w_{it} * \tau_{it}
-		est = c(est, sum(data[data$zz000treat == 1,][[w]] * data[data$zz000treat == 1,][["zz000adj"]]))
+		est = c(est,
+				sum(
+					data[data$zz000treat == 1,][[w]] * data[data$zz000treat == 1,][["zz000adj"]]
+				))
 	}
 
 
@@ -102,6 +104,9 @@ did_imputation = function(data, yname, gname, tname, idname, first_stage, weight
 	# Create Zs
 	Z = sparse_model_matrix(data, first_stage_est)
 
+	Z = Z * weights_vector
+
+	# Equation (6) of Borusyak et. al. 2021
 	# - Z (Z_0' Z_0)^{-1} Z_1' wtr_1
 	v_star = make_V_star(
 		Z,
@@ -113,7 +118,6 @@ did_imputation = function(data, yname, gname, tname, idname, first_stage, weight
 	se = c()
 	for(i in 1:length(wtr)) {
 
-		# Equation (6) of Borusyak et. al. 2021
 		# Calculate v_it^* = - Z (Z_0' Z_0)^{-1} Z_1' * w_1
 		data$zz000v = v_star[, i]
 
@@ -126,10 +130,10 @@ did_imputation = function(data, yname, gname, tname, idname, first_stage, weight
 			# group_by Event Group and Event Time
 			dplyr::group_by(!!rlang::sym(gname), zz000event_time)  %>%
 			dplyr::mutate(
-				zz000tau_et = if_else(zz000treat == 1,
+				zz000tau_et = dplyr::if_else(zz000treat == 1,
 									  sum(zz000v^2 * zz000adj)/sum(zz000v^2) * zz000treat,
 									  0),
-				zz000tau_et = if_else(is.nan(zz000tau_et), 0, zz000tau_et),
+				zz000tau_et = dplyr::if_else(is.nan(zz000tau_et), 0, zz000tau_et),
 				zz000tau_centered = zz000adj - zz000tau_et
 			) %>%
 			dplyr::ungroup()
