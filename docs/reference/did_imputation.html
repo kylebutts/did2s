@@ -22,7 +22,7 @@
   }
 </script>
 
-<title>Work in Progress Treatment effect estimation and pre-trend testing in staggered adoption diff-in-diff designs with an imputation approach of Borusyak, Jaravel, and Spiess (2021) — did_imputation • did2s</title>
+<title>Treatment effect estimation and pre-trend testing in staggered adoption diff-in-diff designs with an imputation approach of Borusyak, Jaravel, and Spiess (2021) — did_imputation • did2s</title>
 
 
 <!-- jquery -->
@@ -65,8 +65,8 @@
 
 
 
-<meta property="og:title" content="Work in Progress Treatment effect estimation and pre-trend testing in staggered adoption diff-in-diff designs with an imputation approach of Borusyak, Jaravel, and Spiess (2021) — did_imputation" />
-<meta property="og:description" content="Work in Progress Treatment effect estimation and pre-trend testing in staggered adoption diff-in-diff designs with an imputation approach of Borusyak, Jaravel, and Spiess (2021)" />
+<meta property="og:title" content="Treatment effect estimation and pre-trend testing in staggered adoption diff-in-diff designs with an imputation approach of Borusyak, Jaravel, and Spiess (2021) — did_imputation" />
+<meta property="og:description" content="Treatment effect estimation and pre-trend testing in staggered adoption diff-in-diff designs with an imputation approach of Borusyak, Jaravel, and Spiess (2021)" />
 
 
 
@@ -101,7 +101,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">did2s</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.2.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.3.0</span>
       </span>
     </div>
 
@@ -124,7 +124,7 @@
   </a>
   <ul class="dropdown-menu" role="menu">
     <li>
-      <a href="../articles/Two-Stage-Difference-in-Differences.html">Two-Stage-Difference-in-Differences</a>
+      <a href="../articles/Two-Stage-Difference-in-Differences.html">Two-Stage Difference-in-Differences</a>
     </li>
   </ul>
 </li>
@@ -152,13 +152,13 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1><strong>Work in Progress</strong> Treatment effect estimation and pre-trend testing in staggered adoption diff-in-diff designs with an imputation approach of Borusyak, Jaravel, and Spiess (2021)</h1>
+    <h1>Treatment effect estimation and pre-trend testing in staggered adoption diff-in-diff designs with an imputation approach of Borusyak, Jaravel, and Spiess (2021)</h1>
     
     <div class="hidden name"><code>did_imputation.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p><strong>Work in Progress</strong> Treatment effect estimation and pre-trend testing in staggered adoption diff-in-diff designs with an imputation approach of Borusyak, Jaravel, and Spiess (2021)</p>
+    <p>Treatment effect estimation and pre-trend testing in staggered adoption diff-in-diff designs with an imputation approach of Borusyak, Jaravel, and Spiess (2021)</p>
     </div>
 
     <pre class="usage"><span class='fu'>did_imputation</span><span class='op'>(</span>
@@ -167,10 +167,11 @@
   <span class='va'>gname</span>,
   <span class='va'>tname</span>,
   <span class='va'>idname</span>,
-  <span class='va'>first_stage</span>,
+  first_stage <span class='op'>=</span> <span class='cn'>NULL</span>,
   weights <span class='op'>=</span> <span class='cn'>NULL</span>,
   wtr <span class='op'>=</span> <span class='cn'>NULL</span>,
-  horizon <span class='op'>=</span> <span class='cn'>NULL</span>
+  horizon <span class='op'>=</span> <span class='cn'>NULL</span>,
+  pretrends <span class='op'>=</span> <span class='cn'>NULL</span>
 <span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
@@ -182,35 +183,51 @@
     </tr>
     <tr>
       <th>yname</th>
-      <td><p>outcome variable</p></td>
+      <td><p>String. Variable name for outcome.</p></td>
     </tr>
     <tr>
       <th>gname</th>
-      <td><p>variable for unit-specific date of treatment (never-treated should be zero or NA)</p></td>
+      <td><p>String. Variable name for unit-specific date of treatment
+(never-treated should be zero or <code>NA</code>)</p></td>
     </tr>
     <tr>
       <th>tname</th>
-      <td><p>variable for calendar period</p></td>
+      <td><p>String. Variable name for calendar period</p></td>
     </tr>
     <tr>
       <th>idname</th>
-      <td><p>variable for unique unit id</p></td>
+      <td><p>String. Variable name for unique unit id</p></td>
     </tr>
     <tr>
       <th>first_stage</th>
-      <td><p>formula for Y(0)</p></td>
+      <td><p>Formula for Y(0).
+Formula following <code><a href='https://lrberge.github.io/fixest/reference/feols.html'>fixest::feols</a></code>.
+Fixed effects specified after "<code><a href='https://rdrr.io/r/base/Logic.html'>|</a></code>".
+If not specified, then just unit and time fixed effects will be used.</p></td>
     </tr>
     <tr>
       <th>weights</th>
-      <td><p>estimation weights for observations. This is used in estimating Y(0) and also augments treatment effect weights</p></td>
+      <td><p>Estimation weights for observations. This is used in estimating
+Y(0) and also augments treatment effect weights.</p></td>
     </tr>
     <tr>
       <th>wtr</th>
-      <td><p>character vector of treatment weight names (see horizon/allhorizon for standard event study weights)</p></td>
+      <td><p>Character vector of treatment weight names
+(see horizon for standard static and event-study weights)</p></td>
     </tr>
     <tr>
       <th>horizon</th>
-      <td><p>vector of event_time. This only applies if wtr is left as NULL. If both wtr and horizon are null, then all values of event_time will be used.</p></td>
+      <td><p>Integer vector of event_time or <code>TRUE</code>. This only applies if <code>wtr</code> is left
+as <code>NULL</code>. if specified, weighted averages/sums of treatment effects will be
+reported for each of these horizons separately (i.e. tau0 for the treatment
+period, tau1 for one period after treatment, etc.).
+If <code>TRUE</code>, all horizons are used.
+If <code>wtr</code> and <code>horizon</code> are null, then the static treatment effect is calculated.</p></td>
+    </tr>
+    <tr>
+      <th>pretrends</th>
+      <td><p>Integer vector or <code>TRUE</code>. Which pretrends to estimate.
+If <code>TRUE</code>, all <code>pretrends</code> are used.</p></td>
     </tr>
     </table>
 

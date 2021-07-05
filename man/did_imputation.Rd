@@ -23,7 +23,7 @@ did_imputation(
 \item{yname}{String. Variable name for outcome.}
 
 \item{gname}{String. Variable name for unit-specific date of treatment
-(never-treated should be zero or NA)}
+(never-treated should be zero or \code{NA})}
 
 \item{tname}{String. Variable name for calendar period}
 
@@ -31,23 +31,24 @@ did_imputation(
 
 \item{first_stage}{Formula for Y(0).
 Formula following \code{\link[fixest:feols]{fixest::feols}}.
-Fixed effects specified after "|".
+Fixed effects specified after "\code{|}".
 If not specified, then just unit and time fixed effects will be used.}
 
 \item{weights}{Estimation weights for observations. This is used in estimating
 Y(0) and also augments treatment effect weights.}
 
 \item{wtr}{Character vector of treatment weight names
-(see horizon for standard event study weights)}
+(see horizon for standard static and event-study weights)}
 
-\item{horizon}{Integer vector of event_time or TRUE. This only applies if wtr is left
-as NULL. if specified, weighted averages/sums of treatment effects will be
+\item{horizon}{Integer vector of event_time or \code{TRUE}. This only applies if \code{wtr} is left
+as \code{NULL}. if specified, weighted averages/sums of treatment effects will be
 reported for each of these horizons separately (i.e. tau0 for the treatment
 period, tau1 for one period after treatment, etc.).
-If TRUE, all horizons are used.
-If wtr and horizon are null, then the static treatment effect is calculated.}
+If \code{TRUE}, all horizons are used.
+If \code{wtr} and \code{horizon} are null, then the static treatment effect is calculated.}
 
-\item{pretrends}{Integer vector or TRUE. Which pre_trends to estimate. If TRU}
+\item{pretrends}{Integer vector or \code{TRUE}. Which pretrends to estimate.
+If \code{TRUE}, all \code{pretrends} are used.}
 }
 \description{
 Treatment effect estimation and pre-trend testing in staggered adoption diff-in-diff designs with an imputation approach of Borusyak, Jaravel, and Spiess (2021)

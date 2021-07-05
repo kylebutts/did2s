@@ -4,25 +4,24 @@
 #' @param yname String. Variable name for outcome.
 #' @param idname String. Variable name for unique unit id
 #' @param gname String. Variable name for unit-specific date of treatment
-#'   (never-treated should be zero or NA)
+#'   (never-treated should be zero or `NA`)
 #' @param tname String. Variable name for calendar period
 #' @param first_stage Formula for Y(0).
 #'   Formula following \code{\link[fixest:feols]{fixest::feols}}.
-#'   Fixed effects specified after "|".
+#'   Fixed effects specified after "`|`".
 #'   If not specified, then just unit and time fixed effects will be used.
 #' @param weights Estimation weights for observations. This is used in estimating
 #'   Y(0) and also augments treatment effect weights.
 #' @param wtr Character vector of treatment weight names
-#'   (see horizon for standard event study weights)
-#' @param horizon Integer vector of event_time or TRUE. This only applies if wtr is left
-#'   as NULL. if specified, weighted averages/sums of treatment effects will be
+#'   (see horizon for standard static and event-study weights)
+#' @param horizon Integer vector of event_time or `TRUE`. This only applies if `wtr` is left
+#'   as `NULL`. if specified, weighted averages/sums of treatment effects will be
 #'   reported for each of these horizons separately (i.e. tau0 for the treatment
 #'   period, tau1 for one period after treatment, etc.).
-#'   If TRUE, all horizons are used.
-#'   If wtr and horizon are null, then the static treatment effect is calculated.
-#' @param pretrends Integer vector or TRUE. Which pre_trends to estimate. If TRU
-#'
-#'
+#'   If `TRUE`, all horizons are used.
+#'   If `wtr` and `horizon` are null, then the static treatment effect is calculated.
+#' @param pretrends Integer vector or `TRUE`. Which pretrends to estimate.
+#'   If `TRUE`, all `pretrends` are used.
 #'
 #' @export
 did_imputation = function(data, yname, gname, tname, idname, first_stage = NULL,

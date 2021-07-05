@@ -25,29 +25,29 @@ did2s(
 \item{first_stage}{Fixed effects and other covariates you want to residualize
 with in first stage.
 Formula following \code{\link[fixest:feols]{fixest::feols}}.
-Fixed effects specified after "|".}
+Fixed effects specified after "\code{|}".}
 
 \item{second_stage}{Second stage, these should be the treatment indicator(s)
-(e.g. treatment variable or es leads/lags).
+(e.g. treatment variable or event-study leads/lags).
 Formula following \code{\link[fixest:feols]{fixest::feols}}.
-Use i() for factor variables, see \code{\link[fixest:i]{fixest::i}}.}
+Use \code{i()} for factor variables, see \code{\link[fixest:i]{fixest::i}}.}
 
 \item{treatment}{A variable that = 1 if treated, = 0 otherwise}
 
 \item{cluster_var}{What variable to cluster standard errors. This can be IDs
 or a higher aggregate level (state for example)}
 
-\item{weights}{Optional. variable to run a weighted first- and second-stage regressions}
+\item{weights}{Optional. Variable name for regression weights.}
 
 \item{bootstrap}{Optional. Should standard errors be calculated using bootstrap?
-Default is FALSE.}
+Default is \code{FALSE}.}
 
 \item{n_bootstraps}{Optional. How many bootstraps to run.
-Default is 250.}
+Default is \code{250}.}
 
 \item{verbose}{Optional. Logical. Should information about the two-stage
 procedure be printed back to the user?
-Default is TRUE.}
+Default is \code{TRUE}.}
 }
 \value{
 fixest::feols point estimate with adjusted standard errors (either by formula or by bootstrap)
@@ -67,7 +67,7 @@ You can run a static TWFE fixed effect model for a simple treatment indicator\if
     first_stage = "i(state) + i(year)",
     second_stage = "i(treat, ref=FALSE)")
 #> 
-#> ── Two-stage Difference-in-Differences ─────────────────────────────────────────────────────────────────────────────────────────
+#> ── Two-stage Difference-in-Differences ─────────────────────────────────────────
 #> → Running with first stage formula `~ i(state) + i(year)` and second stage formula `~ i(treat, ref=FALSE)`
 #> → The indicator variable that denotes when treatment is on is `treat`
 #> → Standard errors will be clustered by `state`
@@ -89,7 +89,7 @@ Or you can use relative-treatment indicators to estimate an event study estimate
     first_stage = "i(state) + i(year)",
     second_stage = "i(rel_year, ref=c(-1, Inf))")
 #> 
-#> ── Two-stage Difference-in-Differences ─────────────────────────────────────────────────────────────────────────────────────────
+#> ── Two-stage Difference-in-Differences ─────────────────────────────────────────
 #> → Running with first stage formula `~ i(state) + i(year)` and second stage formula `~ i(rel_year, ref=c(-1, Inf))`
 #> → The indicator variable that denotes when treatment is on is `treat`
 #> → Standard errors will be clustered by `state`
@@ -157,7 +157,7 @@ did2s(
 	cluster_var = "state", weights = "popwt"
 )
 #> 
-#> ── Two-stage Difference-in-Differences ─────────────────────────────────────────────────────────────────────────────────────────
+#> ── Two-stage Difference-in-Differences ─────────────────────────────────────────
 #> → Running with first stage formula `~ i(sid) + i(year)` and second stage formula `~ i(post, ref = 0)`
 #> → The indicator variable that denotes when treatment is on is `post`
 #> → Standard errors will be clustered by `state`

@@ -101,7 +101,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">did2s</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.2.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.3.0</span>
       </span>
     </div>
 
@@ -124,7 +124,7 @@
   </a>
   <ul class="dropdown-menu" role="menu">
     <li>
-      <a href="../articles/Two-Stage-Difference-in-Differences.html">Two-Stage-Difference-in-Differences</a>
+      <a href="../articles/Two-Stage-Difference-in-Differences.html">Two-Stage Difference-in-Differences</a>
     </li>
   </ul>
 </li>
@@ -187,11 +187,17 @@
     </tr>
     <tr>
       <th>first_stage</th>
-      <td><p>Fixed effects and other covariates you want to residualize with in first stage, use i() for fixed effects., following fixest::feols.</p></td>
+      <td><p>Fixed effects and other covariates you want to residualize
+with in first stage.
+Formula following <code><a href='https://lrberge.github.io/fixest/reference/feols.html'>fixest::feols</a></code>.
+Fixed effects specified after "<code><a href='https://rdrr.io/r/base/Logic.html'>|</a></code>".</p></td>
     </tr>
     <tr>
       <th>second_stage</th>
-      <td><p>Second stage, these should be the treatment indicator(s) (e.g. treatment variable or es leads/lags), use i() for factor variables, following fixest::feols.</p></td>
+      <td><p>Second stage, these should be the treatment indicator(s)
+(e.g. treatment variable or event-study leads/lags).
+Formula following <code><a href='https://lrberge.github.io/fixest/reference/feols.html'>fixest::feols</a></code>.
+Use <code><a href='https://lrberge.github.io/fixest/reference/i.html'>i()</a></code> for factor variables, see <code><a href='https://lrberge.github.io/fixest/reference/i.html'>fixest::i</a></code>.</p></td>
     </tr>
     <tr>
       <th>treatment</th>
@@ -199,24 +205,28 @@
     </tr>
     <tr>
       <th>cluster_var</th>
-      <td><p>What variable to cluster standard errors. This can be IDs or a higher aggregate level (state for example)</p></td>
+      <td><p>What variable to cluster standard errors. This can be IDs
+or a higher aggregate level (state for example)</p></td>
     </tr>
     <tr>
       <th>weights</th>
-      <td><p>Optional variable to run a weighted first- and second-stage regressions</p></td>
+      <td><p>Optional. Variable name for regression weights.</p></td>
     </tr>
     <tr>
       <th>bootstrap</th>
-      <td><p>Should standard errors be calculated using bootstrap? Default is FALSE.</p></td>
+      <td><p>Optional. Should standard errors be calculated using bootstrap?
+Default is <code>FALSE</code>.</p></td>
     </tr>
     <tr>
       <th>n_bootstraps</th>
-      <td><p>How many bootstraps to run. Default is 250</p></td>
+      <td><p>Optional. How many bootstraps to run.
+Default is <code>250</code>.</p></td>
     </tr>
     <tr>
       <th>verbose</th>
-      <td><p>Logical. Should information about the two-stage procedure be
-printed back to the user? Default is TRUE.</p></td>
+      <td><p>Optional. Logical. Should information about the two-stage
+procedure be printed back to the user?
+Default is <code>TRUE</code>.</p></td>
     </tr>
     </table>
 
@@ -245,12 +255,12 @@ printed back to the user? Default is TRUE.</p></td>
 <span class='co'>#&gt;                            static</span>
 <span class='co'>#&gt; Dependent Var.:           dep_var</span>
 <span class='co'>#&gt;                                  </span>
-<span class='co'>#&gt; treat = TRUE    1.983*** (0.0750)</span>
+<span class='co'>#&gt; treat = TRUE    1.999*** (0.0627)</span>
 <span class='co'>#&gt; _______________ _________________</span>
 <span class='co'>#&gt; S.E. type                  Custom</span>
 <span class='co'>#&gt; Observations               31,000</span>
-<span class='co'>#&gt; R2                        0.22784</span>
-<span class='co'>#&gt; Adj. R2                   0.22784</span>
+<span class='co'>#&gt; R2                        0.23037</span>
+<span class='co'>#&gt; Adj. R2                   0.23037</span>
 </pre><p></div></p>
 <p>Or you can use relative-treatment indicators to estimate an event study estimate<div class="r"></p><pre><span class='va'>es</span> <span class='op'>&lt;-</span> <span class='fu'>did2s</span><span class='op'>(</span><span class='va'>df_hom</span>,
     yname <span class='op'>=</span> <span class='st'>"dep_var"</span>, treatment <span class='op'>=</span> <span class='st'>"treat"</span>, cluster_var <span class='op'>=</span> <span class='st'>"state"</span>,
@@ -263,54 +273,54 @@ printed back to the user? Default is TRUE.</p></td>
 <span class='co'>#&gt; → Standard errors will be clustered by `state`</span>
 
 <span class='fu'>fixest</span><span class='fu'>::</span><span class='fu'><a href='https://lrberge.github.io/fixest/reference/etable.html'>esttable</a></span><span class='op'>(</span><span class='va'>es</span><span class='op'>)</span>
-<span class='co'>#&gt;                                 es</span>
-<span class='co'>#&gt; Dependent Var.:            dep_var</span>
-<span class='co'>#&gt;                                   </span>
-<span class='co'>#&gt; rel_year = -20   -0.1469* (0.0632)</span>
-<span class='co'>#&gt; rel_year = -19     0.0135 (0.0751)</span>
-<span class='co'>#&gt; rel_year = -18   -0.1143. (0.0691)</span>
-<span class='co'>#&gt; rel_year = -17    -0.0704 (0.0927)</span>
-<span class='co'>#&gt; rel_year = -16    -0.0222 (0.0675)</span>
-<span class='co'>#&gt; rel_year = -15  -0.1942** (0.0678)</span>
-<span class='co'>#&gt; rel_year = -14    -0.0915 (0.0586)</span>
-<span class='co'>#&gt; rel_year = -13    -0.0333 (0.0668)</span>
-<span class='co'>#&gt; rel_year = -12    -0.0995 (0.0644)</span>
-<span class='co'>#&gt; rel_year = -11    -0.0499 (0.0668)</span>
-<span class='co'>#&gt; rel_year = -10     0.0032 (0.0536)</span>
-<span class='co'>#&gt; rel_year = -9     -0.0770 (0.0540)</span>
-<span class='co'>#&gt; rel_year = -8     -0.0265 (0.0627)</span>
-<span class='co'>#&gt; rel_year = -7      0.0024 (0.0629)</span>
-<span class='co'>#&gt; rel_year = -6     -0.0252 (0.0488)</span>
-<span class='co'>#&gt; rel_year = -5      0.0336 (0.0549)</span>
-<span class='co'>#&gt; rel_year = -4      0.0042 (0.0520)</span>
-<span class='co'>#&gt; rel_year = -3     -0.0587 (0.0553)</span>
-<span class='co'>#&gt; rel_year = -2      0.0216 (0.0637)</span>
-<span class='co'>#&gt; rel_year = 0     1.860*** (0.0952)</span>
-<span class='co'>#&gt; rel_year = 1     2.220*** (0.0910)</span>
-<span class='co'>#&gt; rel_year = 2     1.950*** (0.0938)</span>
-<span class='co'>#&gt; rel_year = 3     1.854*** (0.0988)</span>
-<span class='co'>#&gt; rel_year = 4     1.931*** (0.0977)</span>
-<span class='co'>#&gt; rel_year = 5     2.110*** (0.0926)</span>
-<span class='co'>#&gt; rel_year = 6     1.961*** (0.0848)</span>
-<span class='co'>#&gt; rel_year = 7     1.939*** (0.0835)</span>
-<span class='co'>#&gt; rel_year = 8     2.005*** (0.0689)</span>
-<span class='co'>#&gt; rel_year = 9     1.856*** (0.0729)</span>
-<span class='co'>#&gt; rel_year = 10    1.790*** (0.1210)</span>
-<span class='co'>#&gt; rel_year = 11    2.055*** (0.1335)</span>
-<span class='co'>#&gt; rel_year = 12    2.024*** (0.1623)</span>
-<span class='co'>#&gt; rel_year = 13    1.914*** (0.1399)</span>
-<span class='co'>#&gt; rel_year = 14    2.081*** (0.1376)</span>
-<span class='co'>#&gt; rel_year = 15    2.180*** (0.1257)</span>
-<span class='co'>#&gt; rel_year = 16    2.261*** (0.1347)</span>
-<span class='co'>#&gt; rel_year = 17    2.163*** (0.1122)</span>
-<span class='co'>#&gt; rel_year = 18    2.014*** (0.1264)</span>
-<span class='co'>#&gt; rel_year = 19    1.868*** (0.1402)</span>
-<span class='co'>#&gt; rel_year = 20    1.934*** (0.1769)</span>
-<span class='co'>#&gt; _______________ __________________</span>
-<span class='co'>#&gt; S.E. type                   Custom</span>
-<span class='co'>#&gt; Observations                31,000</span>
-<span class='co'>#&gt; R2                         0.22960</span>
-<span class='co'>#&gt; Adj. R2                    0.22863</span>
+<span class='co'>#&gt;                                es</span>
+<span class='co'>#&gt; Dependent Var.:           dep_var</span>
+<span class='co'>#&gt;                                  </span>
+<span class='co'>#&gt; rel_year = -20   -0.0636 (0.0760)</span>
+<span class='co'>#&gt; rel_year = -19    0.0281 (0.0772)</span>
+<span class='co'>#&gt; rel_year = -18    0.0048 (0.0771)</span>
+<span class='co'>#&gt; rel_year = -17   -0.0064 (0.0857)</span>
+<span class='co'>#&gt; rel_year = -16   -0.0185 (0.0692)</span>
+<span class='co'>#&gt; rel_year = -15   -0.0448 (0.0974)</span>
+<span class='co'>#&gt; rel_year = -14    0.0849 (0.0828)</span>
+<span class='co'>#&gt; rel_year = -13   -0.0408 (0.0897)</span>
+<span class='co'>#&gt; rel_year = -12   -0.1028 (0.0930)</span>
+<span class='co'>#&gt; rel_year = -11    0.0365 (0.0660)</span>
+<span class='co'>#&gt; rel_year = -10    0.0266 (0.0520)</span>
+<span class='co'>#&gt; rel_year = -9    -0.0238 (0.0469)</span>
+<span class='co'>#&gt; rel_year = -8    -0.0025 (0.0522)</span>
+<span class='co'>#&gt; rel_year = -7    -0.0131 (0.0508)</span>
+<span class='co'>#&gt; rel_year = -6   -0.0959. (0.0544)</span>
+<span class='co'>#&gt; rel_year = -5     0.0059 (0.0523)</span>
+<span class='co'>#&gt; rel_year = -4    -0.0794 (0.0604)</span>
+<span class='co'>#&gt; rel_year = -3    -0.0274 (0.0485)</span>
+<span class='co'>#&gt; rel_year = -2     0.0093 (0.0535)</span>
+<span class='co'>#&gt; rel_year = 0    2.092*** (0.0708)</span>
+<span class='co'>#&gt; rel_year = 1    1.831*** (0.0841)</span>
+<span class='co'>#&gt; rel_year = 2    1.961*** (0.0690)</span>
+<span class='co'>#&gt; rel_year = 3    1.979*** (0.0798)</span>
+<span class='co'>#&gt; rel_year = 4    1.925*** (0.0896)</span>
+<span class='co'>#&gt; rel_year = 5    2.013*** (0.0973)</span>
+<span class='co'>#&gt; rel_year = 6    2.006*** (0.0980)</span>
+<span class='co'>#&gt; rel_year = 7    2.000*** (0.0890)</span>
+<span class='co'>#&gt; rel_year = 8    1.950*** (0.0909)</span>
+<span class='co'>#&gt; rel_year = 9    2.096*** (0.0710)</span>
+<span class='co'>#&gt; rel_year = 10   2.048*** (0.1173)</span>
+<span class='co'>#&gt; rel_year = 11   1.919*** (0.1071)</span>
+<span class='co'>#&gt; rel_year = 12   1.916*** (0.1300)</span>
+<span class='co'>#&gt; rel_year = 13   1.940*** (0.1309)</span>
+<span class='co'>#&gt; rel_year = 14   1.999*** (0.1435)</span>
+<span class='co'>#&gt; rel_year = 15   2.211*** (0.1210)</span>
+<span class='co'>#&gt; rel_year = 16   2.154*** (0.1584)</span>
+<span class='co'>#&gt; rel_year = 17   1.911*** (0.1133)</span>
+<span class='co'>#&gt; rel_year = 18   2.111*** (0.1338)</span>
+<span class='co'>#&gt; rel_year = 19   2.088*** (0.1345)</span>
+<span class='co'>#&gt; rel_year = 20   1.901*** (0.1313)</span>
+<span class='co'>#&gt; _______________ _________________</span>
+<span class='co'>#&gt; S.E. type                  Custom</span>
+<span class='co'>#&gt; Observations               31,000</span>
+<span class='co'>#&gt; R2                        0.23120</span>
+<span class='co'>#&gt; Adj. R2                   0.23024</span>
 </pre><p></div></p>
 <p>Here's an example using data from Castle (2013)<div class="r"></p><pre><span class='co'># Castle Data</span>
 <span class='va'>castle</span> <span class='op'>&lt;-</span> <span class='fu'>haven</span><span class='fu'>::</span><span class='fu'><a href='https://haven.tidyverse.org/reference/read_dta.html'>read_dta</a></span><span class='op'>(</span><span class='st'>"https://github.com/scunning1975/mixtape/raw/master/castle.dta"</span><span class='op'>)</span>
