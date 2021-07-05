@@ -1,22 +1,43 @@
-#' **Work in Progress** Treatment effect estimation and pre-trend testing in staggered adoption diff-in-diff designs with an imputation approach of Borusyak, Jaravel, and Spiess (2021)
+#' Treatment effect estimation and pre-trend testing in staggered adoption diff-in-diff designs with an imputation approach of Borusyak, Jaravel, and Spiess (2021)
 #'
 #' @param data A data frame
-#' @param yname outcome variable
-#' @param idname variable for unique unit id
-#' @param gname variable for unit-specific date of treatment (never-treated should be zero or NA)
-#' @param tname variable for calendar period
-#' @param first_stage formula for Y(0)
-#' @param weights estimation weights for observations. This is used in estimating Y(0) and also augments treatment effect weights
-#' @param wtr character vector of treatment weight names (see horizon/allhorizon for standard event study weights)
-#' @param horizon vector of event_time. This only applies if wtr is left as NULL. If both wtr and horizon are null, then all values of event_time will be used.
+#' @param yname String. Variable name for outcome.
+#' @param idname String. Variable name for unique unit id
+#' @param gname String. Variable name for unit-specific date of treatment
+#'   (never-treated should be zero or NA)
+#' @param tname String. Variable name for calendar period
+#' @param first_stage Formula for Y(0).
+#'   Formula following \code{\link[fixest:feols]{fixest::feols}}.
+#'   Fixed effects specified after "|".
+#'   If not specified, then just unit and time fixed effects will be used.
+#' @param weights Estimation weights for observations. This is used in estimating
+#'   Y(0) and also augments treatment effect weights.
+#' @param wtr Character vector of treatment weight names
+#'   (see horizon for standard event study weights)
+#' @param horizon Integer vector of event_time or TRUE. This only applies if wtr is left
+#'   as NULL. if specified, weighted averages/sums of treatment effects will be
+#'   reported for each of these horizons separately (i.e. tau0 for the treatment
+#'   period, tau1 for one period after treatment, etc.).
+#'   If TRUE, all horizons are used.
+#'   If wtr and horizon are null, then the static treatment effect is calculated.
+#' @param pretrends Integer vector or TRUE. Which pre_trends to estimate. If TRU
+#'
+#'
 #'
 #' @export
-did_imputation = function(data, yname, gname, tname, idname, first_stage, weights = NULL, wtr = NULL, horizon = NULL){
+did_imputation = function(data, yname, gname, tname, idname, first_stage = NULL,
+						  weights = NULL, wtr = NULL, horizon = NULL,
+						  pretrends = NULL){
+
 
 # Set-up Parameters ------------------------------------------------------------
 
 	# Extract vars from formula
-	if(inherits(first_stage, "formula")) first_stage = as.character(first_stage)[[2]]
+	if(is.null(first_stage)) {
+		first_stage = glue::glue("0 | {idname} + {tname}")
+	} else if(inherits(first_stage, "formula")) {
+		first_stage = as.character(first_stage)[[2]]
+	}
 
 	# Treat
 	data$zz000treat = 1 * (data[[tname]] >= data[[gname]]) * (data[[gname]] > 0)
@@ -31,32 +52,42 @@ did_imputation = function(data, yname, gname, tname, idname, first_stage, weight
 			)
 		)
 
+	# Get list of event_time
+	event_time = unique(data$zz000event_time)
+	event_time = event_time[is.finite(event_time)]
+
 	# horizon/allhorizon options
 	if(is.null(wtr)) {
-		use_horizon = TRUE
 
-		# create event time weights
-		event_time = unique(data$zz000event_time)
-		event_time = event_time[is.finite(event_time)]
-		wtr = c()
+		# event-study
+		if(!is.null(horizon)) {
+			# create event time weights
+			wtr = c()
 
-		# allhorizon
-		if(is.null(horizon)) {
-			horizon = event_time
-		}
+			# allhorizons
+			if(all(horizon == TRUE)) horizon = event_time
 
-		for(e in event_time) {
-			if(e %in% horizon) {
-				if(e >= 0) {
-					var = paste0("zz000wtr", e)
+			# Create wtr of horizons
+			for(e in event_time) {
+				if(e %in% horizon) {
+					if(e >= 0) {
+						var = paste0("zz000wtr", e)
 
-					wtr = c(wtr, var)
+						wtr = c(wtr, var)
 
-					data = data %>% dplyr::mutate(
+						data = data %>% dplyr::mutate(
 							!!rlang::sym(var) := 1*(zz000event_time == e & !is.na(zz000event_time))
 						)
+					}
 				}
 			}
+		# static
+		} else {
+			wtr = "zz000wtrtreat"
+
+			data = data %>% dplyr::mutate(
+				zz000wtrtreat = 1*(zz000treat == 1)
+			)
 		}
 	}
 
@@ -65,12 +96,13 @@ did_imputation = function(data, yname, gname, tname, idname, first_stage, weight
 		weights_vector = rep(1, nrow(data))
 	} else {
 		weights_vector = data[[weights]]
+	}
 
-		# treatment weights * weights_vector
-		for(w in wtr) {
-			data[[w]] = data[[w]] * weights_vector
-			data[[w]] = data[[w]]/sum(data[[w]])
-		}
+	for(w in wtr) {
+		# Treatment weights * weights_vector
+		data[[w]] = data[[w]] * weights_vector
+		# Normalize weights
+		data[[w]] = data[[w]]/sum(data[[w]])
 	}
 
 # First Stage estimate ---------------------------------------------------------
@@ -150,8 +182,19 @@ did_imputation = function(data, yname, gname, tname, idname, first_stage, weight
 
 # Pre-event Estimates ----------------------------------------------------------
 
-	if(use_horizon) {
-		pre_formula <- stats::as.formula(glue::glue(glue::glue("{yname} ~ i(zz000event_time) | {idname} + {tname}")))
+	if(!is.null(pretrends)) {
+		if(all(pretrends == TRUE)) {
+			pre_formula <- stats::as.formula(glue::glue("{yname} ~ i(zz000event_time) + {first_stage}"))
+		} else {
+			if(all(pretrends %in% event_time)) {
+				pre_formula <- stats::as.formula(
+					glue::glue("{yname} ~ i(zz000event_time, keep = c({paste(pretrends, collapse = ', ')}))  + {first_stage}")
+				)
+			} else {
+				stop(glue::glue("Pretrends not found in event_time. Event_time has values {event_time}"))
+			}
+		}
+
 		pre_est <- fixest::feols(pre_formula, data[data$zz000treat == 0, ], weights = weights_vector[data$zz000treat == 0], warn=FALSE, notes=FALSE)
 	}
 
@@ -162,22 +205,20 @@ did_imputation = function(data, yname, gname, tname, idname, first_stage, weight
 	wtr = stringr::str_replace(wtr, "zz000wtr", "")
 
 	out <- dplyr::tibble(
-		term      = as.numeric(wtr),
+		term      = wtr,
 		estimate  = est,
 		std.error = se,
 		conf.low  = est - 1.96 * se,
 		conf.high = est + 1.96 * se
 	)
 
-	if(use_horizon) {
+	if(!is.null(pretrends)) {
 		pre_out <- broom::tidy(pre_est) %>%
 			dplyr::mutate(
 				term = stringr::str_remove(term, "zz000event_time::"),
-				term = as.numeric(term),
 				conf.low = estimate - 1.96 * std.error,
 				conf.high = estimate + 1.96 * std.error
 			) %>%
-			dplyr::filter(term %in% horizon) %>%
 			dplyr::select(term, estimate, std.error, conf.low, conf.high)
 
 		out = dplyr::bind_rows(pre_out, out)

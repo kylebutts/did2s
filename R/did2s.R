@@ -2,15 +2,25 @@
 #'
 #' @param data The dataframe containing all the variables
 #' @param yname Outcome variable
-#' @param first_stage Fixed effects and other covariates you want to residualize with in first stage, use i() for fixed effects., following fixest::feols.
-#' @param second_stage Second stage, these should be the treatment indicator(s) (e.g. treatment variable or es leads/lags), use i() for factor variables, following fixest::feols.
+#' @param first_stage Fixed effects and other covariates you want to residualize
+#'   with in first stage.
+#'   Formula following \code{\link[fixest:feols]{fixest::feols}}.
+#'   Fixed effects specified after "|".
+#' @param second_stage Second stage, these should be the treatment indicator(s)
+#'   (e.g. treatment variable or es leads/lags).
+#'   Formula following \code{\link[fixest:feols]{fixest::feols}}.
+#'   Use i() for factor variables, see \code{\link[fixest:i]{fixest::i}}.
 #' @param treatment A variable that = 1 if treated, = 0 otherwise
-#' @param cluster_var What variable to cluster standard errors. This can be IDs or a higher aggregate level (state for example)
-#' @param weights Optional variable to run a weighted first- and second-stage regressions
-#' @param bootstrap Should standard errors be calculated using bootstrap? Default is FALSE.
-#' @param n_bootstraps How many bootstraps to run. Default is 250
-#' @param verbose Logical. Should information about the two-stage procedure be
-#'   printed back to the user? Default is TRUE.
+#' @param cluster_var What variable to cluster standard errors. This can be IDs
+#'   or a higher aggregate level (state for example)
+#' @param weights Optional. variable to run a weighted first- and second-stage regressions
+#' @param bootstrap Optional. Should standard errors be calculated using bootstrap?
+#'   Default is FALSE.
+#' @param n_bootstraps Optional. How many bootstraps to run.
+#'   Default is 250.
+#' @param verbose Optional. Logical. Should information about the two-stage
+#'   procedure be printed back to the user?
+#'   Default is TRUE.
 #'
 #' @return fixest::feols point estimate with adjusted standard errors (either by formula or by bootstrap)
 #' @export

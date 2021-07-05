@@ -1,6 +1,6 @@
 Package: did2s
 Title: Estimate Two-Stage Difference-in-Differences following Gardner (2021)
-Version: 0.2.0
+Version: 0.3.0
 Authors@R: 
     c(person(given = "Kyle",
              family = "Butts",

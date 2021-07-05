@@ -1,3 +1,9 @@
+# did2s 0.3.0
+
+* Add `did_imputation` following Borusyak, Jaravel, and Spiess (2021)
+
+* Speed up did2s
+
 # did2s 0.2.0
 
 * Use sparse matrices to use much less memory

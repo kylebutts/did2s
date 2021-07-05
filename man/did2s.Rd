@@ -22,22 +22,32 @@ did2s(
 
 \item{yname}{Outcome variable}
 
-\item{first_stage}{Fixed effects and other covariates you want to residualize with in first stage, use i() for fixed effects., following fixest::feols.}
+\item{first_stage}{Fixed effects and other covariates you want to residualize
+with in first stage.
+Formula following \code{\link[fixest:feols]{fixest::feols}}.
+Fixed effects specified after "|".}
 
-\item{second_stage}{Second stage, these should be the treatment indicator(s) (e.g. treatment variable or es leads/lags), use i() for factor variables, following fixest::feols.}
+\item{second_stage}{Second stage, these should be the treatment indicator(s)
+(e.g. treatment variable or es leads/lags).
+Formula following \code{\link[fixest:feols]{fixest::feols}}.
+Use i() for factor variables, see \code{\link[fixest:i]{fixest::i}}.}
 
 \item{treatment}{A variable that = 1 if treated, = 0 otherwise}
 
-\item{cluster_var}{What variable to cluster standard errors. This can be IDs or a higher aggregate level (state for example)}
+\item{cluster_var}{What variable to cluster standard errors. This can be IDs
+or a higher aggregate level (state for example)}
 
-\item{weights}{Optional variable to run a weighted first- and second-stage regressions}
+\item{weights}{Optional. variable to run a weighted first- and second-stage regressions}
 
-\item{bootstrap}{Should standard errors be calculated using bootstrap? Default is FALSE.}
+\item{bootstrap}{Optional. Should standard errors be calculated using bootstrap?
+Default is FALSE.}
 
-\item{n_bootstraps}{How many bootstraps to run. Default is 250}
+\item{n_bootstraps}{Optional. How many bootstraps to run.
+Default is 250.}
 
-\item{verbose}{Logical. Should information about the two-stage procedure be
-printed back to the user? Default is TRUE.}
+\item{verbose}{Optional. Logical. Should information about the two-stage
+procedure be printed back to the user?
+Default is TRUE.}
 }
 \value{
 fixest::feols point estimate with adjusted standard errors (either by formula or by bootstrap)
@@ -57,7 +67,7 @@ You can run a static TWFE fixed effect model for a simple treatment indicator\if
     first_stage = "i(state) + i(year)",
     second_stage = "i(treat, ref=FALSE)")
 #> 
-#> ── Two-stage Difference-in-Differences ─────────────────────────────────────────
+#> ── Two-stage Difference-in-Differences ─────────────────────────────────────────────────────────────────────────────────────────
 #> → Running with first stage formula `~ i(state) + i(year)` and second stage formula `~ i(treat, ref=FALSE)`
 #> → The indicator variable that denotes when treatment is on is `treat`
 #> → Standard errors will be clustered by `state`
@@ -66,12 +76,12 @@ fixest::esttable(static)
 #>                            static
 #> Dependent Var.:           dep_var
 #>                                  
-#> treat = TRUE    1.983*** (0.0750)
+#> treat = TRUE    1.999*** (0.0627)
 #> _______________ _________________
 #> S.E. type                  Custom
 #> Observations               31,000
-#> R2                        0.22784
-#> Adj. R2                   0.22784
+#> R2                        0.23037
+#> Adj. R2                   0.23037
 }\if{html}{\out{</div>}}
 
 Or you can use relative-treatment indicators to estimate an event study estimate\if{html}{\out{<div class="r">}}\preformatted{es <- did2s(df_hom,
@@ -79,60 +89,60 @@ Or you can use relative-treatment indicators to estimate an event study estimate
     first_stage = "i(state) + i(year)",
     second_stage = "i(rel_year, ref=c(-1, Inf))")
 #> 
-#> ── Two-stage Difference-in-Differences ─────────────────────────────────────────
+#> ── Two-stage Difference-in-Differences ─────────────────────────────────────────────────────────────────────────────────────────
 #> → Running with first stage formula `~ i(state) + i(year)` and second stage formula `~ i(rel_year, ref=c(-1, Inf))`
 #> → The indicator variable that denotes when treatment is on is `treat`
 #> → Standard errors will be clustered by `state`
 
 fixest::esttable(es)
-#>                                 es
-#> Dependent Var.:            dep_var
-#>                                   
-#> rel_year = -20   -0.1469* (0.0632)
-#> rel_year = -19     0.0135 (0.0751)
-#> rel_year = -18   -0.1143. (0.0691)
-#> rel_year = -17    -0.0704 (0.0927)
-#> rel_year = -16    -0.0222 (0.0675)
-#> rel_year = -15  -0.1942** (0.0678)
-#> rel_year = -14    -0.0915 (0.0586)
-#> rel_year = -13    -0.0333 (0.0668)
-#> rel_year = -12    -0.0995 (0.0644)
-#> rel_year = -11    -0.0499 (0.0668)
-#> rel_year = -10     0.0032 (0.0536)
-#> rel_year = -9     -0.0770 (0.0540)
-#> rel_year = -8     -0.0265 (0.0627)
-#> rel_year = -7      0.0024 (0.0629)
-#> rel_year = -6     -0.0252 (0.0488)
-#> rel_year = -5      0.0336 (0.0549)
-#> rel_year = -4      0.0042 (0.0520)
-#> rel_year = -3     -0.0587 (0.0553)
-#> rel_year = -2      0.0216 (0.0637)
-#> rel_year = 0     1.860*** (0.0952)
-#> rel_year = 1     2.220*** (0.0910)
-#> rel_year = 2     1.950*** (0.0938)
-#> rel_year = 3     1.854*** (0.0988)
-#> rel_year = 4     1.931*** (0.0977)
-#> rel_year = 5     2.110*** (0.0926)
-#> rel_year = 6     1.961*** (0.0848)
-#> rel_year = 7     1.939*** (0.0835)
-#> rel_year = 8     2.005*** (0.0689)
-#> rel_year = 9     1.856*** (0.0729)
-#> rel_year = 10    1.790*** (0.1210)
-#> rel_year = 11    2.055*** (0.1335)
-#> rel_year = 12    2.024*** (0.1623)
-#> rel_year = 13    1.914*** (0.1399)
-#> rel_year = 14    2.081*** (0.1376)
-#> rel_year = 15    2.180*** (0.1257)
-#> rel_year = 16    2.261*** (0.1347)
-#> rel_year = 17    2.163*** (0.1122)
-#> rel_year = 18    2.014*** (0.1264)
-#> rel_year = 19    1.868*** (0.1402)
-#> rel_year = 20    1.934*** (0.1769)
-#> _______________ __________________
-#> S.E. type                   Custom
-#> Observations                31,000
-#> R2                         0.22960
-#> Adj. R2                    0.22863
+#>                                es
+#> Dependent Var.:           dep_var
+#>                                  
+#> rel_year = -20   -0.0636 (0.0760)
+#> rel_year = -19    0.0281 (0.0772)
+#> rel_year = -18    0.0048 (0.0771)
+#> rel_year = -17   -0.0064 (0.0857)
+#> rel_year = -16   -0.0185 (0.0692)
+#> rel_year = -15   -0.0448 (0.0974)
+#> rel_year = -14    0.0849 (0.0828)
+#> rel_year = -13   -0.0408 (0.0897)
+#> rel_year = -12   -0.1028 (0.0930)
+#> rel_year = -11    0.0365 (0.0660)
+#> rel_year = -10    0.0266 (0.0520)
+#> rel_year = -9    -0.0238 (0.0469)
+#> rel_year = -8    -0.0025 (0.0522)
+#> rel_year = -7    -0.0131 (0.0508)
+#> rel_year = -6   -0.0959. (0.0544)
+#> rel_year = -5     0.0059 (0.0523)
+#> rel_year = -4    -0.0794 (0.0604)
+#> rel_year = -3    -0.0274 (0.0485)
+#> rel_year = -2     0.0093 (0.0535)
+#> rel_year = 0    2.092*** (0.0708)
+#> rel_year = 1    1.831*** (0.0841)
+#> rel_year = 2    1.961*** (0.0690)
+#> rel_year = 3    1.979*** (0.0798)
+#> rel_year = 4    1.925*** (0.0896)
+#> rel_year = 5    2.013*** (0.0973)
+#> rel_year = 6    2.006*** (0.0980)
+#> rel_year = 7    2.000*** (0.0890)
+#> rel_year = 8    1.950*** (0.0909)
+#> rel_year = 9    2.096*** (0.0710)
+#> rel_year = 10   2.048*** (0.1173)
+#> rel_year = 11   1.919*** (0.1071)
+#> rel_year = 12   1.916*** (0.1300)
+#> rel_year = 13   1.940*** (0.1309)
+#> rel_year = 14   1.999*** (0.1435)
+#> rel_year = 15   2.211*** (0.1210)
+#> rel_year = 16   2.154*** (0.1584)
+#> rel_year = 17   1.911*** (0.1133)
+#> rel_year = 18   2.111*** (0.1338)
+#> rel_year = 19   2.088*** (0.1345)
+#> rel_year = 20   1.901*** (0.1313)
+#> _______________ _________________
+#> S.E. type                  Custom
+#> Observations               31,000
+#> R2                        0.23120
+#> Adj. R2                   0.23024
 }\if{html}{\out{</div>}}
 
 Here's an example using data from Castle (2013)\if{html}{\out{<div class="r">}}\preformatted{# Castle Data
@@ -147,7 +157,7 @@ did2s(
 	cluster_var = "state", weights = "popwt"
 )
 #> 
-#> ── Two-stage Difference-in-Differences ─────────────────────────────────────────
+#> ── Two-stage Difference-in-Differences ─────────────────────────────────────────────────────────────────────────────────────────
 #> → Running with first stage formula `~ i(sid) + i(year)` and second stage formula `~ i(post, ref = 0)`
 #> → The indicator variable that denotes when treatment is on is `post`
 #> → Standard errors will be clustered by `state`

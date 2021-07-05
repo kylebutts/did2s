@@ -2,7 +2,7 @@
 % Please edit documentation in R/did_imputation.R
 \name{did_imputation}
 \alias{did_imputation}
-\title{\strong{Work in Progress} Treatment effect estimation and pre-trend testing in staggered adoption diff-in-diff designs with an imputation approach of Borusyak, Jaravel, and Spiess (2021)}
+\title{Treatment effect estimation and pre-trend testing in staggered adoption diff-in-diff designs with an imputation approach of Borusyak, Jaravel, and Spiess (2021)}
 \usage{
 did_imputation(
   data,
@@ -10,31 +10,45 @@ did_imputation(
   gname,
   tname,
   idname,
-  first_stage,
+  first_stage = NULL,
   weights = NULL,
   wtr = NULL,
-  horizon = NULL
+  horizon = NULL,
+  pretrends = NULL
 )
 }
 \arguments{
 \item{data}{A data frame}
 
-\item{yname}{outcome variable}
+\item{yname}{String. Variable name for outcome.}
 
-\item{gname}{variable for unit-specific date of treatment (never-treated should be zero or NA)}
+\item{gname}{String. Variable name for unit-specific date of treatment
+(never-treated should be zero or NA)}
 
-\item{tname}{variable for calendar period}
+\item{tname}{String. Variable name for calendar period}
 
-\item{idname}{variable for unique unit id}
+\item{idname}{String. Variable name for unique unit id}
 
-\item{first_stage}{formula for Y(0)}
+\item{first_stage}{Formula for Y(0).
+Formula following \code{\link[fixest:feols]{fixest::feols}}.
+Fixed effects specified after "|".
+If not specified, then just unit and time fixed effects will be used.}
 
-\item{weights}{estimation weights for observations. This is used in estimating Y(0) and also augments treatment effect weights}
+\item{weights}{Estimation weights for observations. This is used in estimating
+Y(0) and also augments treatment effect weights.}
 
-\item{wtr}{character vector of treatment weight names (see horizon/allhorizon for standard event study weights)}
+\item{wtr}{Character vector of treatment weight names
+(see horizon for standard event study weights)}
 
-\item{horizon}{vector of event_time. This only applies if wtr is left as NULL. If both wtr and horizon are null, then all values of event_time will be used.}
+\item{horizon}{Integer vector of event_time or TRUE. This only applies if wtr is left
+as NULL. if specified, weighted averages/sums of treatment effects will be
+reported for each of these horizons separately (i.e. tau0 for the treatment
+period, tau1 for one period after treatment, etc.).
+If TRUE, all horizons are used.
+If wtr and horizon are null, then the static treatment effect is calculated.}
+
+\item{pretrends}{Integer vector or TRUE. Which pre_trends to estimate. If TRU}
 }
 \description{
-\strong{Work in Progress} Treatment effect estimation and pre-trend testing in staggered adoption diff-in-diff designs with an imputation approach of Borusyak, Jaravel, and Spiess (2021)
+Treatment effect estimation and pre-trend testing in staggered adoption diff-in-diff designs with an imputation approach of Borusyak, Jaravel, and Spiess (2021)
 }
