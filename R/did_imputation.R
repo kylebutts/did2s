@@ -53,8 +53,7 @@ did_imputation = function(data, yname, gname, tname, idname, first_stage, weight
 					wtr = c(wtr, var)
 
 					data = data %>% dplyr::mutate(
-							!!rlang::sym(var) := 1*(zz000event_time == e & !is.na(zz000event_time)),
-							!!rlang::sym(var) := !!rlang::sym(var)/sum(!!rlang::sym(var))
+							!!rlang::sym(var) := 1*(zz000event_time == e & !is.na(zz000event_time))
 						)
 				}
 			}
@@ -104,14 +103,12 @@ did_imputation = function(data, yname, gname, tname, idname, first_stage, weight
 	# Create Zs
 	Z = sparse_model_matrix(data, first_stage_est)
 
-	Z = Z * weights_vector
-
 	# Equation (6) of Borusyak et. al. 2021
 	# - Z (Z_0' Z_0)^{-1} Z_1' wtr_1
 	v_star = make_V_star(
-		Z,
-		Z[data$zz000treat == 0, ],
-		Z[data$zz000treat == 1, ],
+		(Z * weights_vector),
+		(Z * weights_vector)[data$zz000treat == 0, ],
+		(Z * weights_vector)[data$zz000treat == 1, ],
 		Matrix::Matrix(as.matrix(data[data$zz000treat == 1, wtr]), sparse = TRUE)
 	)
 
@@ -155,7 +152,7 @@ did_imputation = function(data, yname, gname, tname, idname, first_stage, weight
 
 	if(use_horizon) {
 		pre_formula <- stats::as.formula(glue::glue(glue::glue("{yname} ~ i(zz000event_time) | {idname} + {tname}")))
-		pre_est <- fixest::feols(pre_formula, data %>% dplyr::filter(zz000treat == 0), weights = weights_vector, warn=FALSE, notes=FALSE)
+		pre_est <- fixest::feols(pre_formula, data[data$zz000treat == 0, ], weights = weights_vector[data$zz000treat == 0], warn=FALSE, notes=FALSE)
 	}
 
 

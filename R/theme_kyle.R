@@ -1,9 +1,3 @@
-# Load Showtext and font Fira Sans
-showtext::showtext_auto()
-sysfonts::font_add_google("Fira Sans", "fira_sans")
-sysfonts::font_add_google("Merriweather", "merriweather")
-
-
 #' Kyle Butts' custom ggplot theme
 #'
 #' @param base_size Numeric. Base size of font. Everything else is relative to this font.
@@ -22,13 +16,13 @@ theme_kyle <- function(title_pos = "center", axis_title_pos = "left", slides = F
 
 	ggplot2::theme_bw(
 		base_size = base_size,
-		base_family = "fira_sans"
+		base_family = "sans"
 	) +
 		ggplot2::theme(
 			## Title and Subtitle --------------------------------------------------
 			plot.title = ggplot2::element_text(
 				# Font
-				family = "merriweather", face = "bold", size = rel(1.285),
+				family = "serif", face = "bold", size = rel(1.285),
 				colour = "#454545",
 				# Center title
 				hjust = title_hjust,
@@ -37,7 +31,7 @@ theme_kyle <- function(title_pos = "center", axis_title_pos = "left", slides = F
 			),
 			plot.subtitle = ggplot2::element_text(
 				# Font
-				family = "merriweather", face = "italic", size = rel(.86),
+				family = "serif", face = "italic", size = rel(.86),
 				colour = "#454545",
 				# Center subtitle
 				hjust = title_hjust,
