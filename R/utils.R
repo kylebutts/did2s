@@ -7,9 +7,20 @@ sparse_model_matrix = function(data, fixest) {
 
 	# Fixed Effects
 	if("fixef_id" %in% names(fixest)) {
-		frmla <- as.formula(paste("~ 0 + ", paste(glue::glue("factor({all.vars(first_stage_est$fml_all$fixef)})"), collapse = " + ")))
+		frmla <- as.formula(paste("~ 0 + ", paste(glue::glue("factor({all.vars(fixest$fml_all$fixef)})"), collapse = " + ")))
 
-		Z = cbind(Z, Matrix::sparse.model.matrix(frmla, data = data))
+		Z_fixef = Matrix::sparse.model.matrix(frmla, data = data)
+
+		temp = fixest::fixef(first_stage_est)
+		select =	lapply(names(temp), function(var){
+			names = names(temp[[var]])
+			names = names[temp[[var]] != 0]
+
+			glue::glue("factor({var}){names}")
+		})
+
+
+		Z = cbind(Z, Z_fixef[, unlist(blank)])
 	}
 
 	return(Z)
