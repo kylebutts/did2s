@@ -1,4 +1,8 @@
-#' Treatment effect estimation and pre-trend testing in staggered adoption diff-in-diff designs with an imputation approach of Borusyak, Jaravel, and Spiess (2021)
+#' Borusyak, Jaravel, and Spiess (2021) Estimator
+#'
+#' Treatment effect estimation and pre-trend testing in staggered adoption
+#' diff-in-diff designs with an imputation approach of Borusyak, Jaravel, and
+#' Spiess (2021)
 #'
 #' @param data A data frame
 #' @param yname String. Variable name for outcome.
@@ -24,6 +28,39 @@
 #'   If `TRUE`, all `pretrends` are used.
 #'
 #' @export
+#'
+#' @section Examples:
+#'
+#'
+#' Load example dataset which has two treatment groups and homogeneous treatment effects
+#'
+#' ```{r, comment = "#>", collapse = TRUE}
+#' # Load Example Dataset
+#' data("df_hom")
+#' ```
+#'
+#' You can run a static TWFE fixed effect model for a simple treatment indicator
+#' ```{r, comment = "#>", collapse = TRUE}
+#' did_imputation(data = df_hom, yname = "dep_var", gname = "g",
+#'                tname = "year", idname = "unit")
+#' ```
+#'
+#' Or you can use relative-treatment indicators to estimate an event study estimate
+#' ```{r, comment = "#>", collapse = TRUE}
+#' did_imputation(data = df_hom, yname = "dep_var", gname = "g",
+#'                tname = "year", idname = "unit", horizon=TRUE)
+#' ```
+#'
+#' Here's an example using data from Castle (2013)
+#' ```{r, comment = "#>", collapse = TRUE}
+#' # Castle Data
+#' castle <- haven::read_dta("https://github.com/scunning1975/mixtape/raw/master/castle.dta")
+#'
+#' did_imputation(data = castle, yname = "l_homicide", gname = "effyear",
+#'                first_stage = ~ 0 | sid + year,
+#'                tname = "year", idname = "sid")
+#' ```
+#'
 did_imputation = function(data, yname, gname, tname, idname, first_stage = NULL,
 						  weights = NULL, wtr = NULL, horizon = NULL,
 						  pretrends = NULL){

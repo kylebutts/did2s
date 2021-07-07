@@ -3,3 +3,33 @@ template:
 params:
     toggle: manual
 url: http://kylebutts.com/did2s
+
+home:
+  links:
+    - text: Source Code
+      href: https://github.com/kylebutts/did2s
+    - text: Report Bugs or Feature Requests
+      href: https://github.com/kylebutts/did2s/issues
+
+reference:
+  - title: "Imputation Estimators"
+    desc: >
+      Imputation estimators of difference-in-differences uses
+      not-treated/not-yet-treated observations to estimate `Y(0)`. Then treatment
+      effects are estimated using `Y(1) - Yhat(0)` (how aggregate treatment effects
+      are estimated depends on the function).
+    contents:
+      - did2s
+      - did_imputation
+  - title: "Event Study 'Robustness Checks'"
+    desc: >
+      Uses the estimation procedures recommended from
+      Borusyak, Jaravell, Spiess (2021); Callaway and Sant'Anna (2020);
+      Gardner (2021); Roth and Sant'Anna (2021); and Sun and Abraham (2020)
+    contents:
+      - event_study
+      - plot_event_study
+  - title: "Extra Functions"
+    contents:
+      - gen_data
+      - theme_kyle

@@ -3,7 +3,7 @@ pkgdown: 1.6.1
 pkgdown_sha: ~
 articles:
   Two-Stage-Difference-in-Differences: Two-Stage-Difference-in-Differences.html
-last_built: 2021-07-05T22:12Z
+last_built: 2021-07-05T23:06Z
 urls:
   reference: http://kylebutts.com/did2s/reference
   article: http://kylebutts.com/did2s/articles

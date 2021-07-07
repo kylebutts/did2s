@@ -2,7 +2,7 @@
 title: "Two-Stage Difference-in-Differences"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Two-Stage-Difference-in-Differences}
+  %\VignetteIndexEntry{Two-Stage Difference-in-Differences}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

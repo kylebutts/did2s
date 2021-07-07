@@ -36,9 +36,5 @@ event_study(
 tibble of point estimates for each estimator
 }
 \description{
-Uses the estimation procedures recommended from Borusyak, Jaravell, Spiess (2021); Callaway and Sant'Anna (2020); Gardner (2021); Roth and Sant'Anna (2021); Sun and Abraham (2020)
+Uses the estimation procedures recommended from Borusyak, Jaravel, Spiess (2021); Callaway and Sant'Anna (2020); Gardner (2021); Roth and Sant'Anna (2021); Sun and Abraham (2020)
 }
-\section{Examples}{
-
-}
-

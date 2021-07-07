@@ -2,7 +2,7 @@
 % Please edit documentation in R/did_imputation.R
 \name{did_imputation}
 \alias{did_imputation}
-\title{Treatment effect estimation and pre-trend testing in staggered adoption diff-in-diff designs with an imputation approach of Borusyak, Jaravel, and Spiess (2021)}
+\title{Borusyak, Jaravel, and Spiess (2021) Estimator}
 \usage{
 did_imputation(
   data,
@@ -51,5 +51,53 @@ If \code{wtr} and \code{horizon} are null, then the static treatment effect is c
 If \code{TRUE}, all \code{pretrends} are used.}
 }
 \description{
-Treatment effect estimation and pre-trend testing in staggered adoption diff-in-diff designs with an imputation approach of Borusyak, Jaravel, and Spiess (2021)
+Treatment effect estimation and pre-trend testing in staggered adoption
+diff-in-diff designs with an imputation approach of Borusyak, Jaravel, and
+Spiess (2021)
 }
+\section{Examples}{
+
+
+Load example dataset which has two treatment groups and homogeneous treatment effects\if{html}{\out{<div class="r">}}\preformatted{# Load Example Dataset
+data("df_hom")
+}\if{html}{\out{</div>}}
+
+You can run a static TWFE fixed effect model for a simple treatment indicator\if{html}{\out{<div class="r">}}\preformatted{did_imputation(data = df_hom, yname = "dep_var", gname = "g",
+               tname = "year", idname = "unit")
+#> # A tibble: 1 x 5
+#>   term  estimate std.error conf.low conf.high
+#>   <chr>    <dbl>     <dbl>    <dbl>     <dbl>
+#> 1 treat     2.02    0.0324     1.96      2.09
+}\if{html}{\out{</div>}}
+
+Or you can use relative-treatment indicators to estimate an event study estimate\if{html}{\out{<div class="r">}}\preformatted{did_imputation(data = df_hom, yname = "dep_var", gname = "g",
+               tname = "year", idname = "unit", horizon=TRUE)
+#> # A tibble: 21 x 5
+#>    term  estimate std.error conf.low conf.high
+#>    <chr>    <dbl>     <dbl>    <dbl>     <dbl>
+#>  1 0         2.12    0.0737     1.97      2.26
+#>  2 1         1.86    0.0767     1.71      2.01
+#>  3 2         1.99    0.0714     1.85      2.13
+#>  4 3         2.00    0.0765     1.85      2.15
+#>  5 4         1.95    0.0754     1.80      2.10
+#>  6 5         2.04    0.0758     1.89      2.19
+#>  7 6         2.03    0.0722     1.89      2.17
+#>  8 7         2.03    0.0754     1.88      2.17
+#>  9 8         1.98    0.0749     1.83      2.12
+#> 10 9         2.12    0.0727     1.98      2.26
+#> # … with 11 more rows
+}\if{html}{\out{</div>}}
+
+Here's an example using data from Castle (2013)\if{html}{\out{<div class="r">}}\preformatted{# Castle Data
+castle <- haven::read_dta("https://github.com/scunning1975/mixtape/raw/master/castle.dta")
+
+did_imputation(data = castle, yname = "l_homicide", gname = "effyear",
+               first_stage = ~ 0 | sid + year,
+               tname = "year", idname = "sid")
+#> # A tibble: 1 x 5
+#>   term  estimate std.error conf.low conf.high
+#>   <chr>    <dbl>     <dbl>    <dbl>     <dbl>
+#> 1 treat   0.0798    0.0609  -0.0395     0.199
+}\if{html}{\out{</div>}}
+}
+

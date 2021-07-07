@@ -1,6 +1,6 @@
 #' Estimate event-study coefficients using TWFE and 5 proposed improvements.
 #'
-#' @description Uses the estimation procedures recommended from Borusyak, Jaravell, Spiess (2021); Callaway and Sant'Anna (2020); Gardner (2021); Roth and Sant'Anna (2021); Sun and Abraham (2020)
+#' @description Uses the estimation procedures recommended from Borusyak, Jaravel, Spiess (2021); Callaway and Sant'Anna (2020); Gardner (2021); Roth and Sant'Anna (2021); Sun and Abraham (2020)
 #'
 #' @param data The dataframe containing all the variables
 #' @param yname Variable name for outcome variable
@@ -13,7 +13,6 @@
 #'
 #' @return tibble of point estimates for each estimator
 #' @export
-#' @section Examples:
 event_study = function(data, yname, idname, gname, tname, xformla = NULL, horizon = NULL, weights = NULL){
 
 # Setup ------------------------------------------------------------------------
@@ -123,13 +122,13 @@ event_study = function(data, yname, idname, gname, tname, xformla = NULL, horizo
 
 # did_imputation ---------------------------------------------------------------
 
-	cli::cli_text("Estimating using Borusyak, Jaravell, Spiess (2021)")
+	cli::cli_text("Estimating using Borusyak, Jaravel, Spiess (2021)")
 
 	impute_first_stage = stats::as.formula(glue::glue("~ {xformla_null} | {idname} + {tname}"))
 
 	tidy_impute = did_imputation(data, yname = yname, gname = gname, tname = tname, idname = idname, first_stage = impute_first_stage) %>%
 		dplyr::select(term, estimate, std.error) %>%
-		dplyr::mutate(estimator = "Borusyak, Jaravell, Spiess (2021)")
+		dplyr::mutate(estimator = "Borusyak, Jaravel, Spiess (2021)")
 
 # staggered --------------------------------------------------------------------
 
@@ -168,7 +167,7 @@ plot_event_study = function(out, seperate = TRUE, horizon = NULL) {
 		dplyr::mutate(
 			ci_lower = estimate - 1.96 * std.error,
 			ci_upper = estimate + 1.96 * std.error,
-			estimator = factor(estimator, levels = c("TWFE", "Borusyak, Jaravell, Spiess (2021)", "Callaway and Sant'Anna (2020)", "Gardner (2021)", "Roth and Sant'Anna (2021)",  "Sun and Abraham (2020)"))
+			estimator = factor(estimator, levels = c("TWFE", "Borusyak, Jaravel, Spiess (2021)", "Callaway and Sant'Anna (2020)", "Gardner (2021)", "Roth and Sant'Anna (2021)",  "Sun and Abraham (2020)"))
 		)
 
 	if(seperate) position = "identity" else position = "dodge"
@@ -190,8 +189,8 @@ plot_event_study = function(out, seperate = TRUE, horizon = NULL) {
 		ggplot2::labs(y = "Point Estimate and 95% Confidence Interval", x = "Event Time", color = "Estimator") +
 		#scale_y_continuous(limits = y_lims) +
 		#scale_x_continuous(limits = x_lims) +
-		ggplot2::theme_kyle(base_size = 16) +
-		ggplot2::scale_color_manual(values = c("TWFE" = "#374E55", "Gardner (2021)" = "#DF8F44", "Callaway and Sant'Anna (2020)" = "#00A1D5", "Sun and Abraham (2020)" = "#B24745", "Roth and Sant'Anna (2021)" = "#79AF97", "Borusyak, Jaravell, Spiess (2021)" = "#6A6599")) +
+		ggplot2::theme_minimal(base_size = 16) +
+		ggplot2::scale_color_manual(values = c("TWFE" = "#374E55", "Gardner (2021)" = "#DF8F44", "Callaway and Sant'Anna (2020)" = "#00A1D5", "Sun and Abraham (2020)" = "#B24745", "Roth and Sant'Anna (2021)" = "#79AF97", "Borusyak, Jaravel, Spiess (2021)" = "#6A6599")) +
 		ggplot2::guides(
 			color = ggplot2::guide_legend(title.position = "top", nrow = 2)
 		) +

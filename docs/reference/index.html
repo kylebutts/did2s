@@ -165,8 +165,8 @@
     <tbody>
       <tr>
         <th colspan="2">
-          <h2 id="section-all-functions" class="hasAnchor"><a href="#section-all-functions" class="anchor"></a>All functions</h2>
-          <p class="section-desc"></p>
+          <h2 id="section-imputation-estimators" class="hasAnchor"><a href="#section-imputation-estimators" class="anchor"></a>Imputation Estimators</h2>
+          <p class="section-desc"><p>Imputation estimators of difference-in-differences uses not-treated/not-yet-treated observations to estimate <code>Y(0)</code>. Then treatment effects are estimated using <code>Y(1) - Yhat(0)</code> (how aggregate treatment effects are estimated depends on the function).</p></p>
         </th>
       </tr>
       
@@ -186,7 +186,20 @@
           <p><code><a href="did_imputation.html">did_imputation()</a></code> </p>
         </td>
         <td><p>Treatment effect estimation and pre-trend testing in staggered adoption diff-in-diff designs with an imputation approach of Borusyak, Jaravel, and Spiess (2021)</p></td>
-      </tr><tr>
+      </tr>
+    </tbody><tbody>
+      <tr>
+        <th colspan="2">
+          <h2 id="section-event-study-robustness-checks-" class="hasAnchor"><a href="#section-event-study-robustness-checks-" class="anchor"></a>Event Study 'Robustness Checks'</h2>
+          <p class="section-desc"><p>Uses the estimation procedures recommended from Borusyak, Jaravell, Spiess (2021); Callaway and Sant’Anna (2020); Gardner (2021); Roth and Sant’Anna (2021); and Sun and Abraham (2020)</p></p>
+        </th>
+      </tr>
+      
+      
+    </tbody><tbody>
+      
+      
+      <tr>
         
         <td>
           <p><code><a href="event_study.html">event_study()</a></code> </p>
@@ -195,21 +208,9 @@
       </tr><tr>
         
         <td>
-          <p><code><a href="gen_data.html">gen_data()</a></code> </p>
-        </td>
-        <td><p>Generate TWFE data</p></td>
-      </tr><tr>
-        
-        <td>
           <p><code><a href="plot_event_study.html">plot_event_study()</a></code> </p>
         </td>
         <td><p>Plot results of <code>event_study()</code></p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="theme_kyle.html">theme_kyle()</a></code> </p>
-        </td>
-        <td><p>Kyle Butts' custom ggplot theme</p></td>
       </tr>
     </tbody>
     </table>
