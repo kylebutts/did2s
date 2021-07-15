@@ -38,8 +38,8 @@
 #' ```{r, comment = "#>", collapse = TRUE}
 #' static <- did2s(df_hom,
 #'     yname = "dep_var", treatment = "treat", cluster_var = "state",
-#'     first_stage = "i(state) + i(year)",
-#'     second_stage = "i(treat, ref=FALSE)")
+#'     first_stage = ~ 0 | unit + year,
+#'     second_stage = ~ i(treat, ref=FALSE))
 #'
 #' fixest::esttable(static)
 #' ```
@@ -48,8 +48,8 @@
 #' ```{r, comment = "#>", collapse = TRUE}
 #' es <- did2s(df_hom,
 #'     yname = "dep_var", treatment = "treat", cluster_var = "state",
-#'     first_stage = "i(state) + i(year)",
-#'     second_stage = "i(rel_year, ref=c(-1, Inf))")
+#'     first_stage = ~ 0 | unit + year,
+#'     second_stage = ~ i(rel_year, ref=c(-1, Inf)))
 #'
 #' fixest::esttable(es)
 #' ```
@@ -62,7 +62,7 @@
 #' did2s(
 #' 	data = castle,
 #' 	yname = "l_homicide",
-#' 	first_stage = ~ i(sid) + i(year),
+#' 	first_stage = ~ 0 | sid + year,
 #' 	second_stage = ~ i(post, ref=0),
 #' 	treatment = "post",
 #' 	cluster_var = "state", weights = "popwt"

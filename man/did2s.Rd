@@ -64,11 +64,11 @@ data("df_hom")
 
 You can run a static TWFE fixed effect model for a simple treatment indicator\if{html}{\out{<div class="r">}}\preformatted{static <- did2s(df_hom,
     yname = "dep_var", treatment = "treat", cluster_var = "state",
-    first_stage = "i(state) + i(year)",
-    second_stage = "i(treat, ref=FALSE)")
+    first_stage = ~ 0 | unit + year,
+    second_stage = ~ i(treat, ref=FALSE))
 #> 
 #> ── Two-stage Difference-in-Differences ─────────────────────────────────────────
-#> → Running with first stage formula `~ i(state) + i(year)` and second stage formula `~ i(treat, ref=FALSE)`
+#> → Running with first stage formula `~ 0 | unit + year` and second stage formula `~ i(treat, ref = FALSE)`
 #> → The indicator variable that denotes when treatment is on is `treat`
 #> → Standard errors will be clustered by `state`
 
@@ -76,21 +76,21 @@ fixest::esttable(static)
 #>                            static
 #> Dependent Var.:           dep_var
 #>                                  
-#> treat = TRUE    1.999*** (0.0627)
+#> treat = TRUE    2.025*** (0.0307)
 #> _______________ _________________
 #> S.E. type                  Custom
 #> Observations               31,000
-#> R2                        0.23037
-#> Adj. R2                   0.23037
+#> R2                        0.31846
+#> Adj. R2                   0.31846
 }\if{html}{\out{</div>}}
 
 Or you can use relative-treatment indicators to estimate an event study estimate\if{html}{\out{<div class="r">}}\preformatted{es <- did2s(df_hom,
     yname = "dep_var", treatment = "treat", cluster_var = "state",
-    first_stage = "i(state) + i(year)",
-    second_stage = "i(rel_year, ref=c(-1, Inf))")
+    first_stage = ~ 0 | unit + year,
+    second_stage = ~ i(rel_year, ref=c(-1, Inf)))
 #> 
 #> ── Two-stage Difference-in-Differences ─────────────────────────────────────────
-#> → Running with first stage formula `~ i(state) + i(year)` and second stage formula `~ i(rel_year, ref=c(-1, Inf))`
+#> → Running with first stage formula `~ 0 | unit + year` and second stage formula `~ i(rel_year, ref = c(-1, Inf))`
 #> → The indicator variable that denotes when treatment is on is `treat`
 #> → Standard errors will be clustered by `state`
 
@@ -98,51 +98,51 @@ fixest::esttable(es)
 #>                                es
 #> Dependent Var.:           dep_var
 #>                                  
-#> rel_year = -20   -0.0636 (0.0760)
-#> rel_year = -19    0.0281 (0.0772)
-#> rel_year = -18    0.0048 (0.0771)
-#> rel_year = -17   -0.0064 (0.0857)
-#> rel_year = -16   -0.0185 (0.0692)
-#> rel_year = -15   -0.0448 (0.0974)
-#> rel_year = -14    0.0849 (0.0828)
-#> rel_year = -13   -0.0408 (0.0897)
-#> rel_year = -12   -0.1028 (0.0930)
-#> rel_year = -11    0.0365 (0.0660)
-#> rel_year = -10    0.0266 (0.0520)
-#> rel_year = -9    -0.0238 (0.0469)
-#> rel_year = -8    -0.0025 (0.0522)
-#> rel_year = -7    -0.0131 (0.0508)
-#> rel_year = -6   -0.0959. (0.0544)
-#> rel_year = -5     0.0059 (0.0523)
-#> rel_year = -4    -0.0794 (0.0604)
-#> rel_year = -3    -0.0274 (0.0485)
-#> rel_year = -2     0.0093 (0.0535)
-#> rel_year = 0    2.092*** (0.0708)
-#> rel_year = 1    1.831*** (0.0841)
-#> rel_year = 2    1.961*** (0.0690)
-#> rel_year = 3    1.979*** (0.0798)
-#> rel_year = 4    1.925*** (0.0896)
-#> rel_year = 5    2.013*** (0.0973)
-#> rel_year = 6    2.006*** (0.0980)
-#> rel_year = 7    2.000*** (0.0890)
-#> rel_year = 8    1.950*** (0.0909)
-#> rel_year = 9    2.096*** (0.0710)
-#> rel_year = 10   2.048*** (0.1173)
-#> rel_year = 11   1.919*** (0.1071)
-#> rel_year = 12   1.916*** (0.1300)
-#> rel_year = 13   1.940*** (0.1309)
-#> rel_year = 14   1.999*** (0.1435)
-#> rel_year = 15   2.211*** (0.1210)
-#> rel_year = 16   2.154*** (0.1584)
-#> rel_year = 17   1.911*** (0.1133)
-#> rel_year = 18   2.111*** (0.1338)
-#> rel_year = 19   2.088*** (0.1345)
-#> rel_year = 20   1.901*** (0.1313)
+#> rel_year = -20   -0.0335 (0.0697)
+#> rel_year = -19    0.0581 (0.0588)
+#> rel_year = -18    0.0348 (0.0578)
+#> rel_year = -17    0.0236 (0.0670)
+#> rel_year = -16    0.0115 (0.0542)
+#> rel_year = -15   -0.0148 (0.0769)
+#> rel_year = -14   0.1150. (0.0613)
+#> rel_year = -13   -0.0108 (0.0720)
+#> rel_year = -12   -0.0727 (0.0635)
+#> rel_year = -11    0.0666 (0.0559)
+#> rel_year = -10    0.0396 (0.0382)
+#> rel_year = -9    -0.0109 (0.0379)
+#> rel_year = -8     0.0105 (0.0388)
+#> rel_year = -7    -0.0001 (0.0445)
+#> rel_year = -6   -0.0829* (0.0388)
+#> rel_year = -5     0.0189 (0.0429)
+#> rel_year = -4    -0.0664 (0.0437)
+#> rel_year = -3    -0.0144 (0.0302)
+#> rel_year = -2     0.0223 (0.0442)
+#> rel_year = 0    2.117*** (0.0622)
+#> rel_year = 1    1.857*** (0.0720)
+#> rel_year = 2    1.986*** (0.0665)
+#> rel_year = 3    2.005*** (0.0708)
+#> rel_year = 4    1.950*** (0.0748)
+#> rel_year = 5    2.038*** (0.0797)
+#> rel_year = 6    2.032*** (0.0732)
+#> rel_year = 7    2.025*** (0.0858)
+#> rel_year = 8    1.976*** (0.0621)
+#> rel_year = 9    2.121*** (0.0619)
+#> rel_year = 10   2.088*** (0.0913)
+#> rel_year = 11   1.943*** (0.1148)
+#> rel_year = 12   1.941*** (0.1131)
+#> rel_year = 13   1.965*** (0.1076)
+#> rel_year = 14   2.023*** (0.0972)
+#> rel_year = 15   2.235*** (0.1174)
+#> rel_year = 16   2.178*** (0.1282)
+#> rel_year = 17   1.936*** (0.1044)
+#> rel_year = 18   2.135*** (0.1115)
+#> rel_year = 19   2.112*** (0.1038)
+#> rel_year = 20   1.925*** (0.1071)
 #> _______________ _________________
 #> S.E. type                  Custom
 #> Observations               31,000
-#> R2                        0.23120
-#> Adj. R2                   0.23024
+#> R2                        0.31957
+#> Adj. R2                   0.31872
 }\if{html}{\out{</div>}}
 
 Here's an example using data from Castle (2013)\if{html}{\out{<div class="r">}}\preformatted{# Castle Data
@@ -151,14 +151,14 @@ castle <- haven::read_dta("https://github.com/scunning1975/mixtape/raw/master/ca
 did2s(
 	data = castle,
 	yname = "l_homicide",
-	first_stage = ~ i(sid) + i(year),
+	first_stage = ~ 0 | sid + year,
 	second_stage = ~ i(post, ref=0),
 	treatment = "post",
 	cluster_var = "state", weights = "popwt"
 )
 #> 
 #> ── Two-stage Difference-in-Differences ─────────────────────────────────────────
-#> → Running with first stage formula `~ i(sid) + i(year)` and second stage formula `~ i(post, ref = 0)`
+#> → Running with first stage formula `~ 0 | sid + year` and second stage formula `~ i(post, ref = 0)`
 #> → The indicator variable that denotes when treatment is on is `post`
 #> → Standard errors will be clustered by `state`
 #> OLS estimation, Dep. Var.: l_homicide
