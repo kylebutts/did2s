@@ -53,94 +53,133 @@ event_study = function(data, yname, idname, gname, tname, xformla = NULL, horizo
 
 	cli::cli_text("Estimating TWFE Model")
 
-	twfe_formula = stats::as.formula(glue::glue("{yname} ~ {xformla_null} + i(zz000event_time) | {idname} + {tname}"))
-	est_twfe = fixest::feols(twfe_formula, data = data)
+	tidy_twfe = NULL
 
-	tidy_twfe = broom::tidy(est_twfe) %>%
-		dplyr::filter(stringr::str_detect(term, "zz000event_time::")) %>%
-		dplyr::mutate(
-			term = stringr::str_replace(term, "zz000event_time::", ""),
-			term = as.numeric(term)
-		) %>%
-		dplyr::select(term, estimate, std.error) %>%
-		dplyr::mutate(estimator = "TWFE")
+	try({
+		twfe_formula = stats::as.formula(glue::glue("{yname} ~ {xformla_null} + i(zz000event_time) | {idname} + {tname}"))
+		est_twfe = fixest::feols(twfe_formula, data = data, warn = F, notes = F)
 
+		tidy_twfe = broom::tidy(est_twfe) %>%
+			dplyr::filter(stringr::str_detect(term, "zz000event_time::")) %>%
+			dplyr::mutate(
+				term = stringr::str_replace(term, "zz000event_time::", ""),
+				term = as.numeric(term)
+			) %>%
+			dplyr::select(term, estimate, std.error) %>%
+			dplyr::mutate(estimator = "TWFE")
+	})
 
+	if(is.null(tidy_twfe)) cli::cli_warn("TWFE Failed")
 
 # did2s ------------------------------------------------------------------------
 
 	cli::cli_text("Estimating using Gardner (2021)")
 
-	did2s_first_stage = stats::as.formula(glue::glue("~ 0 + {xformla_null} | {idname} + {tname}"))
+	tidy_did2s = NULL
 
-	est_did2s = did2s::did2s(data, yname = yname, first_stage = did2s_first_stage, second_stage = ~i(zz000event_time, ref=-Inf), treatment = "zz000treat", cluster_var = idname, verbose = FALSE)
+	try({
+		did2s_first_stage = stats::as.formula(glue::glue("~ 0 + {xformla_null} | {idname} + {tname}"))
 
-	tidy_did2s = broom::tidy(est_did2s) %>%
-		dplyr::filter(stringr::str_detect(term, "zz000event_time::")) %>%
-		dplyr::mutate(
-			term = stringr::str_replace(term, "zz000event_time::", ""),
-			term = as.numeric(term)
-		) %>%
-		dplyr::select(term, estimate, std.error) %>%
-		dplyr::mutate(estimator = "Gardner (2021)")
+		est_did2s = did2s::did2s(data, yname = yname, first_stage = did2s_first_stage, second_stage = ~i(zz000event_time, ref=-Inf), treatment = "zz000treat", cluster_var = idname, verbose = FALSE)
+
+		tidy_did2s = broom::tidy(est_did2s) %>%
+			dplyr::filter(stringr::str_detect(term, "zz000event_time::")) %>%
+			dplyr::mutate(
+				term = stringr::str_replace(term, "zz000event_time::", ""),
+				term = as.numeric(term)
+			) %>%
+			dplyr::select(term, estimate, std.error) %>%
+			dplyr::mutate(estimator = "Gardner (2021)")
+	})
+
+	if(is.null(tidy_did2s)) cli::cli_warn("Gardner (2021) Failed")
+
 
 # did --------------------------------------------------------------------------
 
 	cli::cli_text("Estimating using Callaway and Sant'Anna (2020)")
 
-	est_did = did::att_gt(yname = yname, tname = tname, idname = idname, gname = gname, xformla = xformla, data = data) %>%
-		did::aggte(type = "dynamic", na.rm = TRUE)
+	tidy_did = NULL
 
-	tidy_did = broom::tidy(est_did) %>%
-		dplyr::select(term = event.time, estimate, std.error) %>%
-		dplyr::mutate(estimator = "Callaway and Sant'Anna (2020)")
+	try({
+		est_did = did::att_gt(yname = yname, tname = tname, idname = idname, gname = gname, xformla = xformla, data = data) %>%
+			did::aggte(type = "dynamic", na.rm = TRUE)
+
+		tidy_did = broom::tidy(est_did) %>%
+			dplyr::select(term = event.time, estimate, std.error) %>%
+			dplyr::mutate(estimator = "Callaway and Sant'Anna (2020)")
+	})
+
+	if(is.null(tidy_did)) cli::cli_warn("Callaway and Sant'Anna (2020) Failed")
 
 # sunab ------------------------------------------------------------------------
 
 	cli::cli_text("Estimating using Sun and Abraham (2020)")
 
-	# Format xformla for inclusion
-	if(is.null(xformla)) {
-		sunab_xformla = "1"
-	} else {
-		sunab_xformla = paste0("1 + ", as.character(xformla)[[2]])
-	}
+	tidy_sunab = NULL
 
-	sunab_formla = stats::as.formula(glue::glue("{yname} ~ {sunab_xformla} + sunab({gname}, {tname})"))
+	try({
+		# Format xformla for inclusion
+		if(is.null(xformla)) {
+			sunab_xformla = "1"
+		} else {
+			sunab_xformla = paste0("1 + ", as.character(xformla)[[2]])
+		}
 
-	est_sunab = fixest::feols(sunab_formla, data = data)
+		sunab_formla = stats::as.formula(glue::glue("{yname} ~ {sunab_xformla} + sunab({gname}, {tname})"))
 
-	tidy_sunab = broom::tidy(est_sunab) %>%
-		filter(stringr::str_detect(term, glue::glue("{tname}::"))) %>%
-		dplyr::mutate(
-			term = stringr::str_replace(term, glue::glue("{tname}::"), ""),
-			term = as.numeric(term)
-		) %>%
-		dplyr::select(term, estimate, std.error) %>%
-		dplyr::mutate(estimator = "Sun and Abraham (2020)")
+		est_sunab = fixest::feols(sunab_formla, data = data)
 
+		tidy_sunab = broom::tidy(est_sunab) %>%
+			filter(stringr::str_detect(term, glue::glue("{tname}::"))) %>%
+			dplyr::mutate(
+				term = stringr::str_replace(term, glue::glue("{tname}::"), ""),
+				term = as.numeric(term)
+			) %>%
+			dplyr::select(term, estimate, std.error) %>%
+			dplyr::mutate(estimator = "Sun and Abraham (2020)")
+	})
+
+	if(is.null(tidy_sunab)) cli::cli_warn("Sun and Abraham (2020) Failed")
 
 # did_imputation ---------------------------------------------------------------
 
 	cli::cli_text("Estimating using Borusyak, Jaravel, Spiess (2021)")
 
-	impute_first_stage = stats::as.formula(glue::glue("~ {xformla_null} | {idname} + {tname}"))
+	tidy_impute = NULL
 
-	tidy_impute = did_imputation(data, yname = yname, gname = gname, tname = tname, idname = idname, first_stage = impute_first_stage) %>%
-		dplyr::select(term, estimate, std.error) %>%
-		dplyr::mutate(estimator = "Borusyak, Jaravel, Spiess (2021)")
+	try({
+		impute_first_stage = stats::as.formula(glue::glue("~ {xformla_null} | {idname} + {tname}"))
+
+		tidy_impute = did_imputation(data,
+									 yname = yname, gname = gname, tname = tname, idname = idname,
+									 first_stage = impute_first_stage, horizon = TRUE, pretrends = TRUE) %>%
+			dplyr::select(term, estimate, std.error) %>%
+			dplyr::mutate(estimator = "Borusyak, Jaravel, Spiess (2021)", term = as.numeric(term))
+	})
+
+	if(is.null(tidy_impute)) cli::cli_warn("Borusyak, Jaravel, Spiess (2021) Failed")
 
 # staggered --------------------------------------------------------------------
 
 	cli::cli_text("Estimatng using Roth and Sant'Anna (2021)")
 
-	tidy_staggered <- staggered::staggered(
-			data %>% dplyr::mutate(!!rlang::sym(gname) := if_else(!!rlang::sym(gname) == 0, Inf, !!rlang::sym(gname))),
+	tidy_staggered = NULL
+
+	try({
+		tidy_staggered = staggered::staggered(
+			data %>%
+				dplyr::mutate(!!rlang::sym(gname) := if_else(!!rlang::sym(gname) == 0, Inf, !!rlang::sym(gname))),
 			i = idname, t = tname, g = gname, y = yname, estimand = "eventstudy",
 			eventTime = event_time[is.finite(event_time) & event_time != -1]
 		) %>%
-		dplyr::select(term = eventTime, estimate, std.error = se) %>%
-		dplyr::mutate(estimator = "Roth and Sant'Anna (2021)")
+			dplyr::select(term = eventTime, estimate, std.error = se) %>%
+			dplyr::mutate(estimator = "Roth and Sant'Anna (2021)")
+	})
+
+	if(is.null(tidy_staggered)) cli::cli_warn("Roth and Sant'Anna (2021) Failed")
+
+
 
 
 # Bind results together --------------------------------------------------------
@@ -161,23 +200,36 @@ event_study = function(data, yname, idname, gname, tname, xformla = NULL, horizo
 #' @export
 plot_event_study = function(out, seperate = TRUE, horizon = NULL) {
 
-	source("https://raw.githubusercontent.com/kylebutts/templates/master/ggplot_theme/theme_kyle.R")
+	# Get list of estimators
+	estimators = unique(out$estimator)
 
+	# Subset factor levels
+	levels = c("TWFE", "Borusyak, Jaravel, Spiess (2021)", "Callaway and Sant'Anna (2020)", "Gardner (2021)", "Roth and Sant'Anna (2021)",  "Sun and Abraham (2020)")
+	levels = levels[levels %in% estimators]
+
+	# Subset color scales
+	color_scale = c("TWFE" = "#374E55", "Gardner (2021)" = "#DF8F44", "Callaway and Sant'Anna (2020)" = "#00A1D5", "Sun and Abraham (2020)" = "#B24745", "Roth and Sant'Anna (2021)" = "#79AF97", "Borusyak, Jaravel, Spiess (2021)" = "#6A6599")
+	color_scale = color_scale[names(color_scale) %in% estimators]
+
+	# create confidence intervals
 	out = out %>%
 		dplyr::mutate(
 			ci_lower = estimate - 1.96 * std.error,
 			ci_upper = estimate + 1.96 * std.error,
-			estimator = factor(estimator, levels = c("TWFE", "Borusyak, Jaravel, Spiess (2021)", "Callaway and Sant'Anna (2020)", "Gardner (2021)", "Roth and Sant'Anna (2021)",  "Sun and Abraham (2020)"))
+			estimator = factor(estimator, levels = levels)
 		)
 
-	if(seperate) position = "identity" else position = "dodge"
+	# position depending on sepreate
+	if(seperate) position = "identity" else position = position_dodge(width = 0.5)
 
+	# Subset plot if horizon is specified
 	if(!is.null(horizon)) {
 		out = out %>%
 			dplyr::filter(term >= horizon[1] & term <= horizon[2])
 	}
 
-	y_lims = c(floor(min(out$estimate)), ceiling(max(out$estimate)))
+	# max and min of limits
+	y_lims = c(min(out$ci_lower), max(out$ci_upper)) * 1.05
 	x_lims = c(min(out$term) - 1, max(out$term) + 1)
 
 	ggplot2::ggplot(out, aes(x = term, y = estimate, color = estimator, ymin = ci_lower, ymax = ci_upper)) +
@@ -187,10 +239,10 @@ plot_event_study = function(out, seperate = TRUE, horizon = NULL) {
 		ggplot2::geom_vline(xintercept = -0.5, linetype = "dashed") +
 		ggplot2::geom_hline(yintercept = 0, linetype = "dashed") +
 		ggplot2::labs(y = "Point Estimate and 95% Confidence Interval", x = "Event Time", color = "Estimator") +
-		#scale_y_continuous(limits = y_lims) +
-		#scale_x_continuous(limits = x_lims) +
+		{ if(seperate) scale_y_continuous(limits = y_lims) } +
+		{ if(seperate) scale_x_continuous(limits = x_lims) } +
 		ggplot2::theme_minimal(base_size = 16) +
-		ggplot2::scale_color_manual(values = c("TWFE" = "#374E55", "Gardner (2021)" = "#DF8F44", "Callaway and Sant'Anna (2020)" = "#00A1D5", "Sun and Abraham (2020)" = "#B24745", "Roth and Sant'Anna (2021)" = "#79AF97", "Borusyak, Jaravel, Spiess (2021)" = "#6A6599")) +
+		ggplot2::scale_color_manual(values = color_scale) +
 		ggplot2::guides(
 			color = ggplot2::guide_legend(title.position = "top", nrow = 2)
 		) +

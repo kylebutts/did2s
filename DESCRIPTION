@@ -1,6 +1,6 @@
 Package: did2s
 Title: Estimate Two-Stage Difference-in-Differences following Gardner (2021)
-Version: 0.3.0
+Version: 0.4.0
 Authors@R: 
     c(person(given = "Kyle",
              family = "Butts",
@@ -41,8 +41,10 @@ Remotes: jonathandroth/staggered
 URL: http://kylebutts.com/did2s
 Suggests: 
     rmarkdown,
-    knitr
+    knitr,
+    testthat (>= 3.0.0)
 VignetteBuilder: knitr
 LinkingTo: 
     RcppArmadillo,
     Rcpp
+Config/testthat/edition: 3

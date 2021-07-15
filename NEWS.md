@@ -1,3 +1,7 @@
+# did2s 0.4.0
+
+* Add `event_study` and `plot_event_study` functions
+
 # did2s 0.3.0
 
 * Add `did_imputation` following Borusyak, Jaravel, and Spiess (2021)
