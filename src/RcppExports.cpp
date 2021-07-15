@@ -6,6 +6,11 @@
 
 using namespace Rcpp;
 
+#ifdef RCPP_USE_GLOBAL_ROSTREAM
+Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
+Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
+#endif
+
 // make_V
 arma::mat make_V(arma::sp_mat x1, arma::sp_mat x10, arma::sp_mat x2);
 RcppExport SEXP _did2s_make_V(SEXP x1SEXP, SEXP x10SEXP, SEXP x2SEXP) {

@@ -28,17 +28,14 @@ event_study = function(data, yname, idname, gname, tname, xformla = NULL, horizo
 	data = data %>% dplyr::mutate(
 		zz000event_time = dplyr::if_else(
 			is.na(!!rlang::sym(gname)) | !!rlang::sym(gname) == 0,
-			NA_real_,
+			-Inf,
 			as.numeric(!!rlang::sym(tname) - !!rlang::sym(gname))
-		),
-		zz000event_time = dplyr::if_else(
-			is.na(zz000event_time), -Inf, zz000event_time
 		)
 	)
 
 
 	event_time = unique(data$zz000event_time)
-	event_time = event_time[!is.na(event_time)]
+	event_time = event_time[!is.na(event_time) & is.finite(event_time)]
 	# All horizons
 	if(is.null(horizon)) horizon = event_time
 
@@ -56,7 +53,7 @@ event_study = function(data, yname, idname, gname, tname, xformla = NULL, horizo
 	tidy_twfe = NULL
 
 	try({
-		twfe_formula = stats::as.formula(glue::glue("{yname} ~ {xformla_null} + i(zz000event_time) | {idname} + {tname}"))
+		twfe_formula = stats::as.formula(glue::glue("{yname} ~ 1 + {xformla_null} + i(zz000event_time, ref = -1) | {idname} + {tname}"))
 		est_twfe = fixest::feols(twfe_formula, data = data, warn = F, notes = F)
 
 		tidy_twfe = broom::tidy(est_twfe) %>%
@@ -151,7 +148,7 @@ event_study = function(data, yname, idname, gname, tname, xformla = NULL, horizo
 	try({
 		impute_first_stage = stats::as.formula(glue::glue("~ {xformla_null} | {idname} + {tname}"))
 
-		tidy_impute = did_imputation(data,
+		tidy_impute = did2s::did_imputation(data,
 									 yname = yname, gname = gname, tname = tname, idname = idname,
 									 first_stage = impute_first_stage, horizon = TRUE, pretrends = TRUE) %>%
 			dplyr::select(term, estimate, std.error) %>%
@@ -169,7 +166,7 @@ event_study = function(data, yname, idname, gname, tname, xformla = NULL, horizo
 	try({
 		tidy_staggered = staggered::staggered(
 			data %>%
-				dplyr::mutate(!!rlang::sym(gname) := if_else(!!rlang::sym(gname) == 0, Inf, !!rlang::sym(gname))),
+				dplyr::mutate(!!rlang::sym(gname) := dplyr::if_else(!!rlang::sym(gname) == 0, Inf, !!rlang::sym(gname))),
 			i = idname, t = tname, g = gname, y = yname, estimand = "eventstudy",
 			eventTime = event_time[is.finite(event_time) & event_time != -1]
 		) %>%
@@ -232,15 +229,15 @@ plot_event_study = function(out, seperate = TRUE, horizon = NULL) {
 	y_lims = c(min(out$ci_lower), max(out$ci_upper)) * 1.05
 	x_lims = c(min(out$term) - 1, max(out$term) + 1)
 
-	ggplot2::ggplot(out, aes(x = term, y = estimate, color = estimator, ymin = ci_lower, ymax = ci_upper)) +
+	ggplot2::ggplot(out, ggplot2::aes(x = term, y = estimate, color = estimator, ymin = ci_lower, ymax = ci_upper)) +
 		{ if(seperate) ggplot2::facet_wrap(~ estimator, scales="free") } +
 		ggplot2::geom_point(position = position) +
 		ggplot2::geom_errorbar(position = position) +
 		ggplot2::geom_vline(xintercept = -0.5, linetype = "dashed") +
 		ggplot2::geom_hline(yintercept = 0, linetype = "dashed") +
 		ggplot2::labs(y = "Point Estimate and 95% Confidence Interval", x = "Event Time", color = "Estimator") +
-		{ if(seperate) scale_y_continuous(limits = y_lims) } +
-		{ if(seperate) scale_x_continuous(limits = x_lims) } +
+		{ if(seperate) ggplot2::scale_y_continuous(limits = y_lims) } +
+		{ if(seperate) ggplot2::scale_x_continuous(limits = x_lims) } +
 		ggplot2::theme_minimal(base_size = 16) +
 		ggplot2::scale_color_manual(values = color_scale) +
 		ggplot2::guides(
