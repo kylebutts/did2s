@@ -22,7 +22,7 @@
   }
 </script>
 
-<title>Treatment effect estimation and pre-trend testing in staggered adoption diff-in-diff designs with an imputation approach of Borusyak, Jaravel, and Spiess (2021) — did_imputation • did2s</title>
+<title>Borusyak, Jaravel, and Spiess (2021) Estimator — did_imputation • did2s</title>
 
 
 <!-- jquery -->
@@ -65,8 +65,10 @@
 
 
 
-<meta property="og:title" content="Treatment effect estimation and pre-trend testing in staggered adoption diff-in-diff designs with an imputation approach of Borusyak, Jaravel, and Spiess (2021) — did_imputation" />
-<meta property="og:description" content="Treatment effect estimation and pre-trend testing in staggered adoption diff-in-diff designs with an imputation approach of Borusyak, Jaravel, and Spiess (2021)" />
+<meta property="og:title" content="Borusyak, Jaravel, and Spiess (2021) Estimator — did_imputation" />
+<meta property="og:description" content="Treatment effect estimation and pre-trend testing in staggered adoption
+diff-in-diff designs with an imputation approach of Borusyak, Jaravel, and
+Spiess (2021)" />
 
 
 
@@ -101,7 +103,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">did2s</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.3.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.4.0</span>
       </span>
     </div>
 
@@ -152,13 +154,15 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Treatment effect estimation and pre-trend testing in staggered adoption diff-in-diff designs with an imputation approach of Borusyak, Jaravel, and Spiess (2021)</h1>
+    <h1>Borusyak, Jaravel, and Spiess (2021) Estimator</h1>
     
     <div class="hidden name"><code>did_imputation.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>Treatment effect estimation and pre-trend testing in staggered adoption diff-in-diff designs with an imputation approach of Borusyak, Jaravel, and Spiess (2021)</p>
+    <p>Treatment effect estimation and pre-trend testing in staggered adoption
+diff-in-diff designs with an imputation approach of Borusyak, Jaravel, and
+Spiess (2021)</p>
     </div>
 
     <pre class="usage"><span class='fu'>did_imputation</span><span class='op'>(</span>
@@ -231,6 +235,49 @@ If <code>TRUE</code>, all <code>pretrends</code> are used.</p></td>
     </tr>
     </table>
 
+    <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
+
+    
+
+
+<p>Load example dataset which has two treatment groups and homogeneous treatment effects<div class="r"></p><pre><span class='co'># Load Example Dataset</span>
+<span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span><span class='op'>(</span><span class='st'>"df_hom"</span><span class='op'>)</span>
+</pre><p></div></p>
+<p>You can run a static TWFE fixed effect model for a simple treatment indicator<div class="r"></p><pre><span class='fu'>did_imputation</span><span class='op'>(</span>data <span class='op'>=</span> <span class='va'>df_hom</span>, yname <span class='op'>=</span> <span class='st'>"dep_var"</span>, gname <span class='op'>=</span> <span class='st'>"g"</span>,
+               tname <span class='op'>=</span> <span class='st'>"year"</span>, idname <span class='op'>=</span> <span class='st'>"unit"</span><span class='op'>)</span>
+<span class='co'>#&gt; # A tibble: 1 x 5</span>
+<span class='co'>#&gt;   term  estimate std.error conf.low conf.high</span>
+<span class='co'>#&gt;   &lt;chr&gt;    &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;     &lt;dbl&gt;</span>
+<span class='co'>#&gt; 1 treat     2.02    0.0324     1.96      2.09</span>
+</pre><p></div></p>
+<p>Or you can use relative-treatment indicators to estimate an event study estimate<div class="r"></p><pre><span class='fu'>did_imputation</span><span class='op'>(</span>data <span class='op'>=</span> <span class='va'>df_hom</span>, yname <span class='op'>=</span> <span class='st'>"dep_var"</span>, gname <span class='op'>=</span> <span class='st'>"g"</span>,
+               tname <span class='op'>=</span> <span class='st'>"year"</span>, idname <span class='op'>=</span> <span class='st'>"unit"</span>, horizon<span class='op'>=</span><span class='cn'>TRUE</span><span class='op'>)</span>
+<span class='co'>#&gt; # A tibble: 21 x 5</span>
+<span class='co'>#&gt;    term  estimate std.error conf.low conf.high</span>
+<span class='co'>#&gt;    &lt;chr&gt;    &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;     &lt;dbl&gt;</span>
+<span class='co'>#&gt;  1 0         2.12    0.0737     1.97      2.26</span>
+<span class='co'>#&gt;  2 1         1.86    0.0767     1.71      2.01</span>
+<span class='co'>#&gt;  3 2         1.99    0.0714     1.85      2.13</span>
+<span class='co'>#&gt;  4 3         2.00    0.0765     1.85      2.15</span>
+<span class='co'>#&gt;  5 4         1.95    0.0754     1.80      2.10</span>
+<span class='co'>#&gt;  6 5         2.04    0.0758     1.89      2.19</span>
+<span class='co'>#&gt;  7 6         2.03    0.0722     1.89      2.17</span>
+<span class='co'>#&gt;  8 7         2.03    0.0754     1.88      2.17</span>
+<span class='co'>#&gt;  9 8         1.98    0.0749     1.83      2.12</span>
+<span class='co'>#&gt; 10 9         2.12    0.0727     1.98      2.26</span>
+<span class='co'>#&gt; # … with 11 more rows</span>
+</pre><p></div></p>
+<p>Here's an example using data from Castle (2013)<div class="r"></p><pre><span class='co'># Castle Data</span>
+<span class='va'>castle</span> <span class='op'>&lt;-</span> <span class='fu'>haven</span><span class='fu'>::</span><span class='fu'><a href='https://haven.tidyverse.org/reference/read_dta.html'>read_dta</a></span><span class='op'>(</span><span class='st'>"https://github.com/scunning1975/mixtape/raw/master/castle.dta"</span><span class='op'>)</span>
+
+<span class='fu'>did_imputation</span><span class='op'>(</span>data <span class='op'>=</span> <span class='va'>castle</span>, yname <span class='op'>=</span> <span class='st'>"l_homicide"</span>, gname <span class='op'>=</span> <span class='st'>"effyear"</span>,
+               first_stage <span class='op'>=</span> <span class='op'>~</span> <span class='fl'>0</span> <span class='op'>|</span> <span class='va'>sid</span> <span class='op'>+</span> <span class='va'>year</span>,
+               tname <span class='op'>=</span> <span class='st'>"year"</span>, idname <span class='op'>=</span> <span class='st'>"sid"</span><span class='op'>)</span>
+<span class='co'>#&gt; # A tibble: 1 x 5</span>
+<span class='co'>#&gt;   term  estimate std.error conf.low conf.high</span>
+<span class='co'>#&gt;   &lt;chr&gt;    &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;     &lt;dbl&gt;</span>
+<span class='co'>#&gt; 1 treat   0.0798    0.0609  -0.0395     0.199</span>
+</pre><p></div></p>
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

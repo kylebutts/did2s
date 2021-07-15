@@ -101,7 +101,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">did2s</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.3.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.4.0</span>
       </span>
     </div>
 
@@ -243,11 +243,11 @@ Default is <code>TRUE</code>.</p></td>
 </pre><p></div></p>
 <p>You can run a static TWFE fixed effect model for a simple treatment indicator<div class="r"></p><pre><span class='va'>static</span> <span class='op'>&lt;-</span> <span class='fu'>did2s</span><span class='op'>(</span><span class='va'>df_hom</span>,
     yname <span class='op'>=</span> <span class='st'>"dep_var"</span>, treatment <span class='op'>=</span> <span class='st'>"treat"</span>, cluster_var <span class='op'>=</span> <span class='st'>"state"</span>,
-    first_stage <span class='op'>=</span> <span class='st'>"i(state) + i(year)"</span>,
-    second_stage <span class='op'>=</span> <span class='st'>"i(treat, ref=FALSE)"</span><span class='op'>)</span>
+    first_stage <span class='op'>=</span> <span class='op'>~</span> <span class='fl'>0</span> <span class='op'>|</span> <span class='va'>unit</span> <span class='op'>+</span> <span class='va'>year</span>,
+    second_stage <span class='op'>=</span> <span class='op'>~</span> <span class='fu'><a href='https://lrberge.github.io/fixest/reference/i.html'>i</a></span><span class='op'>(</span><span class='va'>treat</span>, ref<span class='op'>=</span><span class='cn'>FALSE</span><span class='op'>)</span><span class='op'>)</span>
 <span class='co'>#&gt; </span>
 <span class='co'>#&gt; ── Two-stage Difference-in-Differences ─────────────────────────────────────────</span>
-<span class='co'>#&gt; → Running with first stage formula `~ i(state) + i(year)` and second stage formula `~ i(treat, ref=FALSE)`</span>
+<span class='co'>#&gt; → Running with first stage formula `~ 0 | unit + year` and second stage formula `~ i(treat, ref = FALSE)`</span>
 <span class='co'>#&gt; → The indicator variable that denotes when treatment is on is `treat`</span>
 <span class='co'>#&gt; → Standard errors will be clustered by `state`</span>
 
@@ -255,20 +255,20 @@ Default is <code>TRUE</code>.</p></td>
 <span class='co'>#&gt;                            static</span>
 <span class='co'>#&gt; Dependent Var.:           dep_var</span>
 <span class='co'>#&gt;                                  </span>
-<span class='co'>#&gt; treat = TRUE    1.999*** (0.0627)</span>
+<span class='co'>#&gt; treat = TRUE    2.025*** (0.0307)</span>
 <span class='co'>#&gt; _______________ _________________</span>
 <span class='co'>#&gt; S.E. type                  Custom</span>
 <span class='co'>#&gt; Observations               31,000</span>
-<span class='co'>#&gt; R2                        0.23037</span>
-<span class='co'>#&gt; Adj. R2                   0.23037</span>
+<span class='co'>#&gt; R2                        0.31846</span>
+<span class='co'>#&gt; Adj. R2                   0.31846</span>
 </pre><p></div></p>
 <p>Or you can use relative-treatment indicators to estimate an event study estimate<div class="r"></p><pre><span class='va'>es</span> <span class='op'>&lt;-</span> <span class='fu'>did2s</span><span class='op'>(</span><span class='va'>df_hom</span>,
     yname <span class='op'>=</span> <span class='st'>"dep_var"</span>, treatment <span class='op'>=</span> <span class='st'>"treat"</span>, cluster_var <span class='op'>=</span> <span class='st'>"state"</span>,
-    first_stage <span class='op'>=</span> <span class='st'>"i(state) + i(year)"</span>,
-    second_stage <span class='op'>=</span> <span class='st'>"i(rel_year, ref=c(-1, Inf))"</span><span class='op'>)</span>
+    first_stage <span class='op'>=</span> <span class='op'>~</span> <span class='fl'>0</span> <span class='op'>|</span> <span class='va'>unit</span> <span class='op'>+</span> <span class='va'>year</span>,
+    second_stage <span class='op'>=</span> <span class='op'>~</span> <span class='fu'><a href='https://lrberge.github.io/fixest/reference/i.html'>i</a></span><span class='op'>(</span><span class='va'>rel_year</span>, ref<span class='op'>=</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='op'>-</span><span class='fl'>1</span>, <span class='cn'>Inf</span><span class='op'>)</span><span class='op'>)</span><span class='op'>)</span>
 <span class='co'>#&gt; </span>
 <span class='co'>#&gt; ── Two-stage Difference-in-Differences ─────────────────────────────────────────</span>
-<span class='co'>#&gt; → Running with first stage formula `~ i(state) + i(year)` and second stage formula `~ i(rel_year, ref=c(-1, Inf))`</span>
+<span class='co'>#&gt; → Running with first stage formula `~ 0 | unit + year` and second stage formula `~ i(rel_year, ref = c(-1, Inf))`</span>
 <span class='co'>#&gt; → The indicator variable that denotes when treatment is on is `treat`</span>
 <span class='co'>#&gt; → Standard errors will be clustered by `state`</span>
 
@@ -276,51 +276,51 @@ Default is <code>TRUE</code>.</p></td>
 <span class='co'>#&gt;                                es</span>
 <span class='co'>#&gt; Dependent Var.:           dep_var</span>
 <span class='co'>#&gt;                                  </span>
-<span class='co'>#&gt; rel_year = -20   -0.0636 (0.0760)</span>
-<span class='co'>#&gt; rel_year = -19    0.0281 (0.0772)</span>
-<span class='co'>#&gt; rel_year = -18    0.0048 (0.0771)</span>
-<span class='co'>#&gt; rel_year = -17   -0.0064 (0.0857)</span>
-<span class='co'>#&gt; rel_year = -16   -0.0185 (0.0692)</span>
-<span class='co'>#&gt; rel_year = -15   -0.0448 (0.0974)</span>
-<span class='co'>#&gt; rel_year = -14    0.0849 (0.0828)</span>
-<span class='co'>#&gt; rel_year = -13   -0.0408 (0.0897)</span>
-<span class='co'>#&gt; rel_year = -12   -0.1028 (0.0930)</span>
-<span class='co'>#&gt; rel_year = -11    0.0365 (0.0660)</span>
-<span class='co'>#&gt; rel_year = -10    0.0266 (0.0520)</span>
-<span class='co'>#&gt; rel_year = -9    -0.0238 (0.0469)</span>
-<span class='co'>#&gt; rel_year = -8    -0.0025 (0.0522)</span>
-<span class='co'>#&gt; rel_year = -7    -0.0131 (0.0508)</span>
-<span class='co'>#&gt; rel_year = -6   -0.0959. (0.0544)</span>
-<span class='co'>#&gt; rel_year = -5     0.0059 (0.0523)</span>
-<span class='co'>#&gt; rel_year = -4    -0.0794 (0.0604)</span>
-<span class='co'>#&gt; rel_year = -3    -0.0274 (0.0485)</span>
-<span class='co'>#&gt; rel_year = -2     0.0093 (0.0535)</span>
-<span class='co'>#&gt; rel_year = 0    2.092*** (0.0708)</span>
-<span class='co'>#&gt; rel_year = 1    1.831*** (0.0841)</span>
-<span class='co'>#&gt; rel_year = 2    1.961*** (0.0690)</span>
-<span class='co'>#&gt; rel_year = 3    1.979*** (0.0798)</span>
-<span class='co'>#&gt; rel_year = 4    1.925*** (0.0896)</span>
-<span class='co'>#&gt; rel_year = 5    2.013*** (0.0973)</span>
-<span class='co'>#&gt; rel_year = 6    2.006*** (0.0980)</span>
-<span class='co'>#&gt; rel_year = 7    2.000*** (0.0890)</span>
-<span class='co'>#&gt; rel_year = 8    1.950*** (0.0909)</span>
-<span class='co'>#&gt; rel_year = 9    2.096*** (0.0710)</span>
-<span class='co'>#&gt; rel_year = 10   2.048*** (0.1173)</span>
-<span class='co'>#&gt; rel_year = 11   1.919*** (0.1071)</span>
-<span class='co'>#&gt; rel_year = 12   1.916*** (0.1300)</span>
-<span class='co'>#&gt; rel_year = 13   1.940*** (0.1309)</span>
-<span class='co'>#&gt; rel_year = 14   1.999*** (0.1435)</span>
-<span class='co'>#&gt; rel_year = 15   2.211*** (0.1210)</span>
-<span class='co'>#&gt; rel_year = 16   2.154*** (0.1584)</span>
-<span class='co'>#&gt; rel_year = 17   1.911*** (0.1133)</span>
-<span class='co'>#&gt; rel_year = 18   2.111*** (0.1338)</span>
-<span class='co'>#&gt; rel_year = 19   2.088*** (0.1345)</span>
-<span class='co'>#&gt; rel_year = 20   1.901*** (0.1313)</span>
+<span class='co'>#&gt; rel_year = -20   -0.0335 (0.0697)</span>
+<span class='co'>#&gt; rel_year = -19    0.0581 (0.0588)</span>
+<span class='co'>#&gt; rel_year = -18    0.0348 (0.0578)</span>
+<span class='co'>#&gt; rel_year = -17    0.0236 (0.0670)</span>
+<span class='co'>#&gt; rel_year = -16    0.0115 (0.0542)</span>
+<span class='co'>#&gt; rel_year = -15   -0.0148 (0.0769)</span>
+<span class='co'>#&gt; rel_year = -14   0.1150. (0.0613)</span>
+<span class='co'>#&gt; rel_year = -13   -0.0108 (0.0720)</span>
+<span class='co'>#&gt; rel_year = -12   -0.0727 (0.0635)</span>
+<span class='co'>#&gt; rel_year = -11    0.0666 (0.0559)</span>
+<span class='co'>#&gt; rel_year = -10    0.0396 (0.0382)</span>
+<span class='co'>#&gt; rel_year = -9    -0.0109 (0.0379)</span>
+<span class='co'>#&gt; rel_year = -8     0.0105 (0.0388)</span>
+<span class='co'>#&gt; rel_year = -7    -0.0001 (0.0445)</span>
+<span class='co'>#&gt; rel_year = -6   -0.0829* (0.0388)</span>
+<span class='co'>#&gt; rel_year = -5     0.0189 (0.0429)</span>
+<span class='co'>#&gt; rel_year = -4    -0.0664 (0.0437)</span>
+<span class='co'>#&gt; rel_year = -3    -0.0144 (0.0302)</span>
+<span class='co'>#&gt; rel_year = -2     0.0223 (0.0442)</span>
+<span class='co'>#&gt; rel_year = 0    2.117*** (0.0622)</span>
+<span class='co'>#&gt; rel_year = 1    1.857*** (0.0720)</span>
+<span class='co'>#&gt; rel_year = 2    1.986*** (0.0665)</span>
+<span class='co'>#&gt; rel_year = 3    2.005*** (0.0708)</span>
+<span class='co'>#&gt; rel_year = 4    1.950*** (0.0748)</span>
+<span class='co'>#&gt; rel_year = 5    2.038*** (0.0797)</span>
+<span class='co'>#&gt; rel_year = 6    2.032*** (0.0732)</span>
+<span class='co'>#&gt; rel_year = 7    2.025*** (0.0858)</span>
+<span class='co'>#&gt; rel_year = 8    1.976*** (0.0621)</span>
+<span class='co'>#&gt; rel_year = 9    2.121*** (0.0619)</span>
+<span class='co'>#&gt; rel_year = 10   2.088*** (0.0913)</span>
+<span class='co'>#&gt; rel_year = 11   1.943*** (0.1148)</span>
+<span class='co'>#&gt; rel_year = 12   1.941*** (0.1131)</span>
+<span class='co'>#&gt; rel_year = 13   1.965*** (0.1076)</span>
+<span class='co'>#&gt; rel_year = 14   2.023*** (0.0972)</span>
+<span class='co'>#&gt; rel_year = 15   2.235*** (0.1174)</span>
+<span class='co'>#&gt; rel_year = 16   2.178*** (0.1282)</span>
+<span class='co'>#&gt; rel_year = 17   1.936*** (0.1044)</span>
+<span class='co'>#&gt; rel_year = 18   2.135*** (0.1115)</span>
+<span class='co'>#&gt; rel_year = 19   2.112*** (0.1038)</span>
+<span class='co'>#&gt; rel_year = 20   1.925*** (0.1071)</span>
 <span class='co'>#&gt; _______________ _________________</span>
 <span class='co'>#&gt; S.E. type                  Custom</span>
 <span class='co'>#&gt; Observations               31,000</span>
-<span class='co'>#&gt; R2                        0.23120</span>
-<span class='co'>#&gt; Adj. R2                   0.23024</span>
+<span class='co'>#&gt; R2                        0.31957</span>
+<span class='co'>#&gt; Adj. R2                   0.31872</span>
 </pre><p></div></p>
 <p>Here's an example using data from Castle (2013)<div class="r"></p><pre><span class='co'># Castle Data</span>
 <span class='va'>castle</span> <span class='op'>&lt;-</span> <span class='fu'>haven</span><span class='fu'>::</span><span class='fu'><a href='https://haven.tidyverse.org/reference/read_dta.html'>read_dta</a></span><span class='op'>(</span><span class='st'>"https://github.com/scunning1975/mixtape/raw/master/castle.dta"</span><span class='op'>)</span>
@@ -328,14 +328,14 @@ Default is <code>TRUE</code>.</p></td>
 <span class='fu'>did2s</span><span class='op'>(</span>
   data <span class='op'>=</span> <span class='va'>castle</span>,
   yname <span class='op'>=</span> <span class='st'>"l_homicide"</span>,
-  first_stage <span class='op'>=</span> <span class='op'>~</span> <span class='fu'><a href='https://lrberge.github.io/fixest/reference/i.html'>i</a></span><span class='op'>(</span><span class='va'>sid</span><span class='op'>)</span> <span class='op'>+</span> <span class='fu'><a href='https://lrberge.github.io/fixest/reference/i.html'>i</a></span><span class='op'>(</span><span class='va'>year</span><span class='op'>)</span>,
+  first_stage <span class='op'>=</span> <span class='op'>~</span> <span class='fl'>0</span> <span class='op'>|</span> <span class='va'>sid</span> <span class='op'>+</span> <span class='va'>year</span>,
   second_stage <span class='op'>=</span> <span class='op'>~</span> <span class='fu'><a href='https://lrberge.github.io/fixest/reference/i.html'>i</a></span><span class='op'>(</span><span class='va'>post</span>, ref<span class='op'>=</span><span class='fl'>0</span><span class='op'>)</span>,
   treatment <span class='op'>=</span> <span class='st'>"post"</span>,
   cluster_var <span class='op'>=</span> <span class='st'>"state"</span>, weights <span class='op'>=</span> <span class='st'>"popwt"</span>
 <span class='op'>)</span>
 <span class='co'>#&gt; </span>
 <span class='co'>#&gt; ── Two-stage Difference-in-Differences ─────────────────────────────────────────</span>
-<span class='co'>#&gt; → Running with first stage formula `~ i(sid) + i(year)` and second stage formula `~ i(post, ref = 0)`</span>
+<span class='co'>#&gt; → Running with first stage formula `~ 0 | sid + year` and second stage formula `~ i(post, ref = 0)`</span>
 <span class='co'>#&gt; → The indicator variable that denotes when treatment is on is `post`</span>
 <span class='co'>#&gt; → Standard errors will be clustered by `state`</span>
 <span class='co'>#&gt; OLS estimation, Dep. Var.: l_homicide</span>
