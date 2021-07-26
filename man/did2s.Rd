@@ -67,7 +67,7 @@ You can run a static TWFE fixed effect model for a simple treatment indicator\if
     first_stage = ~ 0 | unit + year,
     second_stage = ~ i(treat, ref=FALSE))
 #> 
-#> ── Two-stage Difference-in-Differences ─────────────────────────────────────────
+#> ── Two-stage Difference-in-Differences ──────────────────────────────────────────────────────────
 #> → Running with first stage formula `~ 0 | unit + year` and second stage formula `~ i(treat, ref = FALSE)`
 #> → The indicator variable that denotes when treatment is on is `treat`
 #> → Standard errors will be clustered by `state`
@@ -89,7 +89,7 @@ Or you can use relative-treatment indicators to estimate an event study estimate
     first_stage = ~ 0 | unit + year,
     second_stage = ~ i(rel_year, ref=c(-1, Inf)))
 #> 
-#> ── Two-stage Difference-in-Differences ─────────────────────────────────────────
+#> ── Two-stage Difference-in-Differences ──────────────────────────────────────────────────────────
 #> → Running with first stage formula `~ 0 | unit + year` and second stage formula `~ i(rel_year, ref = c(-1, Inf))`
 #> → The indicator variable that denotes when treatment is on is `treat`
 #> → Standard errors will be clustered by `state`
@@ -157,7 +157,7 @@ did2s(
 	cluster_var = "state", weights = "popwt"
 )
 #> 
-#> ── Two-stage Difference-in-Differences ─────────────────────────────────────────
+#> ── Two-stage Difference-in-Differences ──────────────────────────────────────────────────────────
 #> → Running with first stage formula `~ 0 | sid + year` and second stage formula `~ i(post, ref = 0)`
 #> → The indicator variable that denotes when treatment is on is `post`
 #> → Standard errors will be clustered by `state`

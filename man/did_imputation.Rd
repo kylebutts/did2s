@@ -64,7 +64,7 @@ data("df_hom")
 
 You can run a static TWFE fixed effect model for a simple treatment indicator\if{html}{\out{<div class="r">}}\preformatted{did_imputation(data = df_hom, yname = "dep_var", gname = "g",
                tname = "year", idname = "unit")
-#> # A tibble: 1 x 5
+#> # A tibble: 1 × 5
 #>   term  estimate std.error conf.low conf.high
 #>   <chr>    <dbl>     <dbl>    <dbl>     <dbl>
 #> 1 treat     2.02    0.0324     1.96      2.09
@@ -72,7 +72,7 @@ You can run a static TWFE fixed effect model for a simple treatment indicator\if
 
 Or you can use relative-treatment indicators to estimate an event study estimate\if{html}{\out{<div class="r">}}\preformatted{did_imputation(data = df_hom, yname = "dep_var", gname = "g",
                tname = "year", idname = "unit", horizon=TRUE)
-#> # A tibble: 21 x 5
+#> # A tibble: 21 × 5
 #>    term  estimate std.error conf.low conf.high
 #>    <chr>    <dbl>     <dbl>    <dbl>     <dbl>
 #>  1 0         2.12    0.0737     1.97      2.26
@@ -94,7 +94,7 @@ castle <- haven::read_dta("https://github.com/scunning1975/mixtape/raw/master/ca
 did_imputation(data = castle, yname = "l_homicide", gname = "effyear",
                first_stage = ~ 0 | sid + year,
                tname = "year", idname = "sid")
-#> # A tibble: 1 x 5
+#> # A tibble: 1 × 5
 #>   term  estimate std.error conf.low conf.high
 #>   <chr>    <dbl>     <dbl>    <dbl>     <dbl>
 #> 1 treat   0.0798    0.0609  -0.0395     0.199
