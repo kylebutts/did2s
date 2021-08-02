@@ -64,16 +64,6 @@ I will load example data from the package and plot the average outcome
 among the groups.
 
 ``` r
-library(tidyverse)
-#> ── Attaching packages ─────────────────────────────────────── tidyverse 1.3.1 ──
-#> ✓ ggplot2 3.3.5     ✓ purrr   0.3.4
-#> ✓ tibble  3.1.3     ✓ dplyr   1.0.7
-#> ✓ tidyr   1.1.3     ✓ stringr 1.4.0
-#> ✓ readr   2.0.0     ✓ forcats 0.5.1
-#> ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
-#> x dplyr::filter() masks stats::filter()
-#> x dplyr::lag()    masks stats::lag()
-
 # Automatically loads fixest
 library(did2s)
 #> Loading required package: fixest
@@ -169,7 +159,7 @@ fixest::esttable(static)
 #> Adj. R2                   0.26097
 ```
 
-This is very close to the true treatment effect of 2.2384912.
+This is very close to the true treatment effect of \~2.23.
 
 Then, let’s estimate an event study did. Note that relative year has a
 value of `Inf` for never treated, so I put this as a reference in the

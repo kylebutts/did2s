@@ -125,6 +125,9 @@
     <li>
       <a href="../articles/Two-Stage-Difference-in-Differences.html">Two-Stage Difference-in-Differences</a>
     </li>
+    <li>
+      <a href="../articles/event_study.html">So you're trying to choose an event-study estimator...</a>
+    </li>
   </ul>
 </li>
 <li>
@@ -180,12 +183,6 @@
           <p><code><a href="did2s.html">did2s()</a></code> </p>
         </td>
         <td><p>Calculate two-stage difference-in-differences following Gardner (2021)</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="did_imputation.html">did_imputation()</a></code> </p>
-        </td>
-        <td><p>Borusyak, Jaravel, and Spiess (2021) Estimator</p></td>
       </tr>
     </tbody><tbody>
       <tr>
@@ -215,7 +212,7 @@
     </tbody><tbody>
       <tr>
         <th colspan="2">
-          <h2 id="section-extra-functions" class="hasAnchor"><a href="#section-extra-functions" class="anchor"></a>Extra Functions</h2>
+          <h2 id="section-example-data-and-dgp-function" class="hasAnchor"><a href="#section-example-data-and-dgp-function" class="anchor"></a>Example Data and DGP Function</h2>
           <p class="section-desc"></p>
         </th>
       </tr>
@@ -233,9 +230,33 @@
       </tr><tr>
         
         <td>
-          <p><code><a href="theme_kyle.html">theme_kyle()</a></code> </p>
+          <p><code><a href="df_het.html">df_het</a></code> </p>
         </td>
-        <td><p>Kyle Butts' custom ggplot theme</p></td>
+        <td><p>Simulated data with two treatment groups and heterogenous effects
+
+Generated using the following call:
+<code>did2s::gen_data(panel = c(1990, 2020),
+  g1 = 2000, g2 = 2010, g3 = 0,
+  te1 = 2, te2 = 1, te3 = 0,
+  te_m1 = 0.05, te_m2 = 0.15, te_m3 = 0)</code></p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="df_hom.html">df_hom</a></code> </p>
+        </td>
+        <td><p>Simulated data with two treatment groups and homogenous effects
+
+Generated using the following call:
+<code>did2s::gen_data(panel = c(1990, 2020),
+  g1 = 2000, g2 = 2010, g3 = 0,
+  te1 = 2, te2 = 2, te3 = 0,
+  te_m1 = 0, te_m2 = 0, te_m3 = 0)</code></p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="castle.html">castle</a></code> </p>
+        </td>
+        <td><p>Data from Cheng and Hoekstra (2013)</p></td>
       </tr>
     </tbody>
     </table>
@@ -251,7 +272,7 @@
 
       <footer>
       <div class="copyright">
-  <p>Developed by Kyle Butts.</p>
+  <p>Developed by Kyle Butts, John Gardner.</p>
 </div>
 
 <div class="pkgdown">

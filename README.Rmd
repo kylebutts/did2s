@@ -65,9 +65,7 @@ did2s returns a list with two objects:
 
 I will load example data from the package and plot the average outcome among the groups.
 
-```{r load-data, code_folding=TRUE,}
-
-library(tidyverse)
+```{r load-data}
 
 # Automatically loads fixest
 library(did2s)
@@ -78,7 +76,7 @@ data("df_het", package = "did2s")
 
 Here is a plot of the average outcome variable for each of the groups:
 
-```{r plot-df-het, fig.width=8, fig.height=4, fig.cap="Example data with heterogeneous treatment effects", code_folding=TRUE, layout="l-body-outset"}
+```{r plot-df-het, fig.width=8, fig.height=4, fig.cap="Example data with heterogeneous treatment effects"}
 
 # Mean for treatment group-year
 agg <- aggregate(df_het$dep_var, by=list(g = df_het$g, year = df_het$year), FUN = mean)
@@ -121,7 +119,7 @@ fixest::esttable(static)
 
 ```
 
-This is very close to the true treatment effect of `r df_het %>% filter(treat == 1) %>% summarize(att = mean(te + te_dynamic)) %>% pull(att)`.
+This is very close to the true treatment effect of ~2.23.
 
 Then, let's estimate an event study did. Note that relative year has a value of `Inf` for never treated, so I put this as a reference in the second stage formula.
 

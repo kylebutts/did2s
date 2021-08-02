@@ -126,6 +126,9 @@
     <li>
       <a href="../articles/Two-Stage-Difference-in-Differences.html">Two-Stage Difference-in-Differences</a>
     </li>
+    <li>
+      <a href="../articles/event_study.html">So you're trying to choose an event-study estimator...</a>
+    </li>
   </ul>
 </li>
 <li>
@@ -213,6 +216,15 @@
 
     <p>tibble of point estimates for each estimator</p>
 
+    <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
+    <pre class="examples"><div class='input'><span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span><span class='op'>(</span><span class='va'>df_het</span>, package <span class='op'>=</span> <span class='st'>"did2s"</span><span class='op'>)</span>
+<span class='va'>out</span> <span class='op'>=</span> <span class='fu'>event_study</span><span class='op'>(</span>
+  data <span class='op'>=</span> <span class='va'>df_het</span>, yname <span class='op'>=</span> <span class='st'>"dep_var"</span>, idname <span class='op'>=</span> <span class='st'>"unit"</span>,
+    tname <span class='op'>=</span> <span class='st'>"year"</span>, gname <span class='op'>=</span> <span class='st'>"g"</span>
+<span class='op'>)</span>
+</div><div class='output co'>#&gt; <span class='message'>Estimating TWFE Model</span></div><div class='output co'>#&gt; <span class='message'>Estimating using Gardner (2021)</span></div><div class='output co'>#&gt; <span class='message'>Estimating using Callaway and Sant'Anna (2020)</span></div><div class='output co'>#&gt; <span class='message'>Estimating using Sun and Abraham (2020)</span></div><div class='output co'>#&gt; <span class='message'>Estimating using Borusyak, Jaravel, Spiess (2021)</span></div><div class='output co'>#&gt; <span class='message'>Estimatng using Roth and Sant'Anna (2021)</span></div><div class='input'><span class='fu'><a href='plot_event_study.html'>plot_event_study</a></span><span class='op'>(</span><span class='va'>out</span><span class='op'>)</span>
+</div><div class='img'><img src='event_study-1.png' alt='' width='700' height='433' /></div><div class='input'>
+</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">
@@ -224,7 +236,7 @@
 
       <footer>
       <div class="copyright">
-  <p>Developed by Kyle Butts.</p>
+  <p>Developed by Kyle Butts, John Gardner.</p>
 </div>
 
 <div class="pkgdown">

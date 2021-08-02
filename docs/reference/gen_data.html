@@ -126,6 +126,9 @@
     <li>
       <a href="../articles/Two-Stage-Difference-in-Differences.html">Two-Stage Difference-in-Differences</a>
     </li>
+    <li>
+      <a href="../articles/event_study.html">So you're trying to choose an event-study estimator...</a>
+    </li>
   </ul>
 </li>
 <li>
@@ -178,19 +181,43 @@
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
+      <th>g1</th>
+      <td><p>treatment date for group 1. For no treatment, set g = 0.</p></td>
+    </tr>
+    <tr>
+      <th>g2</th>
+      <td><p>treatment date for group 2. For no treatment, set g = 0.</p></td>
+    </tr>
+    <tr>
+      <th>g3</th>
+      <td><p>treatment date for group 3. For no treatment, set g = 0.</p></td>
+    </tr>
+    <tr>
       <th>panel</th>
       <td><p>numeric vector of size 2, start and end years for panel</p></td>
     </tr>
     <tr>
-      <th>g1/g2/g3</th>
-      <td><p>treatment date for group 1, group 2, group 3. For no treatment, set g = 0.</p></td>
+      <th>te1</th>
+      <td><p>treatment effect for group 1. Will ignore for that group if g = 0.</p></td>
     </tr>
     <tr>
-      <th>te1/te2/te3</th>
-      <td><p>treatment effect per group. Will ignore for that group if g = 0.</p></td>
+      <th>te2</th>
+      <td><p>treatment effect for group 1. Will ignore for that group if g = 0.</p></td>
     </tr>
     <tr>
-      <th>te_m1/te_m2/te_m3</th>
+      <th>te3</th>
+      <td><p>treatment effect for group 1. Will ignore for that group if g = 0.</p></td>
+    </tr>
+    <tr>
+      <th>te_m1</th>
+      <td><p>treatment effect slope per year</p></td>
+    </tr>
+    <tr>
+      <th>te_m2</th>
+      <td><p>treatment effect slope per year</p></td>
+    </tr>
+    <tr>
+      <th>te_m3</th>
       <td><p>treatment effect slope per year</p></td>
     </tr>
     </table>
@@ -201,9 +228,15 @@
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'><span class='co'># Homogeneous treatment effect</span>
-<span class='va'>df_hom</span> <span class='op'>&lt;-</span> <span class='fu'>gen_data</span><span class='op'>(</span>panel <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>1990</span>, <span class='fl'>2020</span><span class='op'>)</span>, g1 <span class='op'>=</span> <span class='fl'>2000</span>, g2 <span class='op'>=</span> <span class='fl'>2010</span>, g3 <span class='op'>=</span> <span class='fl'>0</span>, te1 <span class='op'>=</span> <span class='fl'>2</span>, te2 <span class='op'>=</span> <span class='fl'>2</span>, te3 <span class='op'>=</span> <span class='fl'>0</span>, te_m1 <span class='op'>=</span> <span class='fl'>0</span>, te_m2 <span class='op'>=</span> <span class='fl'>0</span>, te_m3 <span class='op'>=</span> <span class='fl'>0</span><span class='op'>)</span>
+<span class='va'>df_hom</span> <span class='op'>&lt;-</span> <span class='fu'>gen_data</span><span class='op'>(</span>panel <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>1990</span>, <span class='fl'>2020</span><span class='op'>)</span>,
+    g1 <span class='op'>=</span> <span class='fl'>2000</span>, g2 <span class='op'>=</span> <span class='fl'>2010</span>, g3 <span class='op'>=</span> <span class='fl'>0</span>,
+    te1 <span class='op'>=</span> <span class='fl'>2</span>, te2 <span class='op'>=</span> <span class='fl'>2</span>, te3 <span class='op'>=</span> <span class='fl'>0</span>,
+    te_m1 <span class='op'>=</span> <span class='fl'>0</span>, te_m2 <span class='op'>=</span> <span class='fl'>0</span>, te_m3 <span class='op'>=</span> <span class='fl'>0</span><span class='op'>)</span>
 <span class='co'># Heterogeneous treatment effect</span>
-<span class='va'>df_het</span> <span class='op'>&lt;-</span> <span class='fu'>gen_data</span><span class='op'>(</span>panel <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>1990</span>, <span class='fl'>2020</span><span class='op'>)</span>, g1 <span class='op'>=</span> <span class='fl'>2000</span>, g2 <span class='op'>=</span> <span class='fl'>2010</span>, g3 <span class='op'>=</span> <span class='fl'>0</span>, te1 <span class='op'>=</span> <span class='fl'>2</span>, te2 <span class='op'>=</span> <span class='fl'>1</span>, te3 <span class='op'>=</span> <span class='fl'>0</span>, te_m1 <span class='op'>=</span> <span class='fl'>0.05</span>, te_m2 <span class='op'>=</span> <span class='fl'>0.15</span>, te_m3 <span class='op'>=</span> <span class='fl'>0</span><span class='op'>)</span>
+<span class='va'>df_het</span> <span class='op'>&lt;-</span> <span class='fu'>gen_data</span><span class='op'>(</span>panel <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>1990</span>, <span class='fl'>2020</span><span class='op'>)</span>,
+    g1 <span class='op'>=</span> <span class='fl'>2000</span>, g2 <span class='op'>=</span> <span class='fl'>2010</span>, g3 <span class='op'>=</span> <span class='fl'>0</span>,
+    te1 <span class='op'>=</span> <span class='fl'>2</span>, te2 <span class='op'>=</span> <span class='fl'>1</span>, te3 <span class='op'>=</span> <span class='fl'>0</span>,
+    te_m1 <span class='op'>=</span> <span class='fl'>0.05</span>, te_m2 <span class='op'>=</span> <span class='fl'>0.15</span>, te_m3 <span class='op'>=</span> <span class='fl'>0</span><span class='op'>)</span>
 
 </div></pre>
   </div>
@@ -217,7 +250,7 @@
 
       <footer>
       <div class="copyright">
-  <p>Developed by Kyle Butts.</p>
+  <p>Developed by Kyle Butts, John Gardner.</p>
 </div>
 
 <div class="pkgdown">

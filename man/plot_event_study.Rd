@@ -19,3 +19,12 @@ ggplot object that can be fully customized
 \description{
 Plot results of \code{\link[=event_study]{event_study()}}
 }
+\examples{
+data(df_het, package = "did2s")
+out = event_study(
+  data = df_het, yname = "dep_var", idname = "unit",
+    tname = "year", gname = "g"
+)
+plot_event_study(out)
+
+}

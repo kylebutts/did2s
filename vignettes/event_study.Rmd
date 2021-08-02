@@ -1,0 +1,61 @@
+---
+title: "So you're trying to choose an event-study estimator..."
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{So you're trying to choose an event-study estimator...}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup, echo = F, message = F, warning = FALSE}
+library(tidyverse)
+library(gt)
+library(kfbmisc)
+```
+
+
+# Comparison Table
+
+There is certainly many more nuances to each estimator, hence this is a simplified version of the table. 
+
+
+```{r, echo = F}
+
+methods <- tribble(
+  ~Estimator, ~`R function`, ~Type, ~`Comparison group`, ~`Main Assumptions`, ~`Covers use of pre-treatment covariates`, ~`Uniform Inference`, 
+  "Gardner (2021)", "`did2s`", "Imputes Y(0)", "Not-yet- and Never-treated", "- Correct specification of Y(0) \n - Parallel Trends for all units \n - Limited anticipation<sup>*</sup>", "✔", "",
+  "Borusyak, Jaravel, and Spiess (2021)", "`didimputation`", "Imputes Y(0)", "Not-yet- and Never-treated", "- Correct specification of Y(0) \n - Parallel Trends for all units \n - Limited anticipation<sup>*</sup>", "✔", "",
+  "Callaway and Sant'Anna (2021)", "`did`", "2x2 Aggregation", "Either Not-yet- or Never-treated", "- Correct specification of evolution of Y(0) *or* Propensity Score \n - Parallel Trends for Not-yet- *or* Never-treated \n - Limited anticipation<sup>*</sup>", "✔", "✔",
+  "Roth and Sant'Anna (2021)", "`staggered`", "2x2 Aggregation","Not-yet-treated", "- Treatment timing is random", "", "",
+  "Sun and Abraham (2020)", "`fixest::sunab`", "Interacted TWFE", "Not-yet- and Never-treated", "- Parallel Trends for all units \n - No Anticipation", "", "",
+)
+
+gt(methods) %>% 
+  kfbmisc::gt_theme_kyle() %>% 
+  tab_header(title = kfbmisc::make_gt_title("Event Study Estimators")) %>% 
+  tab_options(
+    data_row.padding = gt::px(10),
+    table.width = gt::px(1000),
+    source_notes.font.size = gt::px(14)
+  ) %>% 
+  fmt_markdown(columns = `Main Assumptions`) %>% 
+  cols_align(
+    align = "center",
+    columns = `Covers use of pre-treatment covariates`
+  ) %>%
+  tab_source_note(
+    source_note = gt::md("<sup>*</sup> Anticipation can be accounted for by adjusting initial treatment day back x number of years \n\n <sup>**</sup> Misclassifications are my own fault.")
+  )
+
+```
+
+
+
+

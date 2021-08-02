@@ -12,6 +12,15 @@
 #' @param weights Variable name for estimation weights. This is used in estimating Y(0) and also augments treatment effect weights
 #'
 #' @return tibble of point estimates for each estimator
+#'
+#' @examples
+#' data(df_het, package = "did2s")
+#' out = event_study(
+#'   data = df_het, yname = "dep_var", idname = "unit",
+#'     tname = "year", gname = "g"
+#' )
+#' plot_event_study(out)
+#'
 #' @export
 event_study = function(data, yname, idname, gname, tname, xformla = NULL, horizon = NULL, weights = NULL){
 
@@ -168,7 +177,7 @@ event_study = function(data, yname, idname, gname, tname, xformla = NULL, horizo
 	tidy_impute = NULL
 
 	try({
-		impute_first_stage = stats::as.formula(glue::glue("~ {xformla_null} | {idname} + {tname}"))
+		impute_first_stage = stats::as.formula(glue::glue("~ 1 + {xformla_null} + i({tname}) | {idname}"))
 
 		tidy_impute = didimputation::did_imputation(data,
 									 yname = yname, gname = gname, tname = tname, idname = idname,
@@ -176,6 +185,8 @@ event_study = function(data, yname, idname, gname, tname, xformla = NULL, horizo
 
 		# Subset columns
 		tidy_impute = tidy_impute[, c("term", "estimate", "std.error")]
+
+		tidy_impute = tidy_impute[stringr::str_detect(tidy_impute$term, "^(-)?[0-9]+$"), ]
 
 		# Make event time into a numeric
 		tidy_impute$term = as.numeric(tidy_impute$term)
@@ -192,33 +203,36 @@ event_study = function(data, yname, idname, gname, tname, xformla = NULL, horizo
 
 	tidy_staggered = NULL
 
-	try({
-		# Make untreated g = Inf
-		data_staggered = data
-
-		data_staggered[,gname] = ifelse(
-			data_staggered[[gname]] == 0,
-			Inf,
-			data_staggered[[gname]]
-		)
-
-		tidy_staggered = staggered::staggered(
-			data_staggered,
-			i = idname, t = tname, g = gname, y = yname, estimand = "eventstudy",
-			eventTime = event_time[is.finite(event_time) & event_time != -1]
-		)
-
-		# Subset columns
-		tidy_staggered$term = tidy_staggered$eventTime
-		tidy_staggered$std.error = tidy_staggered$se
-
-		tidy_staggered = tidy_staggered[, c("term", "estimate", "std.error")]
-
-		# Add estimator column
-		tidy_staggered$estimator = "Roth and Sant'Anna (2021)"
-	})
-
-	if(is.null(tidy_staggered)) cli::cli_warn("Roth and Sant'Anna (2021) Failed")
+	# try({
+	# 	# Make untreated g = Inf
+	# 	data_staggered = data
+	#
+	# 	data_staggered[,gname] = ifelse(
+	# 		data_staggered[[gname]] == 0,
+	# 		Inf,
+	# 		data_staggered[[gname]]
+	# 	)
+	#
+	# 	event_time_staggered = event_time[is.finite(event_time) & event_time != -1]
+	# 	event_time_staggered = event_time_staggered[event_time_staggered != min(event_time_staggered) ]
+	#
+	# 	tidy_staggered = staggered::staggered(
+	# 		data_staggered,
+	# 		i = idname, t = tname, g = gname, y = yname, estimand = "eventstudy",
+	# 		eventTime = event_time_staggered
+	# 	)
+	#
+	# 	# Subset columns
+	# 	tidy_staggered$term = tidy_staggered$eventTime
+	# 	tidy_staggered$std.error = tidy_staggered$se
+	#
+	# 	tidy_staggered = tidy_staggered[, c("term", "estimate", "std.error")]
+	#
+	# 	# Add estimator column
+	# 	tidy_staggered$estimator = "Roth and Sant'Anna (2021)"
+	# })
+	#
+	# if(is.null(tidy_staggered)) cli::cli_warn("Roth and Sant'Anna (2021) Failed")
 
 
 
@@ -239,6 +253,15 @@ event_study = function(data, yname, idname, gname, tname, xformla = NULL, horizo
 #'
 #' @return ggplot object that can be fully customized
 #' @export
+#'
+#' @examples
+#' data(df_het, package = "did2s")
+#' out = event_study(
+#'   data = df_het, yname = "dep_var", idname = "unit",
+#'     tname = "year", gname = "g"
+#' )
+#' plot_event_study(out)
+#'
 plot_event_study = function(out, seperate = TRUE, horizon = NULL) {
 
 	# Get list of estimators

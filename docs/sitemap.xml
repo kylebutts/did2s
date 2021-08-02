@@ -4,10 +4,16 @@
     <loc>http://kylebutts.com/did2s/index.html</loc>
   </url>
   <url>
-    <loc>http://kylebutts.com/did2s/reference/did2s.html</loc>
+    <loc>http://kylebutts.com/did2s/reference/castle.html</loc>
   </url>
   <url>
-    <loc>http://kylebutts.com/did2s/reference/did_imputation.html</loc>
+    <loc>http://kylebutts.com/did2s/reference/df_het.html</loc>
+  </url>
+  <url>
+    <loc>http://kylebutts.com/did2s/reference/df_hom.html</loc>
+  </url>
+  <url>
+    <loc>http://kylebutts.com/did2s/reference/did2s.html</loc>
   </url>
   <url>
     <loc>http://kylebutts.com/did2s/reference/event_study.html</loc>
@@ -22,9 +28,9 @@
     <loc>http://kylebutts.com/did2s/reference/plot_event_study.html</loc>
   </url>
   <url>
-    <loc>http://kylebutts.com/did2s/reference/theme_kyle.html</loc>
+    <loc>http://kylebutts.com/did2s/articles/Two-Stage-Difference-in-Differences.html</loc>
   </url>
   <url>
-    <loc>http://kylebutts.com/did2s/articles/Two-Stage-Difference-in-Differences.html</loc>
+    <loc>http://kylebutts.com/did2s/articles/event_study.html</loc>
   </url>
 </urlset>

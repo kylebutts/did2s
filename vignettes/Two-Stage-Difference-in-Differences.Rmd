@@ -110,103 +110,104 @@ head(df_het)
 
 Here is a plot of the average outcome variable for each of the groups:
 
-```{r plot-df-het, fig.width=8, fig.height=5, fig.cap="Example data with heterogeneous treatment effects", code_folding=TRUE, layout="l-body-outset"}
-# Mean outcome by group and year
-df_avg = aggregate(df_het[, "dep_var"], 
-				   list(group = df_het$group, year = df_het$year), 
-				   mean)
+```{r plot-df-het, fig.width=8, fig.height=4, fig.cap="Example data with heterogeneous treatment effects"}
 
-# Treatment years
-tyears = unique(subset(df_het, treat==TRUE)$g)
+# Mean for treatment group-year
+agg <- aggregate(df_het$dep_var, by=list(g = df_het$g, year = df_het$year), FUN = mean)
 
-# Plot
-ggplot(df_avg) +
-	geom_line(aes(y = dep_var, x = year, color = group), size = 1.5) +
-	geom_vline(xintercept = tyears - 0.5, linetype = "dashed") +
-	labs(y = "Outcome", x = "Year", color = "Treatment Cohort") +
-	scale_y_continuous(expand = expansion(add = .5)) +
-	scale_color_manual(values = c("Group 1" = "#d2382c",
-								  "Group 2" = "#497eb3",
-								  "Group 3" = "#8e549f")) +
-	theme_minimal(base_size = 12) +
-	theme(legend.position = "bottom")
+agg$g <- as.character(agg$g)
+agg$g <- ifelse(agg$g == "0", "Never Treated", agg$g)
+
+never <- agg[agg$g == "Never Treated", ]
+g1 <- agg[agg$g == "2000", ]
+g2 <- agg[agg$g == "2010", ]
+
+
+plot(0, 0, xlim = c(1990,2020), ylim = c(4,7.2), type = "n",
+     main = "Data-generating Process", ylab = "Outcome", xlab = "Year")
+abline(v = c(1999.5, 2009.5), lty = 2)
+lines(never$year, never$x, col = "#8e549f", type = "b", pch = 15)
+lines(g1$year, g1$x, col = "#497eb3", type = "b", pch = 17)
+lines(g2$year, g2$x, col = "#d2382c", type = "b", pch = 16)
+legend(x=1990, y=7.1, col = c("#8e549f", "#497eb3", "#d2382c"), 
+       pch = c(15, 17, 16),
+       legend = c("Never Treated", "2000", "2010"))
+
+
 ```
 
+### Estimate Two-stage Difference-in-Differences 
 
-### Estimate Two-stage difference-in-differences 
-
-First, let's estimate a simple, static DiD:
+First, lets estimate a static did. There are two things to note here. First, note that I can use `fixest::feols` formula including the `|` for specifying fixed effects and `fixest::i` for improved factor variable support. Second, note that `did2s` returns a `fixest` estimate object, so `fixest::esttable`, `fixest::coefplot`, and `fixest::iplot` all work as expected.
 
 ```{r static}
-static = did2s(df_het,
-			   yname = "dep_var", 
-			   first_stage = ~ 0 | unit + year, 
-			   second_stage = ~ i(treat, ref = FALSE), 
-			   treatment = "treat", 
-			   cluster_var = "state")
+
+# Static
+static <- did2s(df_het, 
+				yname = "dep_var", first_stage = ~ 0 | state + year, 
+				second_stage = ~i(treat, ref=FALSE), treatment = "treat", 
+				cluster_var = "state")
+
+fixest::esttable(static)
+
 ```
 
-Again, note that `did2s` will return a **fixest** object, so all of the regular methods for table exports and plotting will work. For example:
+This is very close to the true treatment effect of ~2.23.
 
-```{r static_etable}
-etable(static)
-```
-
-Next, let's estimate an event study DiD:
+Then, let's estimate an event study did. Note that relative year has a value of `Inf` for never treated, so I put this as a reference in the second stage formula.
 
 ```{r event-study}
-es = did2s(df_het,
-		   yname = "dep_var", 
-		   first_stage = ~ 0 | unit + year, 
-		   second_stage = ~ i(rel_year, ref=c(-1, Inf)), 
-		   treatment = "treat", 
-		   cluster_var = "state")
 
-## Regression table (we'll only show results for relative years -9 to 9 here)
-etable(es, drop = "[[:digit:]]{2}")
+# Event Study
+es <- did2s(df_het,
+			yname = "dep_var", first_stage = ~ 0 | state + year, 
+			second_stage = ~i(rel_year, ref=c(-1, Inf)), treatment = "treat", 
+			cluster_var = "state")
 
 ```
 
-Being a regular **fixest** object, we can use `iplot()` to quickly plot the results.
+And plot the results:
 
-```{r plot-es, fig.width=8, fig.height=5, fig.cap="Event-study plot with example data", code_folding=TRUE, layout="l-body-outset"}
-par(family = "HersheySans") # Nicer fonts for base R plots
+```{r plot-es, fig.cap="Event-study plot with example data"}
 
-iplot(es, 
-	  ref.line = -0.5, 
-	  col = "steelblue",
-	  xlab = "Relative time to treatment",
-	  main = "Event study: Staggered treatment")
+fixest::iplot(es, main = "Event study: Staggered treatment", xlab = "Relative time to treatment", col = "steelblue", ref.line = -0.5)
+
 # Add the (mean) true effects
 true_effects = head(tapply((df_het$te + df_het$te_dynamic), df_het$rel_year, mean), -1)
-points(-20:20, true_effects, pch = 0, col = "#b44682")
+points(-20:20, true_effects, pch = 20, col = "black")
+
 # Legend
-legend("topleft", col = c("steelblue", "#b44682"), pch = c(20, 0), 
+legend(x=-20, y=3, col = c("steelblue", "black"), pch = c(20, 20), 
        legend = c("Two-stage estimate", "True effect"))
+
 ```
 
 
 ### Comparison to TWFE
 
-```{r plot-compare, fig.width=8, fig.height=5, fig.cap="TWFE and Two-Stage estimates of Event-Study", code_folding=TRUE, layout="l-body-outset"}
-# TWFE
+```{r plot-compare, ig.cap="TWFE and Two-Stage estimates of Event-Study"}
+
 twfe = feols(dep_var ~ i(rel_year, ref=c(-1, Inf)) | unit + year, data = df_het) 
 
-par(family = "HersheySans") # Nicer fonts for base R plots
+fixest::iplot(list(es, twfe), sep = 0.2, ref.line = -0.5,
+      col = c("steelblue", "#82b446"), pt.pch = c(20, 18), 
+      xlab = "Relative time to treatment", 
+      main = "Event study: Staggered treatment (comparison)")
 
-iplot(list(es, twfe), 
-	  sep = 0.2, 
-	  ref.line = -0.5,
-	  col = c("steelblue", "#82b446"),
-	  xlab = "Relative time to treatment",
-	  main = "Event study: Staggered treatment (comparison)")
-# Add the true effects
-points(-20:20, true_effects, pch = 0, col = "#b44682")
+
 # Legend
-legend("topleft", col = c("steelblue", "#b44682", "#82b446"), pch = c(20, 0, 17), 
-       legend = c("Two-stage estimate", "True effect", "TWFE"))
+legend(x=-20, y=3, col = c("steelblue", "#82b446"), pch = c(20, 18), 
+       legend = c("Two-stage estimate", "TWFE"))
+
 ```
 
+# Citation
+
+If you use this package to produce scientific or commercial publications, please cite according to:
+
+```{r}
+citation(package = "did2s")
+```
 
 # References
 

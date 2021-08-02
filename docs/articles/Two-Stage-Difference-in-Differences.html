@@ -73,6 +73,9 @@
 <li>
       <a href="../articles/Two-Stage-Difference-in-Differences.html">Two-Stage Difference-in-Differences</a>
     </li>
+    <li>
+      <a href="../articles/event_study.html">So you're trying to choose an event-study estimator...</a>
+    </li>
   </ul>
 </li>
 <li>
@@ -89,7 +92,7 @@
 
       
 
-      </header><script src="Two-Stage-Difference-in-Differences_files/header-attrs-2.8/header-attrs.js"></script><div class="row">
+      </header><script src="Two-Stage-Difference-in-Differences_files/header-attrs-2.9/header-attrs.js"></script><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
       <h1 data-toc-skip>Two-Stage Difference-in-Differences</h1>
@@ -181,35 +184,34 @@ This R package allows you to specify the variable <span class="math inline">\(D_
 <a href="#example" class="anchor"></a>Example</h3>
 <p>Let’s walk through an example dataset from the package.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="http://kylebutts.com/did2s">did2s</a></span><span class="op">)</span> <span class="co">## The main package. Will automatically load fixest as well.</span>
+<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="http://kylebutts.com/did2s/">did2s</a></span><span class="op">)</span> <span class="co">## The main package. Will automatically load fixest as well.</span>
 <span class="co">#&gt; Loading required package: fixest</span>
-<span class="co">#&gt; fixest 0.9.0, BREAKING changes! (Permanently remove this message with fixest_startup_msg(FALSE).) </span>
+<span class="co">#&gt; From fixest 0.9.0 onward, BREAKING changes! (Permanently remove this message with fixest_startup_msg(FALSE).) </span>
 <span class="co">#&gt; - In i():</span>
 <span class="co">#&gt;     + the first two arguments have been swapped! Now it's i(factor_var, continuous_var) for interactions. </span>
 <span class="co">#&gt;     + argument 'drop' has been removed (put everything in 'ref' now).</span>
 <span class="co">#&gt; - In feglm(): </span>
 <span class="co">#&gt;     + the default family becomes 'gaussian' to be in line with glm(). Hence, for Poisson estimations, please use fepois() instead.</span>
 <span class="co">#&gt; ℹ did2s (v0.4.0). For more information on the methodology, visit &lt;https://www.kylebutts.com/did2s&gt;</span>
-<span class="co">#&gt; </span>
 <span class="co">#&gt; To cite did2s in publications use:</span>
 <span class="co">#&gt; </span>
-<span class="co">#&gt;   Butts, Kyle (2021).  did2s: Imputation Based</span>
-<span class="co">#&gt;   Difference-in-Differences. R package version 0.4.0.</span>
+<span class="co">#&gt;   Butts, Kyle (2021).  did2s: Two-Stage Difference-in-Differences</span>
+<span class="co">#&gt;   Following Gardner (2021). R package version 0.4.0.</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; A BibTeX entry for LaTeX users is</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt;   @Manual{,</span>
-<span class="co">#&gt;     title = {did2s: Imputation Based Difference-in-Differences},</span>
+<span class="co">#&gt;     title = {did2s: Two-Stage Difference-in-Differences Following Gardner (2021)},</span>
 <span class="co">#&gt;     author = {Kyle Butts},</span>
 <span class="co">#&gt;     year = {2021},</span>
-<span class="co">#&gt;     url = {https://www.github.com/kylebutts/did2s},</span>
+<span class="co">#&gt;     url = {https://www.github.com/kylebutts/did2s/},</span>
 <span class="co">#&gt;   }</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org">ggplot2</a></span><span class="op">)</span>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org">ggplot2</a></span><span class="op">)</span> 
 
 <span class="co">## Load heterogeneous treatment dataset from the package</span>
 <span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span><span class="op">(</span><span class="st">"df_het"</span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span><span class="op">(</span><span class="va">df_het</span><span class="op">)</span>
-<span class="co">#&gt; # A tibble: 6 x 14</span>
+<span class="co">#&gt; # A tibble: 6 × 14</span>
 <span class="co">#&gt;    unit state unit_fe group       g  year year_fe treat rel_year rel_year_binned</span>
 <span class="co">#&gt;   &lt;int&gt; &lt;int&gt;   &lt;dbl&gt; &lt;chr&gt;   &lt;dbl&gt; &lt;int&gt;   &lt;dbl&gt; &lt;lgl&gt;    &lt;dbl&gt;           &lt;dbl&gt;</span>
 <span class="co">#&gt; 1     1     5   0.719 Group 3     0  1990  -0.108 FALSE      Inf             Inf</span>
@@ -222,25 +224,27 @@ This R package allows you to specify the variable <span class="math inline">\(D_
 <span class="co">#&gt; #   dep_var &lt;dbl&gt;</span></code></pre></div>
 <p>Here is a plot of the average outcome variable for each of the groups:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co"># Mean outcome by group and year</span>
-<span class="va">df_avg</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/aggregate.html">aggregate</a></span><span class="op">(</span><span class="va">df_het</span><span class="op">[</span>, <span class="st">"dep_var"</span><span class="op">]</span>, 
-                   <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>group <span class="op">=</span> <span class="va">df_het</span><span class="op">$</span><span class="va">group</span>, year <span class="op">=</span> <span class="va">df_het</span><span class="op">$</span><span class="va">year</span><span class="op">)</span>, 
-                   <span class="va">mean</span><span class="op">)</span>
+<code class="sourceCode R">
+<span class="co"># Mean for treatment group-year</span>
+<span class="va">agg</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/aggregate.html">aggregate</a></span><span class="op">(</span><span class="va">df_het</span><span class="op">$</span><span class="va">dep_var</span>, by<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>g <span class="op">=</span> <span class="va">df_het</span><span class="op">$</span><span class="va">g</span>, year <span class="op">=</span> <span class="va">df_het</span><span class="op">$</span><span class="va">year</span><span class="op">)</span>, FUN <span class="op">=</span> <span class="va">mean</span><span class="op">)</span>
 
-<span class="co"># Treatment years</span>
-<span class="va">tyears</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html">unique</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/subset.html">subset</a></span><span class="op">(</span><span class="va">df_het</span>, <span class="va">treat</span><span class="op">==</span><span class="cn">TRUE</span><span class="op">)</span><span class="op">$</span><span class="va">g</span><span class="op">)</span>
+<span class="va">agg</span><span class="op">$</span><span class="va">g</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html">as.character</a></span><span class="op">(</span><span class="va">agg</span><span class="op">$</span><span class="va">g</span><span class="op">)</span>
+<span class="va">agg</span><span class="op">$</span><span class="va">g</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html">ifelse</a></span><span class="op">(</span><span class="va">agg</span><span class="op">$</span><span class="va">g</span> <span class="op">==</span> <span class="st">"0"</span>, <span class="st">"Never Treated"</span>, <span class="va">agg</span><span class="op">$</span><span class="va">g</span><span class="op">)</span>
 
-<span class="co"># Plot</span>
-<span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="va">df_avg</span><span class="op">)</span> <span class="op">+</span>
-    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html">geom_line</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>y <span class="op">=</span> <span class="va">dep_var</span>, x <span class="op">=</span> <span class="va">year</span>, color <span class="op">=</span> <span class="va">group</span><span class="op">)</span>, size <span class="op">=</span> <span class="fl">1.5</span><span class="op">)</span> <span class="op">+</span>
-    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_abline.html">geom_vline</a></span><span class="op">(</span>xintercept <span class="op">=</span> <span class="va">tyears</span> <span class="op">-</span> <span class="fl">0.5</span>, linetype <span class="op">=</span> <span class="st">"dashed"</span><span class="op">)</span> <span class="op">+</span>
-    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">labs</a></span><span class="op">(</span>y <span class="op">=</span> <span class="st">"Outcome"</span>, x <span class="op">=</span> <span class="st">"Year"</span>, color <span class="op">=</span> <span class="st">"Treatment Cohort"</span><span class="op">)</span> <span class="op">+</span>
-    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html">scale_y_continuous</a></span><span class="op">(</span>expand <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/expansion.html">expansion</a></span><span class="op">(</span>add <span class="op">=</span> <span class="fl">.5</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span>
-    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_manual.html">scale_color_manual</a></span><span class="op">(</span>values <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Group 1"</span> <span class="op">=</span> <span class="st">"#d2382c"</span>,
-                                  <span class="st">"Group 2"</span> <span class="op">=</span> <span class="st">"#497eb3"</span>,
-                                  <span class="st">"Group 3"</span> <span class="op">=</span> <span class="st">"#8e549f"</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span>
-    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html">theme_minimal</a></span><span class="op">(</span>base_size <span class="op">=</span> <span class="fl">12</span><span class="op">)</span> <span class="op">+</span>
-    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html">theme</a></span><span class="op">(</span>legend.position <span class="op">=</span> <span class="st">"bottom"</span><span class="op">)</span></code></pre></div>
+<span class="va">never</span> <span class="op">&lt;-</span> <span class="va">agg</span><span class="op">[</span><span class="va">agg</span><span class="op">$</span><span class="va">g</span> <span class="op">==</span> <span class="st">"Never Treated"</span>, <span class="op">]</span>
+<span class="va">g1</span> <span class="op">&lt;-</span> <span class="va">agg</span><span class="op">[</span><span class="va">agg</span><span class="op">$</span><span class="va">g</span> <span class="op">==</span> <span class="st">"2000"</span>, <span class="op">]</span>
+<span class="va">g2</span> <span class="op">&lt;-</span> <span class="va">agg</span><span class="op">[</span><span class="va">agg</span><span class="op">$</span><span class="va">g</span> <span class="op">==</span> <span class="st">"2010"</span>, <span class="op">]</span>
+
+
+<span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0</span>, xlim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1990</span>,<span class="fl">2020</span><span class="op">)</span>, ylim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">4</span>,<span class="fl">7.2</span><span class="op">)</span>, type <span class="op">=</span> <span class="st">"n"</span>,
+     main <span class="op">=</span> <span class="st">"Data-generating Process"</span>, ylab <span class="op">=</span> <span class="st">"Outcome"</span>, xlab <span class="op">=</span> <span class="st">"Year"</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/graphics/abline.html">abline</a></span><span class="op">(</span>v <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1999.5</span>, <span class="fl">2009.5</span><span class="op">)</span>, lty <span class="op">=</span> <span class="fl">2</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/graphics/lines.html">lines</a></span><span class="op">(</span><span class="va">never</span><span class="op">$</span><span class="va">year</span>, <span class="va">never</span><span class="op">$</span><span class="va">x</span>, col <span class="op">=</span> <span class="st">"#8e549f"</span>, type <span class="op">=</span> <span class="st">"b"</span>, pch <span class="op">=</span> <span class="fl">15</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/graphics/lines.html">lines</a></span><span class="op">(</span><span class="va">g1</span><span class="op">$</span><span class="va">year</span>, <span class="va">g1</span><span class="op">$</span><span class="va">x</span>, col <span class="op">=</span> <span class="st">"#497eb3"</span>, type <span class="op">=</span> <span class="st">"b"</span>, pch <span class="op">=</span> <span class="fl">17</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/graphics/lines.html">lines</a></span><span class="op">(</span><span class="va">g2</span><span class="op">$</span><span class="va">year</span>, <span class="va">g2</span><span class="op">$</span><span class="va">x</span>, col <span class="op">=</span> <span class="st">"#d2382c"</span>, type <span class="op">=</span> <span class="st">"b"</span>, pch <span class="op">=</span> <span class="fl">16</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/graphics/legend.html">legend</a></span><span class="op">(</span>x<span class="op">=</span><span class="fl">1990</span>, y<span class="op">=</span><span class="fl">7.1</span>, col <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"#8e549f"</span>, <span class="st">"#497eb3"</span>, <span class="st">"#d2382c"</span><span class="op">)</span>, 
+       pch <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">15</span>, <span class="fl">17</span>, <span class="fl">16</span><span class="op">)</span>,
+       legend <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Never Treated"</span>, <span class="st">"2000"</span>, <span class="st">"2010"</span><span class="op">)</span><span class="op">)</span></code></pre></div>
 <div class="figure">
 <img src="Two-Stage-Difference-in-Differences_files/figure-html/plot-df-het-1.png" alt="Example data with heterogeneous treatment effects" width="768"><p class="caption">
 Example data with heterogeneous treatment effects
@@ -249,91 +253,59 @@ Example data with heterogeneous treatment effects
 </div>
 <div id="estimate-two-stage-difference-in-differences" class="section level3">
 <h3 class="hasAnchor">
-<a href="#estimate-two-stage-difference-in-differences" class="anchor"></a>Estimate Two-stage difference-in-differences</h3>
-<p>First, let’s estimate a simple, static DiD:</p>
+<a href="#estimate-two-stage-difference-in-differences" class="anchor"></a>Estimate Two-stage Difference-in-Differences</h3>
+<p>First, lets estimate a static did. There are two things to note here. First, note that I can use <code><a href="https://lrberge.github.io/fixest/reference/feols.html">fixest::feols</a></code> formula including the <code><a href="https://rdrr.io/r/base/Logic.html">|</a></code> for specifying fixed effects and <code><a href="https://lrberge.github.io/fixest/reference/i.html">fixest::i</a></code> for improved factor variable support. Second, note that <code>did2s</code> returns a <code>fixest</code> estimate object, so <code><a href="https://lrberge.github.io/fixest/reference/etable.html">fixest::esttable</a></code>, <code><a href="https://lrberge.github.io/fixest/reference/coefplot.html">fixest::coefplot</a></code>, and <code><a href="https://lrberge.github.io/fixest/reference/coefplot.html">fixest::iplot</a></code> all work as expected.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">static</span> <span class="op">=</span> <span class="fu"><a href="../reference/did2s.html">did2s</a></span><span class="op">(</span><span class="va">df_het</span>,
-               yname <span class="op">=</span> <span class="st">"dep_var"</span>, 
-               first_stage <span class="op">=</span> <span class="op">~</span> <span class="fl">0</span> <span class="op">|</span> <span class="va">unit</span> <span class="op">+</span> <span class="va">year</span>, 
-               second_stage <span class="op">=</span> <span class="op">~</span> <span class="fu"><a href="https://lrberge.github.io/fixest/reference/i.html">i</a></span><span class="op">(</span><span class="va">treat</span>, ref <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span>, 
-               treatment <span class="op">=</span> <span class="st">"treat"</span>, 
-               cluster_var <span class="op">=</span> <span class="st">"state"</span><span class="op">)</span>
+<code class="sourceCode R">
+<span class="co"># Static</span>
+<span class="va">static</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/did2s.html">did2s</a></span><span class="op">(</span><span class="va">df_het</span>, 
+                yname <span class="op">=</span> <span class="st">"dep_var"</span>, first_stage <span class="op">=</span> <span class="op">~</span> <span class="fl">0</span> <span class="op">|</span> <span class="va">state</span> <span class="op">+</span> <span class="va">year</span>, 
+                second_stage <span class="op">=</span> <span class="op">~</span><span class="fu">i</span><span class="op">(</span><span class="va">treat</span>, ref<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span>, treatment <span class="op">=</span> <span class="st">"treat"</span>, 
+                cluster_var <span class="op">=</span> <span class="st">"state"</span><span class="op">)</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; ── Two-stage Difference-in-Differences ─────────────────────────────────────────</span>
-<span class="co">#&gt; → Running with first stage formula `~ 0 | unit + year` and second stage formula `~ i(treat, ref = FALSE)`</span>
-<span class="co">#&gt; → The indicator variable that denotes when treatment is on is `treat`</span>
-<span class="co">#&gt; → Standard errors will be clustered by `state`</span></code></pre></div>
-<p>Again, note that <code>did2s</code> will return a <strong>fixest</strong> object, so all of the regular methods for table exports and plotting will work. For example:</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="https://lrberge.github.io/fixest/reference/etable.html">etable</a></span><span class="op">(</span><span class="va">static</span><span class="op">)</span>
-<span class="co">#&gt;                            static</span>
-<span class="co">#&gt; Dependent Var.:           dep_var</span>
-<span class="co">#&gt;                                  </span>
-<span class="co">#&gt; treat = TRUE    2.263*** (0.0319)</span>
-<span class="co">#&gt; _______________ _________________</span>
-<span class="co">#&gt; S.E. type                  Custom</span>
-<span class="co">#&gt; Observations               31,000</span>
-<span class="co">#&gt; R2                        0.35288</span>
-<span class="co">#&gt; Adj. R2                   0.35288</span></code></pre></div>
-<p>Next, let’s estimate an event study DiD:</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">es</span> <span class="op">=</span> <span class="fu"><a href="../reference/did2s.html">did2s</a></span><span class="op">(</span><span class="va">df_het</span>,
-           yname <span class="op">=</span> <span class="st">"dep_var"</span>, 
-           first_stage <span class="op">=</span> <span class="op">~</span> <span class="fl">0</span> <span class="op">|</span> <span class="va">unit</span> <span class="op">+</span> <span class="va">year</span>, 
-           second_stage <span class="op">=</span> <span class="op">~</span> <span class="fu"><a href="https://lrberge.github.io/fixest/reference/i.html">i</a></span><span class="op">(</span><span class="va">rel_year</span>, ref<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">1</span>, <span class="cn">Inf</span><span class="op">)</span><span class="op">)</span>, 
-           treatment <span class="op">=</span> <span class="st">"treat"</span>, 
-           cluster_var <span class="op">=</span> <span class="st">"state"</span><span class="op">)</span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt; ── Two-stage Difference-in-Differences ─────────────────────────────────────────</span>
-<span class="co">#&gt; → Running with first stage formula `~ 0 | unit + year` and second stage formula `~ i(rel_year, ref = c(-1, Inf))`</span>
+<span class="co">#&gt; → Running with first stage formula `~ 0 | state + year` and second stage formula `~ i(treat, ref = FALSE)`</span>
 <span class="co">#&gt; → The indicator variable that denotes when treatment is on is `treat`</span>
 <span class="co">#&gt; → Standard errors will be clustered by `state`</span>
 
-<span class="co">## Regression table (we'll only show results for relative years -9 to 9 here)</span>
-<span class="fu"><a href="https://lrberge.github.io/fixest/reference/etable.html">etable</a></span><span class="op">(</span><span class="va">es</span>, drop <span class="op">=</span> <span class="st">"[[:digit:]]{2}"</span><span class="op">)</span>
-<span class="co">#&gt;                                es</span>
+<span class="fu">fixest</span><span class="fu">::</span><span class="fu"><a href="https://lrberge.github.io/fixest/reference/etable.html">esttable</a></span><span class="op">(</span><span class="va">static</span><span class="op">)</span>
+<span class="co">#&gt;                            static</span>
 <span class="co">#&gt; Dependent Var.:           dep_var</span>
 <span class="co">#&gt;                                  </span>
-<span class="co">#&gt; rel_year = -9     0.0130 (0.0353)</span>
-<span class="co">#&gt; rel_year = -8    -0.0143 (0.0356)</span>
-<span class="co">#&gt; rel_year = -7     0.0533 (0.0341)</span>
-<span class="co">#&gt; rel_year = -6   -0.0828* (0.0386)</span>
-<span class="co">#&gt; rel_year = -5    -0.0377 (0.0405)</span>
-<span class="co">#&gt; rel_year = -4    -0.0064 (0.0391)</span>
-<span class="co">#&gt; rel_year = -3    -0.0075 (0.0432)</span>
-<span class="co">#&gt; rel_year = -2     0.0316 (0.0384)</span>
-<span class="co">#&gt; rel_year = 0    1.513*** (0.0721)</span>
-<span class="co">#&gt; rel_year = 1    1.664*** (0.0706)</span>
-<span class="co">#&gt; rel_year = 2    1.864*** (0.0748)</span>
-<span class="co">#&gt; rel_year = 3    1.919*** (0.0779)</span>
-<span class="co">#&gt; rel_year = 4    1.873*** (0.0610)</span>
-<span class="co">#&gt; rel_year = 5    1.878*** (0.0806)</span>
-<span class="co">#&gt; rel_year = 6    2.144*** (0.0785)</span>
-<span class="co">#&gt; rel_year = 7    2.238*** (0.0631)</span>
-<span class="co">#&gt; rel_year = 8    2.337*** (0.0671)</span>
-<span class="co">#&gt; rel_year = 9    2.344*** (0.0894)</span>
+<span class="co">#&gt; treat = TRUE    2.203*** (0.0559)</span>
 <span class="co">#&gt; _______________ _________________</span>
 <span class="co">#&gt; S.E. type                  Custom</span>
 <span class="co">#&gt; Observations               31,000</span>
-<span class="co">#&gt; R2                        0.37286</span>
-<span class="co">#&gt; Adj. R2                   0.37207</span></code></pre></div>
-<p>Being a regular <strong>fixest</strong> object, we can use <code><a href="https://lrberge.github.io/fixest/reference/coefplot.html">iplot()</a></code> to quickly plot the results.</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/par.html">par</a></span><span class="op">(</span>family <span class="op">=</span> <span class="st">"HersheySans"</span><span class="op">)</span> <span class="co"># Nicer fonts for base R plots</span>
+<span class="co">#&gt; R2                        0.26097</span>
+<span class="co">#&gt; Adj. R2                   0.26097</span></code></pre></div>
+<p>This is very close to the true treatment effect of ~2.23.</p>
+<p>Then, let’s estimate an event study did. Note that relative year has a value of <code>Inf</code> for never treated, so I put this as a reference in the second stage formula.</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R">
+<span class="co"># Event Study</span>
+<span class="va">es</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/did2s.html">did2s</a></span><span class="op">(</span><span class="va">df_het</span>,
+            yname <span class="op">=</span> <span class="st">"dep_var"</span>, first_stage <span class="op">=</span> <span class="op">~</span> <span class="fl">0</span> <span class="op">|</span> <span class="va">state</span> <span class="op">+</span> <span class="va">year</span>, 
+            second_stage <span class="op">=</span> <span class="op">~</span><span class="fu">i</span><span class="op">(</span><span class="va">rel_year</span>, ref<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">1</span>, <span class="cn">Inf</span><span class="op">)</span><span class="op">)</span>, treatment <span class="op">=</span> <span class="st">"treat"</span>, 
+            cluster_var <span class="op">=</span> <span class="st">"state"</span><span class="op">)</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; ── Two-stage Difference-in-Differences ─────────────────────────────────────────</span>
+<span class="co">#&gt; → Running with first stage formula `~ 0 | state + year` and second stage formula `~ i(rel_year, ref = c(-1, Inf))`</span>
+<span class="co">#&gt; → The indicator variable that denotes when treatment is on is `treat`</span>
+<span class="co">#&gt; → Standard errors will be clustered by `state`</span></code></pre></div>
+<p>And plot the results:</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R">
+<span class="fu">fixest</span><span class="fu">::</span><span class="fu"><a href="https://lrberge.github.io/fixest/reference/coefplot.html">iplot</a></span><span class="op">(</span><span class="va">es</span>, main <span class="op">=</span> <span class="st">"Event study: Staggered treatment"</span>, xlab <span class="op">=</span> <span class="st">"Relative time to treatment"</span>, col <span class="op">=</span> <span class="st">"steelblue"</span>, ref.line <span class="op">=</span> <span class="op">-</span><span class="fl">0.5</span><span class="op">)</span>
 
-<span class="fu"><a href="https://lrberge.github.io/fixest/reference/coefplot.html">iplot</a></span><span class="op">(</span><span class="va">es</span>, 
-      ref.line <span class="op">=</span> <span class="op">-</span><span class="fl">0.5</span>, 
-      col <span class="op">=</span> <span class="st">"steelblue"</span>,
-      xlab <span class="op">=</span> <span class="st">"Relative time to treatment"</span>,
-      main <span class="op">=</span> <span class="st">"Event study: Staggered treatment"</span><span class="op">)</span>
 <span class="co"># Add the (mean) true effects</span>
 <span class="va">true_effects</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/tapply.html">tapply</a></span><span class="op">(</span><span class="op">(</span><span class="va">df_het</span><span class="op">$</span><span class="va">te</span> <span class="op">+</span> <span class="va">df_het</span><span class="op">$</span><span class="va">te_dynamic</span><span class="op">)</span>, <span class="va">df_het</span><span class="op">$</span><span class="va">rel_year</span>, <span class="va">mean</span><span class="op">)</span>, <span class="op">-</span><span class="fl">1</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/graphics/points.html">points</a></span><span class="op">(</span><span class="op">-</span><span class="fl">20</span><span class="op">:</span><span class="fl">20</span>, <span class="va">true_effects</span>, pch <span class="op">=</span> <span class="fl">0</span>, col <span class="op">=</span> <span class="st">"#b44682"</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/graphics/points.html">points</a></span><span class="op">(</span><span class="op">-</span><span class="fl">20</span><span class="op">:</span><span class="fl">20</span>, <span class="va">true_effects</span>, pch <span class="op">=</span> <span class="fl">20</span>, col <span class="op">=</span> <span class="st">"black"</span><span class="op">)</span>
+
 <span class="co"># Legend</span>
-<span class="fu"><a href="https://rdrr.io/r/graphics/legend.html">legend</a></span><span class="op">(</span><span class="st">"topleft"</span>, col <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"steelblue"</span>, <span class="st">"#b44682"</span><span class="op">)</span>, pch <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">20</span>, <span class="fl">0</span><span class="op">)</span>, 
+<span class="fu"><a href="https://rdrr.io/r/graphics/legend.html">legend</a></span><span class="op">(</span>x<span class="op">=</span><span class="op">-</span><span class="fl">20</span>, y<span class="op">=</span><span class="fl">3</span>, col <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"steelblue"</span>, <span class="st">"black"</span><span class="op">)</span>, pch <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">20</span>, <span class="fl">20</span><span class="op">)</span>, 
        legend <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Two-stage estimate"</span>, <span class="st">"True effect"</span><span class="op">)</span><span class="op">)</span></code></pre></div>
 <div class="figure">
-<img src="Two-Stage-Difference-in-Differences_files/figure-html/plot-es-1.png" alt="Event-study plot with example data" width="768"><p class="caption">
+<img src="Two-Stage-Difference-in-Differences_files/figure-html/plot-es-1.png" alt="Event-study plot with example data" width="700"><p class="caption">
 Event-study plot with example data
 </p>
 </div>
@@ -341,29 +313,42 @@ Event-study plot with example data
 <div id="comparison-to-twfe" class="section level3">
 <h3 class="hasAnchor">
 <a href="#comparison-to-twfe" class="anchor"></a>Comparison to TWFE</h3>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co"># TWFE</span>
-<span class="va">twfe</span> <span class="op">=</span> <span class="fu"><a href="https://lrberge.github.io/fixest/reference/feols.html">feols</a></span><span class="op">(</span><span class="va">dep_var</span> <span class="op">~</span> <span class="fu"><a href="https://lrberge.github.io/fixest/reference/i.html">i</a></span><span class="op">(</span><span class="va">rel_year</span>, ref<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">1</span>, <span class="cn">Inf</span><span class="op">)</span><span class="op">)</span> <span class="op">|</span> <span class="va">unit</span> <span class="op">+</span> <span class="va">year</span>, data <span class="op">=</span> <span class="va">df_het</span><span class="op">)</span> 
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R">
+<span class="va">twfe</span> <span class="op">=</span> <span class="fu">feols</span><span class="op">(</span><span class="va">dep_var</span> <span class="op">~</span> <span class="fu">i</span><span class="op">(</span><span class="va">rel_year</span>, ref<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">1</span>, <span class="cn">Inf</span><span class="op">)</span><span class="op">)</span> <span class="op">|</span> <span class="va">unit</span> <span class="op">+</span> <span class="va">year</span>, data <span class="op">=</span> <span class="va">df_het</span><span class="op">)</span> 
 
-<span class="fu"><a href="https://rdrr.io/r/graphics/par.html">par</a></span><span class="op">(</span>family <span class="op">=</span> <span class="st">"HersheySans"</span><span class="op">)</span> <span class="co"># Nicer fonts for base R plots</span>
-
-<span class="fu"><a href="https://lrberge.github.io/fixest/reference/coefplot.html">iplot</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="va">es</span>, <span class="va">twfe</span><span class="op">)</span>, 
-      sep <span class="op">=</span> <span class="fl">0.2</span>, 
-      ref.line <span class="op">=</span> <span class="op">-</span><span class="fl">0.5</span>,
-      col <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"steelblue"</span>, <span class="st">"#82b446"</span><span class="op">)</span>,
-      xlab <span class="op">=</span> <span class="st">"Relative time to treatment"</span>,
+<span class="fu">fixest</span><span class="fu">::</span><span class="fu"><a href="https://lrberge.github.io/fixest/reference/coefplot.html">iplot</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="va">es</span>, <span class="va">twfe</span><span class="op">)</span>, sep <span class="op">=</span> <span class="fl">0.2</span>, ref.line <span class="op">=</span> <span class="op">-</span><span class="fl">0.5</span>,
+      col <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"steelblue"</span>, <span class="st">"#82b446"</span><span class="op">)</span>, pt.pch <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">20</span>, <span class="fl">18</span><span class="op">)</span>, 
+      xlab <span class="op">=</span> <span class="st">"Relative time to treatment"</span>, 
       main <span class="op">=</span> <span class="st">"Event study: Staggered treatment (comparison)"</span><span class="op">)</span>
-<span class="co"># Add the true effects</span>
-<span class="fu"><a href="https://rdrr.io/r/graphics/points.html">points</a></span><span class="op">(</span><span class="op">-</span><span class="fl">20</span><span class="op">:</span><span class="fl">20</span>, <span class="va">true_effects</span>, pch <span class="op">=</span> <span class="fl">0</span>, col <span class="op">=</span> <span class="st">"#b44682"</span><span class="op">)</span>
+
+
 <span class="co"># Legend</span>
-<span class="fu"><a href="https://rdrr.io/r/graphics/legend.html">legend</a></span><span class="op">(</span><span class="st">"topleft"</span>, col <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"steelblue"</span>, <span class="st">"#b44682"</span>, <span class="st">"#82b446"</span><span class="op">)</span>, pch <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">20</span>, <span class="fl">0</span>, <span class="fl">17</span><span class="op">)</span>, 
-       legend <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Two-stage estimate"</span>, <span class="st">"True effect"</span>, <span class="st">"TWFE"</span><span class="op">)</span><span class="op">)</span></code></pre></div>
-<div class="figure">
-<img src="Two-Stage-Difference-in-Differences_files/figure-html/plot-compare-1.png" alt="TWFE and Two-Stage estimates of Event-Study" width="768"><p class="caption">
-TWFE and Two-Stage estimates of Event-Study
-</p>
+<span class="fu"><a href="https://rdrr.io/r/graphics/legend.html">legend</a></span><span class="op">(</span>x<span class="op">=</span><span class="op">-</span><span class="fl">20</span>, y<span class="op">=</span><span class="fl">3</span>, col <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"steelblue"</span>, <span class="st">"#82b446"</span><span class="op">)</span>, pch <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">20</span>, <span class="fl">18</span><span class="op">)</span>, 
+       legend <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Two-stage estimate"</span>, <span class="st">"TWFE"</span><span class="op">)</span><span class="op">)</span></code></pre></div>
+<p><img src="Two-Stage-Difference-in-Differences_files/figure-html/plot-compare-1.png" width="700"></p>
 </div>
 </div>
+<div id="citation" class="section level1">
+<h1 class="hasAnchor">
+<a href="#citation" class="anchor"></a>Citation</h1>
+<p>If you use this package to produce scientific or commercial publications, please cite according to:</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/utils/citation.html">citation</a></span><span class="op">(</span>package <span class="op">=</span> <span class="st">"did2s"</span><span class="op">)</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; To cite did2s in publications use:</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt;   Butts, Kyle (2021).  did2s: Two-Stage Difference-in-Differences</span>
+<span class="co">#&gt;   Following Gardner (2021). R package version 0.4.0.</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; A BibTeX entry for LaTeX users is</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt;   @Manual{,</span>
+<span class="co">#&gt;     title = {did2s: Two-Stage Difference-in-Differences Following Gardner (2021)},</span>
+<span class="co">#&gt;     author = {Kyle Butts},</span>
+<span class="co">#&gt;     year = {2021},</span>
+<span class="co">#&gt;     url = {https://www.github.com/kylebutts/did2s/},</span>
+<span class="co">#&gt;   }</span></code></pre></div>
 </div>
 <div id="references" class="section level1">
 <h1 class="hasAnchor">
@@ -390,7 +375,7 @@ TWFE and Two-Stage estimates of Event-Study
 
 
       <footer><div class="copyright">
-  <p>Developed by Kyle Butts.</p>
+  <p>Developed by Kyle Butts, John Gardner.</p>
 </div>
 
 <div class="pkgdown">
