@@ -1,5 +1,7 @@
 #' Calculate two-stage difference-in-differences following Gardner (2021)
 #'
+#' @import fixest
+#'
 #' @param data The dataframe containing all the variables
 #' @param yname Outcome variable
 #' @param first_stage Fixed effects and other covariates you want to residualize
@@ -22,7 +24,10 @@
 #'   procedure be printed back to the user?
 #'   Default is `TRUE`.
 #'
-#' @return fixest::feols point estimate with adjusted standard errors (either by formula or by bootstrap)
+#' @return `fixest` object with adjusted standard errors
+#'   (either by formula or by bootstrap). All the methods from `fixest` package
+#'   will work, including \code{\link[fixest:esttable]{fixest::esttable}} and
+#'   \code{\link[fixest:coefplot]{fixest::coefplot}}
 #' @export
 #' @section Examples:
 #'
@@ -34,6 +39,8 @@
 #' data("df_hom")
 #' ```
 #'
+#' ### Static TWFE
+#'
 #' You can run a static TWFE fixed effect model for a simple treatment indicator
 #' ```{r, comment = "#>", collapse = TRUE}
 #' static <- did2s(df_hom,
@@ -43,6 +50,8 @@
 #'
 #' fixest::esttable(static)
 #' ```
+#'
+#' ### Event Study
 #'
 #' Or you can use relative-treatment indicators to estimate an event study estimate
 #' ```{r, comment = "#>", collapse = TRUE}
@@ -54,7 +63,14 @@
 #' fixest::esttable(es)
 #' ```
 #'
-#' Here's an example using data from Castle (2013)
+#' ```{r, eval = F}
+#' # plot rel_year coefficients and standard errors
+#' fixest::coefplot(es, keep = "rel_year::(.*)")
+#' ```
+#'
+#' ### Example from Cheng and Hoekstra (2013)
+#'
+#' Here's an example using data from Cheng and Hoekstra (2013)
 #' ```{r, comment = "#>", collapse = TRUE}
 #' # Castle Data
 #' castle <- haven::read_dta("https://github.com/scunning1975/mixtape/raw/master/castle.dta")
@@ -167,11 +183,11 @@ did2s <- function(data, yname, first_stage, second_stage, treatment, cluster_var
 
 		cli::cli_alert("Starting {n_bootstraps} bootstraps at cluster level: {cluster_var}")
 
-		samples = rsample::bootstraps(data, times = n_bootstraps, strata = all_of(cluster_var), pool = 0)
+		samples = rsample::bootstraps(data, times = n_bootstraps, strata = rsample::all_of(cluster_var), pool = 0)
 
 
 		estimates = purrr::map_dfr(samples$splits, function(x) {
-			data = rsample:::as.data.frame.rsplit(x)
+			data = as.data.frame(x)
 
 			estimate = did2s_estimate(
 				data = data,
@@ -183,10 +199,10 @@ did2s <- function(data, yname, first_stage, second_stage, treatment, cluster_var
 				bootstrap = TRUE
 			)
 
-			return(coef(estimate$second_stage))
+			return(stats::coef(estimate$second_stage))
 		})
 
-		cov = cov(estimates)
+		cov = stats::cov(estimates)
 
 	}
 

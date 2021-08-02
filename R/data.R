@@ -54,3 +54,23 @@
 #'   \item{group}{String name for group}
 #' }
 "df_het"
+
+
+
+
+#' @title Data from Cheng and Hoekstra (2013)
+#'
+#' @description
+#'   State-wide panel data from 2000-2010 that has information on castle-doctrine,
+#'   the so-called "stand-your-ground" laws that were implemented by 20 states.
+#'
+#' @format A data frame with 550 rows and 5 variables:
+#' \describe{
+#'   \item{sid}{state id, unit of observation}
+#'   \item{year}{time in panel data}
+#'   \item{l_homicide}{log of the number of homicides per capita}
+#'   \item{effyear}{year that castle doctrine is passed}
+#'   \item{post}{0/1 variable for when castle doctrine is active}
+#'   \item{time_til}{time relative to castle doctrine being passed into law}
+#' }
+"castle"

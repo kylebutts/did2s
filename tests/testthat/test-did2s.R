@@ -1,9 +1,10 @@
-## test-did2s.R --------------------------------------------------------------------------
+## test-did2s.R ----------------------------------------------------------------
 ## Kyle Butts, CU Boulder Economics
 ##
 ## Test did2s function
 
 data(df_hom)
+library(haven)
 castle = haven::read_dta("https://github.com/scunning1975/mixtape/raw/master/castle.dta")
 
 

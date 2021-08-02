@@ -50,7 +50,10 @@ procedure be printed back to the user?
 Default is \code{TRUE}.}
 }
 \value{
-fixest::feols point estimate with adjusted standard errors (either by formula or by bootstrap)
+\code{fixest} object with adjusted standard errors
+(either by formula or by bootstrap). All the methods from \code{fixest} package
+will work, including \code{\link[fixest:esttable]{fixest::esttable}} and
+\code{\link[fixest:coefplot]{fixest::coefplot}}
 }
 \description{
 Calculate two-stage difference-in-differences following Gardner (2021)
@@ -61,13 +64,14 @@ Calculate two-stage difference-in-differences following Gardner (2021)
 Load example dataset which has two treatment groups and homogeneous treatment effects\if{html}{\out{<div class="r">}}\preformatted{# Load Example Dataset
 data("df_hom")
 }\if{html}{\out{</div>}}
+\subsection{Static TWFE}{
 
 You can run a static TWFE fixed effect model for a simple treatment indicator\if{html}{\out{<div class="r">}}\preformatted{static <- did2s(df_hom,
     yname = "dep_var", treatment = "treat", cluster_var = "state",
     first_stage = ~ 0 | unit + year,
     second_stage = ~ i(treat, ref=FALSE))
 #> 
-#> ── Two-stage Difference-in-Differences ──────────────────────────────────────────────────────────
+#> ── Two-stage Difference-in-Differences ──────────────────────────────────────────────────────────────────────────────────────────────────
 #> → Running with first stage formula `~ 0 | unit + year` and second stage formula `~ i(treat, ref = FALSE)`
 #> → The indicator variable that denotes when treatment is on is `treat`
 #> → Standard errors will be clustered by `state`
@@ -83,13 +87,16 @@ fixest::esttable(static)
 #> R2                        0.31846
 #> Adj. R2                   0.31846
 }\if{html}{\out{</div>}}
+}
+
+\subsection{Event Study}{
 
 Or you can use relative-treatment indicators to estimate an event study estimate\if{html}{\out{<div class="r">}}\preformatted{es <- did2s(df_hom,
     yname = "dep_var", treatment = "treat", cluster_var = "state",
     first_stage = ~ 0 | unit + year,
     second_stage = ~ i(rel_year, ref=c(-1, Inf)))
 #> 
-#> ── Two-stage Difference-in-Differences ──────────────────────────────────────────────────────────
+#> ── Two-stage Difference-in-Differences ──────────────────────────────────────────────────────────────────────────────────────────────────
 #> → Running with first stage formula `~ 0 | unit + year` and second stage formula `~ i(rel_year, ref = c(-1, Inf))`
 #> → The indicator variable that denotes when treatment is on is `treat`
 #> → Standard errors will be clustered by `state`
@@ -143,9 +150,14 @@ fixest::esttable(es)
 #> Observations               31,000
 #> R2                        0.31957
 #> Adj. R2                   0.31872
+}\if{html}{\out{</div>}}\if{html}{\out{<div class="r">}}\preformatted{# plot rel_year coefficients and standard errors
+fixest::coefplot(es, keep = "rel_year::(.*)")
 }\if{html}{\out{</div>}}
+}
 
-Here's an example using data from Castle (2013)\if{html}{\out{<div class="r">}}\preformatted{# Castle Data
+\subsection{Example from Cheng and Hoekstra (2013)}{
+
+Here's an example using data from Cheng and Hoekstra (2013)\if{html}{\out{<div class="r">}}\preformatted{# Castle Data
 castle <- haven::read_dta("https://github.com/scunning1975/mixtape/raw/master/castle.dta")
 
 did2s(
@@ -157,7 +169,7 @@ did2s(
 	cluster_var = "state", weights = "popwt"
 )
 #> 
-#> ── Two-stage Difference-in-Differences ──────────────────────────────────────────────────────────
+#> ── Two-stage Difference-in-Differences ──────────────────────────────────────────────────────────────────────────────────────────────────
 #> → Running with first stage formula `~ 0 | sid + year` and second stage formula `~ i(post, ref = 0)`
 #> → The indicator variable that denotes when treatment is on is `post`
 #> → Standard errors will be clustered by `state`
@@ -170,5 +182,6 @@ did2s(
 #> Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 #> RMSE: 263.4   Adj. R2: 0.052465
 }\if{html}{\out{</div>}}
+}
 }
 

@@ -3,11 +3,13 @@ sparse_model_matrix = function(data, fixest) {
 	Z = NULL
 
 	# Coefficients
-	if("coefficients" %in% names(fixest)) Z = as(model.matrix(fixest, data = data), "sparseMatrix")
+	if("coefficients" %in% names(fixest)) Z = methods::as(stats::model.matrix(fixest, data = data), "sparseMatrix")
 
 	# Fixed Effects
 	if("fixef_id" %in% names(fixest)) {
-		frmla <- as.formula(paste("~ 0 + ", paste(glue::glue("factor({all.vars(fixest$fml_all$fixef)})"), collapse = " + ")))
+		frmla <- stats::as.formula(
+			paste("~ 0 + ", paste(glue::glue("factor({all.vars(fixest$fml_all$fixef)})"), collapse = " + "))
+		)
 
 		Z_fixef = Matrix::sparse.model.matrix(frmla, data = data)
 

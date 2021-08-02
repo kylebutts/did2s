@@ -1,18 +1,23 @@
 Package: did2s
-Title: Estimate Two-Stage Difference-in-Differences following Gardner (2021)
+Title: Two-Stage Difference-in-Differences Following Gardner (2021)
 Version: 0.4.0
 Authors@R: 
     c(person(given = "Kyle",
              family = "Butts",
-             role = "cre",
+             role = c("aut","cre"),
              email = "kyle.butts@colorado.edu",
              comment = c(ORCID = "0000-0002-9048-8059")),
+      person(given = "John",
+             family = "Gardner",
+             role = "aut",
+             email = "jrgardne@olemiss.edu",
+             comment = c(ORCID = "0000-0002-4028-6862")),
       person(given = "Grant",
              family = "McDermott",
              role = "ctb",
              email = "grantmcd@uoregon.edu",
              comment = c(ORCID = "0000-0001-7883-8573")))
-Description: This package creates the function `did2s` which allows you to estimate TWFE diff-in-diff/event-study models. To avoid the problems caused by OLS estimation of the TWFE model, this function first estimates the fixed effects and covariates using untreated observations and then in a second stage, estimates the treatment effects.
+Description: Estimates Two-way Fixed Effects difference-in-differences/event-study models using the approach proposed by Gardner (2021). To avoid the problems caused by OLS estimation of the TWFE model, this function first estimates the fixed effects and covariates using untreated observations and then in a second stage, estimates the treatment effects.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
@@ -24,6 +29,7 @@ Depends:
 Imports: 
     dplyr,
     magrittr,
+    ggplot2,
     glue,
     stats,
     stringr,
@@ -36,12 +42,18 @@ Imports:
     Matrix,
     Rcpp,
     did,
-    broom
-Remotes: jonathandroth/staggered
-URL: http://kylebutts.com/did2s
+    broom,
+    methods,
+    staggered,
+    didimputation
+Remotes: 
+    github::jonathandroth/staggered,
+    github::kylebutts/didimputation
+URL: http://kylebutts.com/did2s/
 Suggests: 
     rmarkdown,
     knitr,
+    haven,
     testthat (>= 3.0.0)
 VignetteBuilder: knitr
 LinkingTo: 

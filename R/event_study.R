@@ -275,8 +275,8 @@ plot_event_study = function(out, seperate = TRUE, horizon = NULL) {
 	y_lims = c(min(out$ci_lower), max(out$ci_upper)) * 1.05
 	x_lims = c(min(out$term) - 1, max(out$term) + 1)
 
-	ggplot2::ggplot(ggplot2::aes(x = out$term, y = out$estimate, color = out$estimator, ymin = out$ci_lower, ymax = out$ci_upper)) +
-		{ if(seperate) ggplot2::facet_wrap(~ out$estimator, scales="free") } +
+	ggplot2::ggplot(data = out, ggplot2::aes(x = term, y = estimate, color = estimator, ymin = ci_lower, ymax = ci_upper)) +
+		{ if(seperate) ggplot2::facet_wrap(~ estimator, scales="free") } +
 		ggplot2::geom_point(position = position) +
 		ggplot2::geom_errorbar(position = position) +
 		ggplot2::geom_vline(xintercept = -0.5, linetype = "dashed") +

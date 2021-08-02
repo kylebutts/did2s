@@ -2,10 +2,12 @@
 
 export("%>%")
 export(did2s)
-export(did_imputation)
 export(event_study)
 export(gen_data)
 export(plot_event_study)
+import(fixest)
+importFrom("methods",as)
+importFrom(Matrix,sparseMatrix)
 importFrom(Rcpp,sourceCpp)
 importFrom(magrittr,"%>%")
 useDynLib(did2s, .registration = TRUE)

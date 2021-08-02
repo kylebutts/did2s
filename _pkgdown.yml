@@ -20,7 +20,6 @@ reference:
       are estimated depends on the function).
     contents:
       - did2s
-      - did_imputation
   - title: "Event Study 'Robustness Checks'"
     desc: >
       Uses the estimation procedures recommended from
@@ -29,7 +28,8 @@ reference:
     contents:
       - event_study
       - plot_event_study
-  - title: "Extra Functions"
+  - title: "Example Data and DGP Function"
     contents:
       - gen_data
-      - theme_kyle
+      - df_het
+      - df_hom

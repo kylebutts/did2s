@@ -1,6 +1,6 @@
 ---
 output: github_document
-bibliography: references.bib
+bibliography: inst/references.bib
 ---
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
@@ -63,59 +63,57 @@ did2s returns a list with two objects:
 
 ### TWFE vs. Two-Stage DID Example
 
-I will load example data from the package and plot the average outcome among the groups. Here is one unit's data:
+I will load example data from the package and plot the average outcome among the groups.
 
 ```{r load-data, code_folding=TRUE,}
 
 library(tidyverse)
-library(did2s)
-library(fixest)
-library(rmarkdown)
 
-# Load theme
-source("https://raw.githubusercontent.com/kylebutts/templates/master/ggplot_theme/theme_kyle.R")
+# Automatically loads fixest
+library(did2s)
 
 # Load Data from R package
-data("df_het")
-
-# One observation
-df_het %>% select(unit, g, year, treat, rel_year, dep_var) %>% head(n = 31) %>% pander::pander()
+data("df_het", package = "did2s")
 ```
 
 Here is a plot of the average outcome variable for each of the groups:
 
 ```{r plot-df-het, fig.width=8, fig.height=4, fig.cap="Example data with heterogeneous treatment effects", code_folding=TRUE, layout="l-body-outset"}
-# Plot Data 
-df_avg <- df_het %>% 
-  group_by(group, year) %>% 
-  summarize(dep_var = mean(dep_var), .groups = 'drop')
 
-# Get treatment years for plotting
-gs <- df_het %>% 
-  filter(treat == TRUE) %>% 
-  pull(g) %>% unique()
-	
-	
-ggplot() + 
-	geom_line(data = df_avg, mapping = aes(y = dep_var, x = year, color = group), size = 1.5) +
-	geom_vline(xintercept = gs - 0.5, linetype = "dashed") + 
-	theme_kyle(base_size = 16) +
-	theme(legend.position = "bottom") +
-	labs(y = "Outcome", x = "Year", color = "Treatment Cohort") + 
-	scale_y_continuous(expand = expansion(add = .5)) + 
-	scale_color_manual(values = c("Group 1" = "#d2382c", "Group 2" = "#497eb3", "Group 3" = "#8e549f")) 
+# Mean for treatment group-year
+agg <- aggregate(df_het$dep_var, by=list(g = df_het$g, year = df_het$year), FUN = mean)
+
+agg$g <- as.character(agg$g)
+agg$g <- ifelse(agg$g == "0", "Never Treated", agg$g)
+
+never <- agg[agg$g == "Never Treated", ]
+g1 <- agg[agg$g == "2000", ]
+g2 <- agg[agg$g == "2010", ]
+
+
+plot(0, 0, xlim = c(1990,2020), ylim = c(4,7.2), type = "n",
+     main = "Data-generating Process", ylab = "Outcome", xlab = "Year")
+abline(v = c(1999.5, 2009.5), lty = 2)
+lines(never$year, never$x, col = "#8e549f", type = "b", pch = 15)
+lines(g1$year, g1$x, col = "#497eb3", type = "b", pch = 17)
+lines(g2$year, g2$x, col = "#d2382c", type = "b", pch = 16)
+legend(x=1990, y=7.1, col = c("#8e549f", "#497eb3", "#d2382c"), 
+       pch = c(15, 17, 16),
+       legend = c("Never Treated", "2000", "2010"))
+
+
 ```
 
 
 ### Estimate Two-stage Difference-in-Differences 
 
-First, lets estimate a static did:
+First, lets estimate a static did. There are two things to note here. First, note that I can use `fixest::feols` formula including the `|` for specifying fixed effects and `fixest::i` for improved factor variable support. Second, note that `did2s` returns a `fixest` estimate object, so `fixest::esttable`, `fixest::coefplot`, and `fixest::iplot` all work as expected.
 
 ```{r static}
 
 # Static
 static <- did2s(df_het, 
-				yname = "dep_var", first_stage = ~i(state) + i(year), 
+				yname = "dep_var", first_stage = ~ 0 | state + year, 
 				second_stage = ~i(treat, ref=FALSE), treatment = "treat", 
 				cluster_var = "state")
 
@@ -125,114 +123,60 @@ fixest::esttable(static)
 
 This is very close to the true treatment effect of `r df_het %>% filter(treat == 1) %>% summarize(att = mean(te + te_dynamic)) %>% pull(att)`.
 
-Then, let's estimate an event study did:
+Then, let's estimate an event study did. Note that relative year has a value of `Inf` for never treated, so I put this as a reference in the second stage formula.
 
 ```{r event-study}
 
 # Event Study
 es <- did2s(df_het,
-			yname = "dep_var", first_stage = ~i(state) + i(year), 
+			yname = "dep_var", first_stage = ~ 0 | state + year, 
 			second_stage = ~i(rel_year, ref=c(-1, Inf)), treatment = "treat", 
 			cluster_var = "state")
-
-fixest::esttable(es)
 
 ```
 
 And plot the results:
 
-```{r plot-es, fig.width=8, fig.height=4, fig.cap="Event-study plot with example data", code_folding=TRUE, layout="l-body-outset"}
+```{r plot-es, fig.cap="Event-study plot with example data"}
 
-pts <- broom::tidy(es) %>%
-    filter(str_detect(term, "rel_year::")) %>%
-	select(rel_year = term, estimate, se = std.error) %>%
-    mutate(
-        rel_year = as.numeric(str_remove(rel_year, "rel_year::")),
-        ci_lower = estimate - 1.96 * se,
-        ci_upper = estimate + 1.96 * se,
-        group = "Two-Stage Estimate"
-    ) %>%
-    filter(rel_year <= 8 & rel_year >= -8) %>% 
-    mutate(rel_year = rel_year + 0.1)
+fixest::iplot(es, main = "Event study: Staggered treatment", xlab = "Relative time to treatment", col = "steelblue", ref.line = -0.5)
 
-te_true <- df_het %>%
-    # Keep only treated units
-    filter(g > 0) %>%
-    group_by(rel_year) %>%
-    summarize(estimate = mean(te + te_dynamic)) %>%
-	  mutate(group = "True Effect") %>%
-    filter(rel_year >= -8 & rel_year <= 8) %>% 
-    mutate(rel_year = rel_year)
+# Add the (mean) true effects
+true_effects = head(tapply((df_het$te + df_het$te_dynamic), df_het$rel_year, mean), -1)
+points(-20:20, true_effects, pch = 20, col = "black")
 
-pts <- bind_rows(pts, te_true)
-
-max_y <- max(pts$estimate)
-
-ggplot() +
-    # 0 effect
-    geom_hline(yintercept = 0, linetype = "dashed") +
-    geom_vline(xintercept = -0.5, linetype = "dashed") +
-    # Confidence Intervals
-    geom_linerange(data = pts, mapping = aes(x = rel_year, ymin = ci_lower, ymax = ci_upper), color = "grey30") +
-    # Estimates
-    geom_point(data = pts, mapping = aes(x = rel_year, y = estimate, color = group), size = 2) +
-    # Label
-    geom_label(data = data.frame(x = -0.5 - 0.1, y = max_y + 0.25, label = "Treatment Starts ▶"), label.size=NA,
-               mapping = aes(x = x, y = y, label = label), size = 5.5, hjust = 1, fontface = 2, inherit.aes = FALSE) +
-    scale_x_continuous(breaks = -8:8, minor_breaks = NULL) +
-    scale_y_continuous(minor_breaks = NULL) +
-    scale_color_manual(values = c("Two-Stage Estimate" = "steelblue", "True Effect" = "#b44682", "TWFE Estimate" = "#82b446"))
-    labs(x = "Relative Time", y = "Estimate", color = NULL, title = NULL) +
-    theme_kyle(base_size = 16) +
-    theme(legend.position = "bottom")
+# Legend
+legend(x=-20, y=3, col = c("steelblue", "black"), pch = c(20, 20), 
+       legend = c("Two-stage estimate", "True effect"))
 
 ```
 
 
 ### Comparison to TWFE
 
-```{r plot-compare, fig.width=8, fig.height=4, fig.cap="TWFE and Two-Stage estimates of Event-Study", code_folding=TRUE, layout="l-body-outset"}
+```{r plot-compare, ig.cap="TWFE and Two-Stage estimates of Event-Study"}
 
-# TWFE
-twfe <- fixest::feols(dep_var ~ i(rel_year, ref=c(-1, Inf)) | unit + year, data = df_het) %>%
-	broom::tidy() %>%
-    filter(str_detect(term, "rel_year::")) %>%
-	select(rel_year = term, estimate, se = std.error) %>%
-    mutate(
-        rel_year = as.numeric(str_remove(rel_year, "rel_year::")),
-        ci_lower = estimate - 1.96 * se,
-        ci_upper = estimate + 1.96 * se,
-        group = "TWFE Estimate"
-    ) %>%
-    filter(rel_year <= 8 & rel_year >= -8) %>% 
-    mutate(rel_year = rel_year - 0.1)
+twfe = feols(dep_var ~ i(rel_year, ref=c(-1, Inf)) | unit + year, data = df_het) 
 
-# Add TWFE Points
-both_pts <- pts %>% mutate(
-		group = if_else(group == "Estimated Effect", "Two-Stage Estimate", group)
-	) %>% 
-	bind_rows(., twfe)
+fixest::iplot(list(es, twfe), sep = 0.2, ref.line = -0.5,
+      col = c("steelblue", "#82b446"), pt.pch = c(20, 18), 
+      xlab = "Relative time to treatment", 
+      main = "Event study: Staggered treatment (comparison)")
 
 
-ggplot() +
-    # 0 effect
-    geom_hline(yintercept = 0, linetype = "dashed") +
-    geom_vline(xintercept = -0.5, linetype = "dashed") +
-    # Confidence Intervals
-    geom_linerange(data = both_pts, mapping = aes(x = rel_year, ymin = ci_lower, ymax = ci_upper), color = "grey30") +
-    # Estimates
-    geom_point(data = both_pts, mapping = aes(x = rel_year, y = estimate, color = group), size = 2) +
-    # Label
-    geom_label(data = data.frame(x = -0.5 - 0.1, y = max_y + 0.25, label = "Treatment Starts ▶"), label.size=NA,
-               mapping = aes(x = x, y = y, label = label), size = 5.5, hjust = 1, fontface = 2, inherit.aes = FALSE) +
-    scale_x_continuous(breaks = -8:8, minor_breaks = NULL) +
-    scale_y_continuous(minor_breaks = NULL) +
-    scale_color_manual(values = c("Two-Stage Estimate" = "steelblue", "True Effect" = "#b44682", "TWFE Estimate" = "#82b446")) +
-    labs(x = "Relative Time", y = "Estimate", color = NULL, title = NULL) +
-    theme_kyle(base_size = 16) +
-    theme(legend.position = "bottom")
+# Legend
+legend(x=-20, y=3, col = c("steelblue", "#82b446"), pch = c(20, 18), 
+       legend = c("Two-stage estimate", "TWFE"))
+
 ```
 
+# Citation
+
+If you use this package to produce scientific or commercial publications, please cite according to:
+
+```{r}
+citation(package = "did2s")
+```
 
 
 
