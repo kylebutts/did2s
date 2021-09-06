@@ -5,7 +5,7 @@ vignette: >
   %\VignetteIndexEntry{Two-Stage Difference-in-Differences}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
-  % \VignetteDepends{ggplot2}
+  %\VignetteDepends{ggplot2}
 ---
 
 ```{r, include = FALSE}

@@ -5,6 +5,7 @@ vignette: >
   %\VignetteIndexEntry{So you're trying to choose an event-study estimator...}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
+  %\VignetteDepends{gt}
 ---
 
 ```{r, include = FALSE}

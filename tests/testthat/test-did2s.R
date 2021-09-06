@@ -36,3 +36,13 @@ test_that("estimation runs", {
 		treatment = "post", cluster_var = "state", weights = "popwt"),
 		NA)
 })
+
+
+test_that("parameter checking works", {
+	# Treatment not 0/1 or T/F
+	expect_error(did2s(
+		data = df_hom, yname = "dep_var", first_stage = ~ 0 | unit + year,
+		second_stage = ~ i(treat, ref=FALSE), weight = "weight",
+		treatment = "state", cluster_var = "state"),
+		"'state' must be a 0/1 or T/F variable indicating which observations are untreated/not-yet-treated.")
+})

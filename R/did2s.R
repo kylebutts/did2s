@@ -95,14 +95,28 @@ did2s <- function(data, yname, first_stage, second_stage, treatment, cluster_var
 	if(inherits(first_stage, "formula")) first_stage = as.character(first_stage)[[2]]
 	if(inherits(second_stage, "formula")) second_stage = as.character(second_stage)[[2]]
 
+	# Check that treatment is a 0/1 or T/F variable
+	if(!all(
+			unique(data[[treatment]]) %in% c(1, 0, T, F)
+		)) {
+		stop(sprintf(
+			"'%s' must be a 0/1 or T/F variable indicating which observations are untreated/not-yet-treated.",
+			treatment
+		))
+	}
+
+
+
 	# Print --------------------------------------------------------------------
 	if(verbose){
-    cli::cli_h1("Two-stage Difference-in-Differences")
-    cli::cli_alert("Running with first stage formula {.var {paste0('~ ', first_stage)}} and second stage formula {.var {paste0('~ ', second_stage)}}")
-    cli::cli_alert("The indicator variable that denotes when treatment is on is {.var {treatment}}")
-    if(!bootstrap) cli::cli_alert("Standard errors will be clustered by {.var {cluster_var}}")
-    if(bootstrap) cli::cli_alert("Standard errors will be block bootstrapped with cluster {.var {cluster_var}}")
-    cli::cat_line()
+	cli::cli({
+	    cli::cli_h1("Two-stage Difference-in-Differences")
+	    cli::cli_alert("Running with first stage formula {.var {paste0('~ ', first_stage)}} and second stage formula {.var {paste0('~ ', second_stage)}}")
+	    cli::cli_alert("The indicator variable that denotes when treatment is on is {.var {treatment}}")
+	    if(!bootstrap) cli::cli_alert("Standard errors will be clustered by {.var {cluster_var}}")
+	    if(bootstrap) cli::cli_alert("Standard errors will be block bootstrapped with cluster {.var {cluster_var}}")
+	    cli::cat_line()
+	})
 	}
 
 	# Point Estimates ----------------------------------------------------------
@@ -146,7 +160,7 @@ did2s <- function(data, yname, first_stage, second_stage, treatment, cluster_var
 
 		# x10 is matrix used to estimate first stage (zero out rows with D_it = 1)
 		x10 = x1
-		x10[data[[treatment]] == 1L] = 0
+		x10[data[[treatment]] == 1L, ] = 0
 
 		# Unique values of cluster variable
 		cl = unique(data[[cluster_var]])
@@ -207,7 +221,12 @@ did2s <- function(data, yname, first_stage, second_stage, treatment, cluster_var
 	}
 
 	# summary creates fixest object with correct standard errors and vcov
-	return(base::suppressWarnings(summary(est$second_stage, .vcov = cov)))
+	# vcov_name =
+
+	return(base::suppressWarnings(
+		# summary(est$second_stage, .vcov = list("Two-stage Adjusted" = cov))
+		summary(est$second_stage, .vcov = cov)
+	))
 }
 
 

@@ -24,6 +24,20 @@
 #' @export
 event_study = function(data, yname, idname, gname, tname, xformla = NULL, horizon = NULL, weights = NULL){
 
+
+# Check Parameters -------------------------------------------------------------
+
+	# Test that gname is in tname
+	if(!all(
+			unique(data[[gname]]) %in% c(0, NA, unique(data[[tname]]))
+		)) {
+		stop(sprintf(
+			"'%s' must denote which year treatment starts for each group. Untreated observations should have g = 0 or NA.",
+			gname
+		))
+	}
+
+
 # Setup ------------------------------------------------------------------------
 
 	# Treat
@@ -252,7 +266,6 @@ event_study = function(data, yname, idname, gname, tname, xformla = NULL, horizo
 #' @param horizon Numeric. Vector of length 2. First element is min and second element is max of event_time to plot
 #'
 #' @return ggplot object that can be fully customized
-#' @export
 #'
 #' @examples
 #' data(df_het, package = "did2s")
@@ -262,6 +275,8 @@ event_study = function(data, yname, idname, gname, tname, xformla = NULL, horizo
 #' )
 #' plot_event_study(out)
 #'
+#' @importFrom rlang .data
+#' @export
 plot_event_study = function(out, seperate = TRUE, horizon = NULL) {
 
 	# Get list of estimators
@@ -298,7 +313,12 @@ plot_event_study = function(out, seperate = TRUE, horizon = NULL) {
 	y_lims = c(min(out$ci_lower), max(out$ci_upper)) * 1.05
 	x_lims = c(min(out$term) - 1, max(out$term) + 1)
 
-	ggplot2::ggplot(data = out, ggplot2::aes(x = term, y = estimate, color = estimator, ymin = ci_lower, ymax = ci_upper)) +
+	ggplot2::ggplot(
+			data = out,
+			ggplot2::aes(x = .data$term, y = .data$estimate,
+						 color = .data$estimator,
+						 ymin = .data$ci_lower, ymax = .data$ci_upper)
+		) +
 		{ if(seperate) ggplot2::facet_wrap(~ estimator, scales="free") } +
 		ggplot2::geom_point(position = position) +
 		ggplot2::geom_errorbar(position = position) +
