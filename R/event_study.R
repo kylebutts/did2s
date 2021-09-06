@@ -27,7 +27,7 @@ event_study = function(data, yname, idname, gname, tname, xformla = NULL, horizo
 
 # Check Parameters -------------------------------------------------------------
 
-	# Test that gname is in tname
+	# Test that gname is in tname or 0/NA for untreated
 	if(!all(
 			unique(data[[gname]]) %in% c(0, NA, unique(data[[tname]]))
 		)) {
@@ -35,6 +35,15 @@ event_study = function(data, yname, idname, gname, tname, xformla = NULL, horizo
 			"'%s' must denote which year treatment starts for each group. Untreated observations should have g = 0 or NA.",
 			gname
 		))
+	}
+
+	# Test that there exists never-treated units
+	if(!any(
+		unique(data[[gname]]) %in% c(0, NA)
+		)) {
+		stop(
+			"event_study only works when there is a never-treated groups. This will be updated in the future, though with fewer estimators."
+		)
 	}
 
 
