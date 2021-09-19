@@ -222,9 +222,10 @@ event_study = function(data, yname, idname, gname, tname, xformla = NULL, horizo
 
 # staggered --------------------------------------------------------------------
 
-	cli::cli_text("Estimatng using Roth and Sant'Anna (2021)")
+	# Waiting for staggered on CRAN
+	# cli::cli_text("Estimatng using Roth and Sant'Anna (2021)")
 
-	tidy_staggered = NULL
+	# tidy_staggered = NULL
 
 	# try({
 	# 	# Make untreated g = Inf

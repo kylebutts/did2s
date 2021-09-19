@@ -45,10 +45,8 @@ Imports:
     broom,
     methods,
     staggered,
-    didimputation
-Remotes: 
-    github::jonathandroth/staggered,
-    github::kylebutts/didimputation
+    didimputation,
+    gt
 URL: http://kylebutts.com/did2s/
 Suggests: 
     rmarkdown,

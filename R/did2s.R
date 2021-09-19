@@ -20,6 +20,9 @@
 #'   Default is `FALSE`.
 #' @param n_bootstraps Optional. How many bootstraps to run.
 #'   Default is `250`.
+#' @param return_bootstrap Optional. Logical. Will return each bootstrap second-stage
+#'   estimate to allow for manual use, e.g. percentile standard errors and empirical
+#'   confidence intervals.
 #' @param verbose Optional. Logical. Should information about the two-stage
 #'   procedure be printed back to the user?
 #'   Default is `TRUE`.
@@ -87,7 +90,7 @@
 #'
 did2s <- function(data, yname, first_stage, second_stage, treatment, cluster_var,
 				  weights = NULL, bootstrap = FALSE, n_bootstraps = 250,
-				  verbose = TRUE) {
+				  return_bootstrap = FALSE, verbose = TRUE) {
 
 	# Check Parameters ---------------------------------------------------------
 
@@ -216,15 +219,26 @@ did2s <- function(data, yname, first_stage, second_stage, treatment, cluster_var
 			return(stats::coef(estimate$second_stage))
 		})
 
-		cov = stats::cov(estimates)
+		if(return_bootstrap) {
+			return(estimates)
+		}
 
+		cov = stats::cov(estimates)
 	}
 
 	# summary creates fixest object with correct standard errors and vcov
-	# vcov_name =
+
+	# Once fixest updates on CRAN
+	# rescale cov by G/(G-1) and use t(G-1) distribution
+	# G = length(cl)
+	# cov = cov * G/(G-1)
 
 	return(base::suppressWarnings(
-		# summary(est$second_stage, .vcov = list("Two-stage Adjusted" = cov))
+		# summary(
+		#   est$second_stage,
+		#   .vcov = list("Two-stage Adjusted" = cov),
+		#   ssc = ssc(adj = FALSE, t.df = G-1)
+		# )
 		summary(est$second_stage, .vcov = cov)
 	))
 }
