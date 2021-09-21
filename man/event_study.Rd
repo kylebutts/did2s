@@ -2,6 +2,7 @@
 % Please edit documentation in R/event_study.R
 \name{event_study}
 \alias{event_study}
+\alias{plot_event_study}
 \title{Estimate event-study coefficients using TWFE and 5 proposed improvements.}
 \usage{
 event_study(
@@ -14,6 +15,8 @@ event_study(
   horizon = NULL,
   weights = NULL
 )
+
+plot_event_study(out, seperate = TRUE, horizon = NULL)
 }
 \arguments{
 \item{data}{The dataframe containing all the variables}
@@ -28,21 +31,26 @@ event_study(
 
 \item{xformla}{A formula for the covariates to include in the model. It should be of the form \code{~ X1 + X2}. Default is NULL.}
 
-\item{horizon}{Integer of length two. The first integer is the earliest pre-effect to include and the second is the latest post-effect to include. Default is all horizons.}
+\item{horizon}{Numeric. Vector of length 2. First element is min and second element is max of event_time to plot}
 
 \item{weights}{Variable name for estimation weights. This is used in estimating Y(0) and also augments treatment effect weights}
+
+\item{out}{Output from \code{\link[=event_study]{event_study()}}}
+
+\item{seperate}{Logical. Should the estimators be on seperate plots? Default is TRUE.}
 }
 \value{
-tibble of point estimates for each estimator
+\code{event_study} returns a data.frame of point estimates for each estimator
+
+\code{plot_event_study} returns a ggplot object that can be fully customized
 }
 \description{
 Uses the estimation procedures recommended from Borusyak, Jaravel, Spiess (2021); Callaway and Sant'Anna (2020); Gardner (2021); Roth and Sant'Anna (2021); Sun and Abraham (2020)
 }
 \examples{
-data(df_het, package = "did2s")
 out = event_study(
-  data = df_het, yname = "dep_var", idname = "unit",
-    tname = "year", gname = "g"
+  data = did2s::df_het, yname = "dep_var", idname = "unit",
+  tname = "year", gname = "g"
 )
 plot_event_study(out)
 

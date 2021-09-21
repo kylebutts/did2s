@@ -9,3 +9,4 @@
 ^\.github$
 ^R/dev-*\.R$
 ^vignettes/event_study.Rmd$
+^\.Renviron$

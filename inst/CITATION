@@ -12,7 +12,7 @@ citEntry(entry	= "Manual",
                )
          ),
 	 year = 2021,
-   url = "https://www.github.com/kylebutts/did2s/",
+   url = "https://github.com/kylebutts/did2s/",
 	 textVersion = paste0(
              "Butts, Kyle (2021).  did2s: Two-Stage Difference-in-Differences Following Gardner (2021). ", vers, ".")
          )

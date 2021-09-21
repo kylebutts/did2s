@@ -109,15 +109,16 @@ did2s <- function(data, yname, first_stage, second_stage, treatment, cluster_var
 	}
 
 
-
 	# Print --------------------------------------------------------------------
 	if(verbose){
 	cli::cli({
-	    cli::cli_h1("Two-stage Difference-in-Differences")
-	    cli::cli_alert("Running with first stage formula {.var {paste0('~ ', first_stage)}} and second stage formula {.var {paste0('~ ', second_stage)}}")
-	    cli::cli_alert("The indicator variable that denotes when treatment is on is {.var {treatment}}")
-	    if(!bootstrap) cli::cli_alert("Standard errors will be clustered by {.var {cluster_var}}")
-	    if(bootstrap) cli::cli_alert("Standard errors will be block bootstrapped with cluster {.var {cluster_var}}")
+	    cli::cli_text("Running Two-stage Difference-in-Differences")
+		cli::cli_ul()
+	    cli::cli_li("first stage formula {.var {paste0('~ ', first_stage)}}")
+	    cli::cli_li("second stage formula {.var {paste0('~ ', second_stage)}}")
+	    cli::cli_li("The indicator variable that denotes when treatment is on is {.var {treatment}}")
+	    if(!bootstrap) cli::cli_li("Standard errors will be clustered by {.var {cluster_var}}")
+	    if(bootstrap) cli::cli_li("Standard errors will be block bootstrapped with cluster {.var {cluster_var}}")
 	    cli::cat_line()
 	})
 	}

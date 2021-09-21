@@ -11,13 +11,12 @@
 #' @param horizon Integer of length two. The first integer is the earliest pre-effect to include and the second is the latest post-effect to include. Default is all horizons.
 #' @param weights Variable name for estimation weights. This is used in estimating Y(0) and also augments treatment effect weights
 #'
-#' @return tibble of point estimates for each estimator
+#' @return `event_study` returns a data.frame of point estimates for each estimator
 #'
 #' @examples
-#' data(df_het, package = "did2s")
 #' out = event_study(
-#'   data = df_het, yname = "dep_var", idname = "unit",
-#'     tname = "year", gname = "g"
+#'   data = did2s::df_het, yname = "dep_var", idname = "unit",
+#'   tname = "year", gname = "g"
 #' )
 #' plot_event_study(out)
 #'
@@ -223,40 +222,40 @@ event_study = function(data, yname, idname, gname, tname, xformla = NULL, horizo
 # staggered --------------------------------------------------------------------
 
 	# Waiting for staggered on CRAN
-	# cli::cli_text("Estimatng using Roth and Sant'Anna (2021)")
+	cli::cli_text("Estimatng using Roth and Sant'Anna (2021)")
 
-	# tidy_staggered = NULL
+	tidy_staggered = NULL
 
-	# try({
-	# 	# Make untreated g = Inf
-	# 	data_staggered = data
-	#
-	# 	data_staggered[,gname] = ifelse(
-	# 		data_staggered[[gname]] == 0,
-	# 		Inf,
-	# 		data_staggered[[gname]]
-	# 	)
-	#
-	# 	event_time_staggered = event_time[is.finite(event_time) & event_time != -1]
-	# 	event_time_staggered = event_time_staggered[event_time_staggered != min(event_time_staggered) ]
-	#
-	# 	tidy_staggered = staggered::staggered(
-	# 		data_staggered,
-	# 		i = idname, t = tname, g = gname, y = yname, estimand = "eventstudy",
-	# 		eventTime = event_time_staggered
-	# 	)
-	#
-	# 	# Subset columns
-	# 	tidy_staggered$term = tidy_staggered$eventTime
-	# 	tidy_staggered$std.error = tidy_staggered$se
-	#
-	# 	tidy_staggered = tidy_staggered[, c("term", "estimate", "std.error")]
-	#
-	# 	# Add estimator column
-	# 	tidy_staggered$estimator = "Roth and Sant'Anna (2021)"
-	# })
-	#
-	# if(is.null(tidy_staggered)) cli::cli_warn("Roth and Sant'Anna (2021) Failed")
+	try({
+		# Make untreated g = Inf
+		data_staggered = data
+
+		data_staggered[,gname] = ifelse(
+			data_staggered[[gname]] == 0,
+			Inf,
+			data_staggered[[gname]]
+		)
+
+		event_time_staggered = event_time[is.finite(event_time) & event_time != -1]
+		event_time_staggered = event_time_staggered[event_time_staggered != min(event_time_staggered) ]
+
+		tidy_staggered = staggered::staggered(
+			data_staggered,
+			i = idname, t = tname, g = gname, y = yname, estimand = "eventstudy",
+			eventTime = event_time_staggered
+		)
+
+		# Subset columns
+		tidy_staggered$term = tidy_staggered$eventTime
+		tidy_staggered$std.error = tidy_staggered$se
+
+		tidy_staggered = tidy_staggered[, c("term", "estimate", "std.error")]
+
+		# Add estimator column
+		tidy_staggered$estimator = "Roth and Sant'Anna (2021)"
+	})
+
+	if(is.null(tidy_staggered)) cli::cli_warn("Roth and Sant'Anna (2021) Failed")
 
 
 
@@ -271,19 +270,13 @@ event_study = function(data, yname, idname, gname, tname, xformla = NULL, horizo
 
 
 #' Plot results of [event_study()]
-#' @param out Tibble from [event_study()]
+#' @param out Output from [event_study()]
 #' @param seperate Logical. Should the estimators be on seperate plots? Default is TRUE.
 #' @param horizon Numeric. Vector of length 2. First element is min and second element is max of event_time to plot
 #'
-#' @return ggplot object that can be fully customized
+#' @return `plot_event_study` returns a ggplot object that can be fully customized
 #'
-#' @examples
-#' data(df_het, package = "did2s")
-#' out = event_study(
-#'   data = df_het, yname = "dep_var", idname = "unit",
-#'     tname = "year", gname = "g"
-#' )
-#' plot_event_study(out)
+#' @rdname event_study
 #'
 #' @importFrom rlang .data
 #' @export
