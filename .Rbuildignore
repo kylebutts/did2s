@@ -10,3 +10,4 @@
 ^R/dev-*\.R$
 ^vignettes/event_study.Rmd$
 ^\.Renviron$
+^cran-comments\.md$

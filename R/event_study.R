@@ -14,12 +14,13 @@
 #' @return `event_study` returns a data.frame of point estimates for each estimator
 #'
 #' @examples
+#' \dontrun{
 #' out = event_study(
 #'   data = did2s::df_het, yname = "dep_var", idname = "unit",
 #'   tname = "year", gname = "g"
 #' )
 #' plot_event_study(out)
-#'
+#' }
 #' @export
 event_study = function(data, yname, idname, gname, tname, xformla = NULL, horizon = NULL, weights = NULL){
 

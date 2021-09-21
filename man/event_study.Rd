@@ -48,10 +48,11 @@ plot_event_study(out, seperate = TRUE, horizon = NULL)
 Uses the estimation procedures recommended from Borusyak, Jaravel, Spiess (2021); Callaway and Sant'Anna (2020); Gardner (2021); Roth and Sant'Anna (2021); Sun and Abraham (2020)
 }
 \examples{
+\dontrun{
 out = event_study(
   data = did2s::df_het, yname = "dep_var", idname = "unit",
   tname = "year", gname = "g"
 )
 plot_event_study(out)
-
+}
 }
