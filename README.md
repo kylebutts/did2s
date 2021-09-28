@@ -11,7 +11,13 @@ problem of staggered treatment adoption.
 
 ## Installation
 
-You can install did2s from github with:
+You can install did2s from CRAN with:
+
+``` r
+install.packages("did2s")
+```
+
+Or you can install the developmental version with:
 
 ``` r
 devtools::install_github("kylebutts/did2s")
@@ -27,7 +33,7 @@ the two-stage difference-in-differences estimator. To install the
 package, run the following:
 
 ``` r
-devtools::install_github("kylebutts/did2s")
+install.packages("did2s")
 ```
 
 To view the documentation, type `?did2s` into the console.
