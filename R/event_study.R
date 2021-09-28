@@ -14,7 +14,7 @@
 #' @return `event_study` returns a data.frame of point estimates for each estimator
 #'
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' out = event_study(
 #'   data = did2s::df_het, yname = "dep_var", idname = "unit",
 #'   tname = "year", gname = "g"
