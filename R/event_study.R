@@ -171,7 +171,7 @@ event_study = function(data, yname, idname, gname, tname, xformla = NULL, horizo
 			sunab_xformla = paste0("1 + ", as.character(xformla)[[2]])
 		}
 
-		sunab_formla = stats::as.formula(glue::glue("{yname} ~ {sunab_xformla} + sunab({gname}, {tname})"))
+		sunab_formla = stats::as.formula(glue::glue("{yname} ~ {sunab_xformla} + sunab({gname}, {tname}) | {idname} + {tname}"))
 
 		est_sunab = fixest::feols(sunab_formla, data = data)
 
