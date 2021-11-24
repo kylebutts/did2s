@@ -20,7 +20,7 @@ Authors@R:
       person(given = "Laurent",
              family = "Berge",
              role = "ctb",
-             email = "laurent.berge@u-bordeaux.fr")
+             email = "laurent.berge@u-bordeaux.fr"))
 Description: Estimates Two-way Fixed Effects difference-in-differences/event-study models using the approach proposed by Gardner (2021). To avoid the problems caused by OLS estimation of the Two-way Fixed Effects model, this function first estimates the fixed effects and covariates using untreated observations and then in a second stage, estimates the treatment effects.
 License: MIT + file LICENSE
 Encoding: UTF-8
