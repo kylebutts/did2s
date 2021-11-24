@@ -91,6 +91,8 @@ fixest::esttable(static)
 #> Observations               31,000
 #> R2                        0.31846
 #> Adj. R2                   0.31846
+#> ---
+#> Signif. codes: 0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 }\if{html}{\out{</div>}}
 }
 
@@ -155,6 +157,8 @@ fixest::esttable(es)
 #> Observations               31,000
 #> R2                        0.31957
 #> Adj. R2                   0.31872
+#> ---
+#> Signif. codes: 0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 }\if{html}{\out{</div>}}\if{html}{\out{<div class="r">}}\preformatted{# plot rel_year coefficients and standard errors
 fixest::coefplot(es, keep = "rel_year::(.*)")
 }\if{html}{\out{</div>}}
@@ -182,7 +186,7 @@ did2s(
 #> Observations: 550 
 #> Standard-errors: Custom 
 #>         Estimate Std. Error t value Pr(>|t|)    
-#> post::1 0.075142    0.03538  2.1239 0.034127 *  
+#> post::1 0.075142    0.03538 2.12387 0.034127 *  
 #> ---
 #> Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 #> RMSE: 263.4   Adj. R2: 0.052465

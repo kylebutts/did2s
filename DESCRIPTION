@@ -46,7 +46,8 @@ Imports:
     methods,
     staggered,
     didimputation,
-    gt
+    gt,
+    boot
 URL: http://kylebutts.com/did2s/
 Suggests: 
     rmarkdown,

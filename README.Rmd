@@ -23,22 +23,21 @@ The goal of did2s is to estimate TWFE models without running into the problem of
 
 ## Installation
 
-You can install did2s from github with:
+You can install did2s from CRAN with:
 
 ``` r
+install.packages("did2s")
+```
+
+To install the development version, run the following:
+
+```{r, eval = FALSE}
 devtools::install_github("kylebutts/did2s")
 ```
 
 ## Two-stage Difference-in-differences [@Gardner_2021]
 
-
 For details on the methodology, view this [vignette](http://kylebutts.com/did2s/articles/Two-Stage-Difference-in-Differences.html)
-
-I have created an R package with the help of John Gardner to estimate the two-stage difference-in-differences estimator. To install the package, run the following:
-
-```{r, eval = FALSE}
-devtools::install_github("kylebutts/did2s")
-```
 
 To view the documentation, type `?did2s` into the console.
 
@@ -105,7 +104,7 @@ legend(x=1990, y=7.1, col = c("#8e549f", "#497eb3", "#d2382c"),
 
 ### Estimate Two-stage Difference-in-Differences 
 
-First, lets estimate a static did. There are two things to note here. First, note that I can use `fixest::feols` formula including the `|` for specifying fixed effects and `fixest::i` for improved factor variable support. Second, note that `did2s` returns a `fixest` estimate object, so `fixest::esttable`, `fixest::coefplot`, and `fixest::iplot` all work as expected.
+First, lets estimate a static did. There are two things to note here. First, note that I can use `fixest::feols` formula including the `|` for specifying fixed effects and `fixest::i` for improved factor variable support. Second, note that `did2s` returns a `fixest` estimate object, so `fixest::etable`, `fixest::coefplot`, and `fixest::iplot` all work as expected.
 
 ```{r static}
 
@@ -115,7 +114,7 @@ static <- did2s(df_het,
 				second_stage = ~i(treat, ref=FALSE), treatment = "treat", 
 				cluster_var = "state")
 
-fixest::esttable(static)
+fixest::etable(static)
 
 ```
 

@@ -5,11 +5,11 @@ make_V <- function(x1, x10, x2) {
     .Call(`_did2s_make_V`, x1, x10, x2)
 }
 
-make_cov <- function(x2, meat_sum) {
-    .Call(`_did2s_make_cov`, x2, meat_sum)
+make_sandwich <- function(x2, meat_sum) {
+    .Call(`_did2s_make_sandwich`, x2, meat_sum)
 }
 
-make_W <- function(x2g, x10g, first_ug, second_ug, V) {
-    .Call(`_did2s_make_W`, x2g, x10g, first_ug, second_ug, V)
+make_meat <- function(x2g, x10g, first_ug, second_ug, V) {
+    .Call(`_did2s_make_meat`, x2g, x10g, first_ug, second_ug, V)
 }
 

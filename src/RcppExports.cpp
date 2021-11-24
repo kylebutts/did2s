@@ -24,38 +24,38 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// make_cov
-arma::mat make_cov(arma::sp_mat x2, arma::mat meat_sum);
-RcppExport SEXP _did2s_make_cov(SEXP x2SEXP, SEXP meat_sumSEXP) {
+// make_sandwich
+arma::mat make_sandwich(arma::sp_mat x2, arma::mat meat_sum);
+RcppExport SEXP _did2s_make_sandwich(SEXP x2SEXP, SEXP meat_sumSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< arma::sp_mat >::type x2(x2SEXP);
     Rcpp::traits::input_parameter< arma::mat >::type meat_sum(meat_sumSEXP);
-    rcpp_result_gen = Rcpp::wrap(make_cov(x2, meat_sum));
+    rcpp_result_gen = Rcpp::wrap(make_sandwich(x2, meat_sum));
     return rcpp_result_gen;
 END_RCPP
 }
-// make_W
-arma::mat make_W(arma::sp_mat x2g, arma::sp_mat x10g, arma::vec first_ug, arma::vec second_ug, arma::mat V);
-RcppExport SEXP _did2s_make_W(SEXP x2gSEXP, SEXP x10gSEXP, SEXP first_ugSEXP, SEXP second_ugSEXP, SEXP VSEXP) {
+// make_meat
+arma::mat make_meat(arma::sp_mat& x2g, arma::sp_mat& x10g, arma::vec first_ug, arma::vec second_ug, arma::mat& V);
+RcppExport SEXP _did2s_make_meat(SEXP x2gSEXP, SEXP x10gSEXP, SEXP first_ugSEXP, SEXP second_ugSEXP, SEXP VSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::sp_mat >::type x2g(x2gSEXP);
-    Rcpp::traits::input_parameter< arma::sp_mat >::type x10g(x10gSEXP);
+    Rcpp::traits::input_parameter< arma::sp_mat& >::type x2g(x2gSEXP);
+    Rcpp::traits::input_parameter< arma::sp_mat& >::type x10g(x10gSEXP);
     Rcpp::traits::input_parameter< arma::vec >::type first_ug(first_ugSEXP);
     Rcpp::traits::input_parameter< arma::vec >::type second_ug(second_ugSEXP);
-    Rcpp::traits::input_parameter< arma::mat >::type V(VSEXP);
-    rcpp_result_gen = Rcpp::wrap(make_W(x2g, x10g, first_ug, second_ug, V));
+    Rcpp::traits::input_parameter< arma::mat& >::type V(VSEXP);
+    rcpp_result_gen = Rcpp::wrap(make_meat(x2g, x10g, first_ug, second_ug, V));
     return rcpp_result_gen;
 END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
     {"_did2s_make_V", (DL_FUNC) &_did2s_make_V, 3},
-    {"_did2s_make_cov", (DL_FUNC) &_did2s_make_cov, 2},
-    {"_did2s_make_W", (DL_FUNC) &_did2s_make_W, 5},
+    {"_did2s_make_sandwich", (DL_FUNC) &_did2s_make_sandwich, 2},
+    {"_did2s_make_meat", (DL_FUNC) &_did2s_make_meat, 5},
     {NULL, NULL, 0}
 };
 

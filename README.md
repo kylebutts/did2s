@@ -17,7 +17,7 @@ You can install did2s from CRAN with:
 install.packages("did2s")
 ```
 
-Or you can install the developmental version with:
+To install the development version, run the following:
 
 ``` r
 devtools::install_github("kylebutts/did2s")
@@ -27,14 +27,6 @@ devtools::install_github("kylebutts/did2s")
 
 For details on the methodology, view this
 [vignette](http://kylebutts.com/did2s/articles/Two-Stage-Difference-in-Differences.html)
-
-I have created an R package with the help of John Gardner to estimate
-the two-stage difference-in-differences estimator. To install the
-package, run the following:
-
-``` r
-install.packages("did2s")
-```
 
 To view the documentation, type `?did2s` into the console.
 
@@ -73,12 +65,6 @@ among the groups.
 # Automatically loads fixest
 library(did2s)
 #> Loading required package: fixest
-#> From fixest 0.9.0 onward, BREAKING changes! (Permanently remove this message with fixest_startup_msg(FALSE).) 
-#> - In i():
-#>     + the first two arguments have been swapped! Now it's i(factor_var, continuous_var) for interactions. 
-#>     + argument 'drop' has been removed (put everything in 'ref' now).
-#> - In feglm(): 
-#>     + the default family becomes 'gaussian' to be in line with glm(). Hence, for Poisson estimations, please use fepois() instead.
 #> ℹ did2s (v0.4.0). For more information on the methodology, visit <https://www.kylebutts.com/did2s>
 #> To cite did2s in publications use:
 #> 
@@ -91,7 +77,7 @@ library(did2s)
 #>     title = {did2s: Two-Stage Difference-in-Differences Following Gardner (2021)},
 #>     author = {Kyle Butts},
 #>     year = {2021},
-#>     url = {https://www.github.com/kylebutts/did2s/},
+#>     url = {https://github.com/kylebutts/did2s/},
 #>   }
 
 # Load Data from R package
@@ -123,14 +109,7 @@ legend(x=1990, y=7.1, col = c("#8e549f", "#497eb3", "#d2382c"),
        legend = c("Never Treated", "2000", "2010"))
 ```
 
-<div class="figure">
-
-<img src="man/figures/README-plot-df-het-1.png" alt="Example data with heterogeneous treatment effects" width="100%" />
-<p class="caption">
-Example data with heterogeneous treatment effects
-</p>
-
-</div>
+<img src="man/figures/README-plot-df-het-1.png" title="Example data with heterogeneous treatment effects" alt="Example data with heterogeneous treatment effects" width="100%" />
 
 ### Estimate Two-stage Difference-in-Differences
 
@@ -138,8 +117,8 @@ First, lets estimate a static did. There are two things to note here.
 First, note that I can use `fixest::feols` formula including the `|` for
 specifying fixed effects and `fixest::i` for improved factor variable
 support. Second, note that `did2s` returns a `fixest` estimate object,
-so `fixest::esttable`, `fixest::coefplot`, and `fixest::iplot` all work
-as expected.
+so `fixest::etable`, `fixest::coefplot`, and `fixest::iplot` all work as
+expected.
 
 ``` r
 # Static
@@ -147,13 +126,13 @@ static <- did2s(df_het,
                 yname = "dep_var", first_stage = ~ 0 | state + year, 
                 second_stage = ~i(treat, ref=FALSE), treatment = "treat", 
                 cluster_var = "state")
-#> 
-#> ── Two-stage Difference-in-Differences ─────────────────────────────────────────
-#> → Running with first stage formula `~ 0 | state + year` and second stage formula `~ i(treat, ref = FALSE)`
-#> → The indicator variable that denotes when treatment is on is `treat`
-#> → Standard errors will be clustered by `state`
+#> Running Two-stage Difference-in-Differences
+#> • first stage formula `~ 0 | state + year`
+#> • second stage formula `~ i(treat, ref = FALSE)`
+#> • The indicator variable that denotes when treatment is on is `treat`
+#> • Standard errors will be clustered by `state`
 
-fixest::esttable(static)
+fixest::etable(static)
 #>                            static
 #> Dependent Var.:           dep_var
 #>                                  
@@ -163,6 +142,8 @@ fixest::esttable(static)
 #> Observations               31,000
 #> R2                        0.26097
 #> Adj. R2                   0.26097
+#> ---
+#> Signif. codes: 0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 ```
 
 This is very close to the true treatment effect of \~2.23.
@@ -177,11 +158,11 @@ es <- did2s(df_het,
             yname = "dep_var", first_stage = ~ 0 | state + year, 
             second_stage = ~i(rel_year, ref=c(-1, Inf)), treatment = "treat", 
             cluster_var = "state")
-#> 
-#> ── Two-stage Difference-in-Differences ─────────────────────────────────────────
-#> → Running with first stage formula `~ 0 | state + year` and second stage formula `~ i(rel_year, ref = c(-1, Inf))`
-#> → The indicator variable that denotes when treatment is on is `treat`
-#> → Standard errors will be clustered by `state`
+#> Running Two-stage Difference-in-Differences
+#> • first stage formula `~ 0 | state + year`
+#> • second stage formula `~ i(rel_year, ref = c(-1, Inf))`
+#> • The indicator variable that denotes when treatment is on is `treat`
+#> • Standard errors will be clustered by `state`
 ```
 
 And plot the results:
@@ -198,14 +179,7 @@ legend(x=-20, y=3, col = c("steelblue", "black"), pch = c(20, 20),
        legend = c("Two-stage estimate", "True effect"))
 ```
 
-<div class="figure">
-
-<img src="man/figures/README-plot-es-1.png" alt="Event-study plot with example data" width="100%" />
-<p class="caption">
-Event-study plot with example data
-</p>
-
-</div>
+<img src="man/figures/README-plot-es-1.png" title="Event-study plot with example data" alt="Event-study plot with example data" width="100%" />
 
 ### Comparison to TWFE
 
@@ -244,7 +218,7 @@ citation(package = "did2s")
 #>     title = {did2s: Two-Stage Difference-in-Differences Following Gardner (2021)},
 #>     author = {Kyle Butts},
 #>     year = {2021},
-#>     url = {https://www.github.com/kylebutts/did2s/},
+#>     url = {https://github.com/kylebutts/did2s/},
 #>   }
 ```
 
