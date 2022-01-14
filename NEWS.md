@@ -6,6 +6,9 @@
 
 - Improved block bootstrapping code using `boot::boot`
 
+- Fixed Sun and Abraham bug in `event_study`, h/t Frederik Noack
+	
+
 # did2s 0.4.0
 
 - Add `event_study` and `plot_event_study` functions

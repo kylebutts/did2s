@@ -29,7 +29,7 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.1
 Depends: 
     R (>= 2.10),
-    fixest (>= 0.9.0)
+    fixest (>= 0.10.2)
 Imports: 
     dplyr,
     magrittr,

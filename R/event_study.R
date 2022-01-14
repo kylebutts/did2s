@@ -171,17 +171,17 @@ event_study = function(data, yname, idname, gname, tname, xformla = NULL, horizo
 			sunab_xformla = paste0("1 + ", as.character(xformla)[[2]])
 		}
 
-		sunab_formla = stats::as.formula(glue::glue("{yname} ~ {sunab_xformla} + sunab({gname}, {tname})"))
+		sunab_formla = stats::as.formula(glue::glue("{yname} ~ {sunab_xformla} + sunab({gname}, zz000event_time, ref.c =0, ref.p = -1)"))
 
 		est_sunab = fixest::feols(sunab_formla, data = data)
 
 		tidy_sunab = broom::tidy(est_sunab)
 
 		# Extract zz000event_time
-		tidy_sunab = tidy_sunab[stringr::str_detect(tidy_sunab$term, glue::glue("{tname}::")), ]
+		tidy_sunab = tidy_sunab[stringr::str_detect(tidy_sunab$term, glue::glue("zz000event_time::")), ]
 
 		# Make event time into a numeric
-		tidy_sunab$term = stringr::str_replace(tidy_sunab$term, glue::glue("{tname}::"), "")
+		tidy_sunab$term = stringr::str_replace(tidy_sunab$term, glue::glue("zz000event_time::"), "")
 		tidy_sunab$term = as.numeric(tidy_sunab$term)
 
 		# Subset columns
