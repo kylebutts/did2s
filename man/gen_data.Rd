@@ -14,7 +14,8 @@ gen_data(
   te3 = 2,
   te_m1 = 0,
   te_m2 = 0,
-  te_m3 = 0
+  te_m3 = 0,
+  n = 1000
 )
 }
 \arguments{
@@ -37,6 +38,8 @@ gen_data(
 \item{te_m2}{treatment effect slope per year}
 
 \item{te_m3}{treatment effect slope per year}
+
+\item{n}{number of individuals in sample}
 }
 \value{
 Dataframe of generated data

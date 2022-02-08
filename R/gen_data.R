@@ -11,6 +11,7 @@
 #' @param te_m1 treatment effect slope per year
 #' @param te_m2 treatment effect slope per year
 #' @param te_m3 treatment effect slope per year
+#' @param n number of individuals in sample
 #'
 #' @return Dataframe of generated data
 #' @export
@@ -26,64 +27,69 @@
 #'     te1 = 2, te2 = 1, te3 = 0,
 #'     te_m1 = 0.05, te_m2 = 0.15, te_m3 = 0)
 #'
-gen_data <- function(g1 = 2000, g2 = 2010, g3 = 0, panel = c(1990, 2020), te1 = 2, te2 = 2, te3 = 2, te_m1 = 0, te_m2 = 0, te_m3 = 0) {
+gen_data <- function(g1 = 2000, g2 = 2010, g3 = 0, panel = c(1990, 2020), te1 = 2, te2 = 2, te3 = 2, te_m1 = 0, te_m2 = 0, te_m3 = 0, n = 1000) {
 
-n = 1000
+	# CRAN problem
+	unit_fe <- state <- group <- g <- unit <- year_fe <- treat <- rel_year <- rel_year_binned <- error <- te <- te_dynamic <- dep_var <- NULL
 
-df = tibble::tibble(unit = 1:n)
+	df = data.table::data.table(
+		unit = 1:n,
+		state = sample(1:40, n, replace = TRUE),
+		group = stats::runif(n)
+	)
 
-df$state = sample(1:40, n, replace = TRUE)
-df$unit_fe = stats::rnorm(n, df$state/5, 1)
+	df[,unit_fe := stats::rnorm(n, state/5, 1),
+		][, group := data.table::fcase(
+			group < 0.33, "Group 1",
+			group < 0.66, "Group 2",
+			default = "Group 3"
+		)][, g := data.table::fcase(
+			group == "Group 1", g1,
+			group == "Group 2", g2,
+			default = g3
+		)]
 
-df$group = stats::runif(n)
-df$group = dplyr::case_when(
-				df$group < 0.33 ~ "Group 1",
-				df$group < 0.66 ~ "Group 2",
-				TRUE ~ "Group 3"
-			)
-df$g = dplyr::case_when(
-				df$group == "Group 1" ~ g1,
-				df$group == "Group 2" ~ g2,
-				df$group == "Group 3" ~ g3,
-			)
+	# Make into panel
+	nyear <- panel[2] - panel[1] + 1
+	df = df[rep(1:nrow(df), times = nyear), ]
 
-# Make into panel
-nyear <- panel[2] - panel[1] + 1
-df = df[rep(1:nrow(df), times = nyear), ]
-df$year <- rep(panel[1]:panel[2], each = n)
+	df[, year := rep(panel[1]:panel[2], each = n)]
 
-# Add year FE
-year_fe = tibble::tibble(year = panel[1]:panel[2])
-year_fe$year_fe = stats::rnorm(length(year_fe$year), 0, 1)
+	data.table::setorder(df, unit, year)
 
-# Join with year_fe tibble
-df = dplyr::left_join(df, year_fe, by = "year")
 
-df$treat = (df$year >= df$g) & (df$g %in% panel[1]:panel[2])
+	# Add year FE
+	df[, year_fe := stats::rnorm(1), by = year]
 
-df$rel_year = dplyr::if_else(df$g == 0L, Inf, as.numeric(df$year - df$g))
+	# Add treatment variables
+	df[,
+	    treat := (year >= g) & (g %in% panel[1]:panel[2])
+	  ][,
+		rel_year := year - g
+      ][
+      	df$g == 0L, rel_year := Inf
+  	  ][,
+  	  	rel_year_binned := data.table::fcase(
+  	  		rel_year <= -6, -6,
+  	  		rel_year >= 6, 6,
+  	  		rel_year > -6 & rel_year < 6, rel_year
+  	  	)
+  	  ][,
+  	  	error := stats::rnorm(.N)
+  	  ]
 
-df$rel_year_binned = dplyr::case_when(
-	df$rel_year == Inf ~ Inf,
-	df$rel_year <= -6 ~ -6,
-	df$rel_year >= 6 ~ 6,
-	TRUE ~ df$rel_year
-)
+	# Level Effect
+	df[, te :=
+		(df$group == "Group 1") * te1 * (df$year >= g1) +
+		(df$group == "Group 2") * te2 * (df$year >= g2) +
+		(df$group == "Group 3") * te3 * (df$year >= g3)
+	][, te_dynamic :=
+		(df$group == "Group 1") * (df$year >= g1) * te_m1 * (df$year - g1) +
+		(df$group == "Group 2") * (df$year >= g2) * te_m2 * (df$year - g2) +
+		(df$group == "Group 3") * (df$year >= g3) * te_m3 * (df$year - g3)
+	][, dep_var :=
+	  	df$unit_fe + df$year_fe + df$te + df$te_dynamic + df$error
+	]
 
-df$error = stats::rnorm(nrow(df), 0, 1)
-
-# Level Effect
-df$te =
-	(df$group == "Group 1") * te1 * (df$year >= g1) +
-	(df$group == "Group 2") * te2 * (df$year >= g2) +
-	(df$group == "Group 3") * te3 * (df$year >= g3)
-# dynamic Effect
-df$te_dynamic =
-	(df$group == "Group 1") * (df$year >= g1) * te_m1 * (df$year - g1) +
-	(df$group == "Group 2") * (df$year >= g2) * te_m2 * (df$year - g2) +
-	(df$group == "Group 3") * (df$year >= g3) * te_m3 * (df$year - g3)
-
-df$dep_var = df$unit_fe + df$year_fe + df$te + df$te_dynamic + df$error
-
-return(df)
+	return(df)
 }

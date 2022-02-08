@@ -31,6 +31,7 @@ Depends:
     R (>= 2.10),
     fixest (>= 0.10.2)
 Imports: 
+    data.table,
     dplyr,
     magrittr,
     ggplot2,
@@ -39,7 +40,6 @@ Imports:
     stringr,
     rlang,
     tibble,
-    tidyr,
     rsample,
     purrr,
     cli,
@@ -50,7 +50,6 @@ Imports:
     methods,
     staggered,
     didimputation,
-    gt,
     boot
 URL: http://kylebutts.com/did2s/
 Suggests: 
