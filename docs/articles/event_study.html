@@ -5,26 +5,9 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<!-- Inform modern browsers that this page supports both dark and light color schemes,
-  and the page author prefers light. --><meta name="color-scheme" content="dark light">
-<script>
-  // If `prefers-color-scheme` is not supported, fall back to light mode.
-  // i.e. In this case, inject the `light` CSS before the others, with
-  // no media filter so that it will be downloaded with highest priority.
-  if (window.matchMedia("(prefers-color-scheme: dark)").media === "not all") {
-    document.documentElement.style.display = "none";
-    document.head.insertAdjacentHTML(
-      "beforeend",
-      "<link id=\"css\" rel=\"stylesheet\" href=\"https://bootswatch.com/3/flatly/bootstrap.css\" onload=\"document.documentElement.style.display = ''\">"
-    );
-  }
-</script><title>So you're trying to choose an event-study estimator... • did2s</title>
-<!-- jquery --><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script><!-- Bootstrap --><script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script><!-- Flatly Theme - Light  --><link id="css-light" rel="stylesheet" href="https://bootswatch.com/3/flatly/bootstrap.css" media="(prefers-color-scheme: light), (prefers-color-scheme: no-preference)">
-<!-- Darkly Theme - Dark --><link id="css-dark" rel="stylesheet" href="https://bootswatch.com/3/darkly/bootstrap.css" media="(prefers-color-scheme: dark)">
-<!-- preferably CSS --><link rel="stylesheet" href="../preferably.css">
-<link id="css-code-light" rel="stylesheet" href="../code-color-scheme-light.css" media="(prefers-color-scheme: light), (prefers-color-scheme: no-preference)">
-<link id="css-code-dark" rel="stylesheet" href="../code-color-scheme-dark.css" media="(prefers-color-scheme: dark)">
-<!-- bootstrap-toc --><link rel="stylesheet" href="../bootstrap-toc.css">
+<title>So you're trying to choose an event-study estimator... • did2s</title>
+<!-- jquery --><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script><!-- Bootstrap --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha256-bZLfwXAP04zRMK2BjiO8iu9pf4FbLqX6zitd+tIvLhE=" crossorigin="anonymous">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script><!-- bootstrap-toc --><link rel="stylesheet" href="../bootstrap-toc.css">
 <script src="../bootstrap-toc.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
 <!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- pkgdown --><link href="../pkgdown.css" rel="stylesheet">
@@ -36,6 +19,8 @@
 <![endif]-->
 </head>
 <body data-spy="scroll" data-target="#toc">
+    
+
     <div class="container template-article">
       <header><div class="navbar navbar-default navbar-fixed-top" role="navigation">
   <div class="container">
@@ -48,23 +33,17 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">did2s</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.4.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.6.0</span>
       </span>
     </div>
 
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
 <li>
-  <a href="../index.html">
-    <span class="fas fa-home fa-lg"></span>
-     
-  </a>
-</li>
-<li>
   <a href="../reference/index.html">Reference</a>
 </li>
 <li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
     Articles
      
     <span class="caret"></span>
@@ -92,10 +71,11 @@
 
       
 
-      </header><script src="event_study_files/header-attrs-2.9/header-attrs.js"></script><div class="row">
+      </header><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
-      <h1 data-toc-skip>So you’re trying to choose an event-study estimator…</h1>
+      <h1 data-toc-skip>So you’re trying to choose an event-study
+estimator…</h1>
             
       
       
@@ -105,17 +85,18 @@
 
     
     
-<div id="comparison-table" class="section level1">
-<h1 class="hasAnchor">
-<a href="#comparison-table" class="anchor"></a>Comparison Table</h1>
-<p>There is certainly many more nuances to each estimator, hence this is a simplified version of the table.</p>
-<div id="mdhimdgomu" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>@import url("https://fonts.googleapis.com/css2?family=Chivo:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap");
+<div class="section level2">
+<h2 id="comparison-table">Comparison Table<a class="anchor" aria-label="anchor" href="#comparison-table"></a>
+</h2>
+<p>There is certainly many more nuances to each estimator, hence this is
+a simplified version of the table.</p>
+<div id="cfxfuahntj" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>@import url("https://fonts.googleapis.com/css2?family=Fira+Code:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap");
 html {
-  font-family: Chivo, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
+  font-family: 'Fira Code', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
 }
 
-#mdhimdgomu .gt_table {
+#cfxfuahntj .gt_table {
   display: table;
   border-collapse: collapse;
   margin-left: auto;
@@ -128,19 +109,19 @@ html {
   width: 1000px;
   border-top-style: solid;
   border-top-width: 3px;
-  border-top-color: transparent;
+  border-top-color: rgba(255, 255, 255, 0);
   border-right-style: none;
   border-right-width: 2px;
   border-right-color: #D3D3D3;
   border-bottom-style: solid;
   border-bottom-width: 3px;
-  border-bottom-color: transparent;
+  border-bottom-color: rgba(255, 255, 255, 0);
   border-left-style: none;
   border-left-width: 2px;
   border-left-color: #D3D3D3;
 }
 
-#mdhimdgomu .gt_heading {
+#cfxfuahntj .gt_heading {
   background-color: #FFFFFF;
   text-align: left;
   border-bottom-color: #FFFFFF;
@@ -152,39 +133,43 @@ html {
   border-right-color: #D3D3D3;
 }
 
-#mdhimdgomu .gt_title {
+#cfxfuahntj .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
   padding-top: 4px;
   padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
   border-bottom-color: #FFFFFF;
   border-bottom-width: 0;
 }
 
-#mdhimdgomu .gt_subtitle {
+#cfxfuahntj .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
   padding-top: 0;
-  padding-bottom: 4px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
   border-top-color: #FFFFFF;
   border-top-width: 0;
 }
 
-#mdhimdgomu .gt_bottom_border {
+#cfxfuahntj .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#mdhimdgomu .gt_col_headings {
+#cfxfuahntj .gt_col_headings {
   border-top-style: solid;
   border-top-width: 3px;
-  border-top-color: transparent;
+  border-top-color: rgba(255, 255, 255, 0);
   border-bottom-style: solid;
   border-bottom-width: 3px;
-  border-bottom-color: black;
+  border-bottom-color: #000000;
   border-left-style: none;
   border-left-width: 1px;
   border-left-color: #D3D3D3;
@@ -193,12 +178,12 @@ html {
   border-right-color: #D3D3D3;
 }
 
-#mdhimdgomu .gt_col_heading {
+#cfxfuahntj .gt_col_heading {
   color: #333333;
-  background-color: white;
-  font-size: 80%;
-  font-weight: bolder;
-  text-transform: uppercase;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
   border-left-style: none;
   border-left-width: 1px;
   border-left-color: #D3D3D3;
@@ -213,45 +198,48 @@ html {
   overflow-x: hidden;
 }
 
-#mdhimdgomu .gt_column_spanner_outer {
+#cfxfuahntj .gt_column_spanner_outer {
   color: #333333;
-  background-color: white;
-  font-size: 80%;
-  font-weight: bolder;
-  text-transform: uppercase;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
   padding-top: 0;
   padding-bottom: 0;
   padding-left: 4px;
   padding-right: 4px;
 }
 
-#mdhimdgomu .gt_column_spanner_outer:first-child {
+#cfxfuahntj .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#mdhimdgomu .gt_column_spanner_outer:last-child {
+#cfxfuahntj .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#mdhimdgomu .gt_column_spanner {
+#cfxfuahntj .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 3px;
-  border-bottom-color: black;
+  border-bottom-color: #000000;
   vertical-align: bottom;
   padding-top: 5px;
-  padding-bottom: 6px;
+  padding-bottom: 5px;
   overflow-x: hidden;
   display: inline-block;
   width: 100%;
 }
 
-#mdhimdgomu .gt_group_heading {
-  padding: 8px;
+#cfxfuahntj .gt_group_heading {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
   color: #333333;
   background-color: #FFFFFF;
-  font-size: 80%;
-  font-weight: bolder;
-  text-transform: uppercase;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -267,12 +255,12 @@ html {
   vertical-align: middle;
 }
 
-#mdhimdgomu .gt_empty_group_heading {
+#cfxfuahntj .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
-  font-size: 80%;
-  font-weight: bolder;
+  font-size: 100%;
+  font-weight: initial;
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -282,15 +270,15 @@ html {
   vertical-align: middle;
 }
 
-#mdhimdgomu .gt_from_md > :first-child {
+#cfxfuahntj .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#mdhimdgomu .gt_from_md > :last-child {
+#cfxfuahntj .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#mdhimdgomu .gt_row {
+#cfxfuahntj .gt_row {
   padding-top: 10px;
   padding-bottom: 10px;
   padding-left: 5px;
@@ -309,19 +297,38 @@ html {
   overflow-x: hidden;
 }
 
-#mdhimdgomu .gt_stub {
+#cfxfuahntj .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
-  font-size: 80%;
-  font-weight: bolder;
-  text-transform: uppercase;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
   border-right-style: solid;
   border-right-width: 2px;
   border-right-color: #D3D3D3;
-  padding-left: 12px;
+  padding-left: 5px;
+  padding-right: 5px;
 }
 
-#mdhimdgomu .gt_summary_row {
+#cfxfuahntj .gt_stub_row_group {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+  vertical-align: top;
+}
+
+#cfxfuahntj .gt_row_group_first td {
+  border-top-width: 2px;
+}
+
+#cfxfuahntj .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -331,17 +338,26 @@ html {
   padding-right: 5px;
 }
 
-#mdhimdgomu .gt_first_summary_row {
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
+#cfxfuahntj .gt_first_summary_row {
   border-top-style: solid;
-  border-top-width: 2px;
   border-top-color: #D3D3D3;
 }
 
-#mdhimdgomu .gt_grand_summary_row {
+#cfxfuahntj .gt_first_summary_row.thick {
+  border-top-width: 2px;
+}
+
+#cfxfuahntj .gt_last_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#cfxfuahntj .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -351,7 +367,7 @@ html {
   padding-right: 5px;
 }
 
-#mdhimdgomu .gt_first_grand_summary_row {
+#cfxfuahntj .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -361,11 +377,11 @@ html {
   border-top-color: #D3D3D3;
 }
 
-#mdhimdgomu .gt_striped {
+#cfxfuahntj .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#mdhimdgomu .gt_table_body {
+#cfxfuahntj .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -374,7 +390,7 @@ html {
   border-bottom-color: #D3D3D3;
 }
 
-#mdhimdgomu .gt_footnotes {
+#cfxfuahntj .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -388,13 +404,16 @@ html {
   border-right-color: #D3D3D3;
 }
 
-#mdhimdgomu .gt_footnote {
+#cfxfuahntj .gt_footnote {
   margin: 0px;
   font-size: 90%;
-  padding: 4px;
+  padding-left: 4px;
+  padding-right: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
 }
 
-#mdhimdgomu .gt_sourcenotes {
+#cfxfuahntj .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -408,44 +427,71 @@ html {
   border-right-color: #D3D3D3;
 }
 
-#mdhimdgomu .gt_sourcenote {
+#cfxfuahntj .gt_sourcenote {
   font-size: 14px;
-  padding: 4px;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
 }
 
-#mdhimdgomu .gt_left {
+#cfxfuahntj .gt_left {
   text-align: left;
 }
 
-#mdhimdgomu .gt_center {
+#cfxfuahntj .gt_center {
   text-align: center;
 }
 
-#mdhimdgomu .gt_right {
+#cfxfuahntj .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#mdhimdgomu .gt_font_normal {
+#cfxfuahntj .gt_font_normal {
   font-weight: normal;
 }
 
-#mdhimdgomu .gt_font_bold {
+#cfxfuahntj .gt_font_bold {
   font-weight: bold;
 }
 
-#mdhimdgomu .gt_font_italic {
+#cfxfuahntj .gt_font_italic {
   font-style: italic;
 }
 
-#mdhimdgomu .gt_super {
+#cfxfuahntj .gt_super {
   font-size: 65%;
 }
 
-#mdhimdgomu .gt_footnote_marks {
+#cfxfuahntj .gt_footnote_marks {
   font-style: italic;
   font-weight: normal;
-  font-size: 65%;
+  font-size: 75%;
+  vertical-align: 0.4em;
+}
+
+#cfxfuahntj .gt_asterisk {
+  font-size: 100%;
+  vertical-align: 0;
+}
+
+#cfxfuahntj .gt_slash_mark {
+  font-size: 0.7em;
+  line-height: 0.7em;
+  vertical-align: 0.15em;
+}
+
+#cfxfuahntj .gt_fraction_numerator {
+  font-size: 0.6em;
+  line-height: 0.6em;
+  vertical-align: 0.45em;
+}
+
+#cfxfuahntj .gt_fraction_denominator {
+  font-size: 0.6em;
+  line-height: 0.6em;
+  vertical-align: -0.05em;
 }
 </style>
 <table class="table gt_table">
@@ -454,17 +500,19 @@ html {
     </tr></thead>
 <thead class="gt_col_headings"><tr>
 <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1">Estimator</th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1">R function</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1">R package</th>
       <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1">Type</th>
       <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1">Comparison group</th>
       <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1">Main Assumptions</th>
       <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1">Covers use of pre-treatment covariates</th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1">Uniform Inference</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1">Uniform inference of estimates</th>
     </tr></thead>
 <tbody class="gt_table_body">
 <tr>
 <td class="gt_row gt_left">Gardner (2021)</td>
-<td class="gt_row gt_left">`did2s`</td>
+<td class="gt_row gt_left"><div class="gt_from_md">
+<p><a href="http://kylebutts.com/did2s/">did2s</a></p>
+</div></td>
 <td class="gt_row gt_left">Imputes Y(0)</td>
 <td class="gt_row gt_left">Not-yet- and Never-treated</td>
 <td class="gt_row gt_left"><div class="gt_from_md"><ul>
@@ -478,7 +526,9 @@ html {
 </tr>
 <tr>
 <td class="gt_row gt_left">Borusyak, Jaravel, and Spiess (2021)</td>
-<td class="gt_row gt_left">`didimputation`</td>
+<td class="gt_row gt_left"><div class="gt_from_md">
+<p><code>{didimputation}</code></p>
+</div></td>
 <td class="gt_row gt_left">Imputes Y(0)</td>
 <td class="gt_row gt_left">Not-yet- and Never-treated</td>
 <td class="gt_row gt_left"><div class="gt_from_md"><ul>
@@ -492,7 +542,9 @@ html {
 </tr>
 <tr>
 <td class="gt_row gt_left">Callaway and Sant'Anna (2021)</td>
-<td class="gt_row gt_left">`did`</td>
+<td class="gt_row gt_left"><div class="gt_from_md">
+<p><a href="https://bcallaway11.github.io/did/" class="external-link">did</a></p>
+</div></td>
 <td class="gt_row gt_left">2x2 Aggregation</td>
 <td class="gt_row gt_left">Either Not-yet- or Never-treated</td>
 <td class="gt_row gt_left"><div class="gt_from_md"><ul>
@@ -506,7 +558,9 @@ html {
 </tr>
 <tr>
 <td class="gt_row gt_left">Roth and Sant'Anna (2021)</td>
-<td class="gt_row gt_left">`staggered`</td>
+<td class="gt_row gt_left"><div class="gt_from_md">
+<p><code>{staggered}</code></p>
+</div></td>
 <td class="gt_row gt_left">2x2 Aggregation</td>
 <td class="gt_row gt_left">Not-yet-treated</td>
 <td class="gt_row gt_left"><div class="gt_from_md"><ul>
@@ -516,21 +570,24 @@ html {
 <td class="gt_row gt_left"></td>
 </tr>
 <tr>
-<td class="gt_row gt_left" style="border-bottom-width: 2px; border-bottom-style: solid; border-bottom-color: transparent;">Sun and Abraham (2020)</td>
-<td class="gt_row gt_left" style="border-bottom-width: 2px; border-bottom-style: solid; border-bottom-color: transparent;">`fixest::sunab`</td>
-<td class="gt_row gt_left" style="border-bottom-width: 2px; border-bottom-style: solid; border-bottom-color: transparent;">Interacted TWFE</td>
-<td class="gt_row gt_left" style="border-bottom-width: 2px; border-bottom-style: solid; border-bottom-color: transparent;">Not-yet- and Never-treated</td>
-<td class="gt_row gt_left" style="border-bottom-width: 2px; border-bottom-style: solid; border-bottom-color: transparent;"><div class="gt_from_md"><ul>
+<td class="gt_row gt_left">Sun and Abraham (2020)</td>
+<td class="gt_row gt_left"><div class="gt_from_md">
+<p><a href="https://lrberge.github.io/fixest/" class="external-link">fixest</a></p>
+</div></td>
+<td class="gt_row gt_left">Interacted TWFE</td>
+<td class="gt_row gt_left">Not-yet- and Never-treated</td>
+<td class="gt_row gt_left"><div class="gt_from_md"><ul>
 <li>Parallel Trends for all units</li>
-<li>No Anticipation</li>
+<li>Limited anticipation<sup>*</sup>
+</li>
 </ul></div></td>
-<td class="gt_row gt_center" style="border-bottom-width: 2px; border-bottom-style: solid; border-bottom-color: transparent;"></td>
-<td class="gt_row gt_left" style="border-bottom-width: 2px; border-bottom-style: solid; border-bottom-color: transparent;"></td>
+<td class="gt_row gt_center"></td>
+<td class="gt_row gt_left"></td>
 </tr>
 </tbody>
 <tfoot class="gt_sourcenotes"><tr>
 <td class="gt_sourcenote" colspan="7">
-<sup>*</sup> Anticipation can be accounted for by adjusting initial treatment day back x number of years
+<sup>*</sup> Anticipation can be accounted for by adjusting 'initial treatment day' back (x) number of years, where (x) is the number of years before treatment that anticipation can occur.
 <p><sup>**</sup> Misclassifications are my own fault.</p>
 </td>
     </tr></tfoot>
@@ -550,11 +607,14 @@ html {
 
 
       <footer><div class="copyright">
-  <p>Developed by Kyle Butts, John Gardner.</p>
+  <p></p>
+<p>Developed by Kyle Butts, John Gardner.</p>
 </div>
 
 <div class="pkgdown">
-  <p>Made with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1, using <a href="https://preferably.amirmasoudabdol.name/?source=footer">preferably</a> template.</p>
+  <p></p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a>
+2.0.2.</p>
 </div>
 
       </footer>
@@ -562,6 +622,8 @@ html {
 
   
 
+
+  
 
   </body>
 </html>

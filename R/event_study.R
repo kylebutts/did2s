@@ -6,10 +6,17 @@
 #' @param yname Variable name for outcome variable
 #' @param idname Variable name for unique unit id
 #' @param tname Variable name for calendar period
-#' @param gname Variable name for unit-specific date of initial treatment (never-treated should be zero or NA)
-#' @param xformla A formula for the covariates to include in the model. It should be of the form `~ X1 + X2`. Default is NULL.
-#' @param horizon Integer of length two. The first integer is the earliest pre-effect to include and the second is the latest post-effect to include. Default is all horizons.
-#' @param weights Variable name for estimation weights. This is used in estimating Y(0) and also augments treatment effect weights
+#' @param gname Variable name for unit-specific date of initial treatment
+#'   (never-treated should be zero or NA)
+#' @param xformla A formula for the covariates to include in the model.
+#'   It should be of the form `~ X1 + X2`. Default is NULL.
+#' @param horizon Integer of length two. The first integer is the earliest
+#'   pre-effect to include and the second is the latest post-effect to include.
+#'   Default is all horizons.
+#' @param weights Variable name for estimation weights. This is used in
+#'   estimating Y(0) and also augments treatment effect weights
+#' @param estimator Estimator you would like to use. Use "all" to estimate all.
+#'   Otherwise see table to know advantages and requirements for each of these.
 #'
 #' @return `event_study` returns a data.frame of point estimates for each estimator
 #'
@@ -22,10 +29,16 @@
 #' plot_event_study(out)
 #' }
 #' @export
-event_study = function(data, yname, idname, gname, tname, xformla = NULL, horizon = NULL, weights = NULL){
-
+event_study = function(data, yname, idname, gname, tname,
+					   xformla = NULL, horizon = NULL, weights = NULL,
+					   estimator = c("TWFE", "did2s", "did", "impute", "sunab",
+					   			  "staggered", "all")
+			   ){
 
 # Check Parameters -------------------------------------------------------------
+
+	# Select estimator
+	estimator <- match.arg(estimator)
 
 	# Test that gname is in tname or 0/NA for untreated
 	if(!all(
@@ -75,11 +88,19 @@ event_study = function(data, yname, idname, gname, tname, xformla = NULL, horizo
 		xformla_null = "0"
 	}
 
+
+
+# initialize empty arguments
+tidy_twfe = NULL
+tidy_did2s = NULL
+tidy_did = NULL
+tidy_sunab = NULL
+tidy_impute = NULL
+tidy_staggered = NULL
+
 # TWFE -------------------------------------------------------------------------
-
+if(estimator %in% c("TWFE", "all")) {
 	cli::cli_text("Estimating TWFE Model")
-
-	tidy_twfe = NULL
 
 	try({
 		twfe_formula = stats::as.formula(glue::glue("{yname} ~ 1 + {xformla_null} + i(zz000event_time, ref = -1) | {idname} + {tname}"))
@@ -97,18 +118,14 @@ event_study = function(data, yname, idname, gname, tname, xformla = NULL, horizo
 
 		# Subset column
 		tidy_twfe = tidy_twfe[, c("term", "estimate", "std.error")]
-
-		# Add estimator column
-		tidy_twfe$estimator = "TWFE"
 	})
 
 	if(is.null(tidy_twfe)) cli::cli_warn("TWFE Failed")
+}
 
 # did2s ------------------------------------------------------------------------
-
+if(estimator %in% c("did2s", "all")) {
 	cli::cli_text("Estimating using Gardner (2021)")
-
-	tidy_did2s = NULL
 
 	try({
 		did2s_first_stage = stats::as.formula(glue::glue("~ 0 + {xformla_null} | {idname} + {tname}"))
@@ -127,23 +144,19 @@ event_study = function(data, yname, idname, gname, tname, xformla = NULL, horizo
 
 		# Subset columns
 		tidy_did2s = tidy_did2s[, c("term", "estimate", "std.error")]
-
-		# Add estimator column
-		tidy_did2s$estimator = "Gardner (2021)"
 	})
 
 	if(is.null(tidy_did2s)) cli::cli_warn("Gardner (2021) Failed")
-
+}
 
 # did --------------------------------------------------------------------------
-
+if(estimator %in% c("did", "all")) {
 	cli::cli_text("Estimating using Callaway and Sant'Anna (2020)")
 
-	tidy_did = NULL
-
 	try({
-		est_did = did::att_gt(yname = yname, tname = tname, idname = idname, gname = gname, xformla = xformla, data = data) %>%
-			did::aggte(type = "dynamic", na.rm = TRUE)
+		est_did = did::att_gt(yname = yname, tname = tname, idname = idname, gname = gname, xformla = xformla, data = data)
+
+		est_did = did::aggte(est_did, type = "dynamic", na.rm = TRUE)
 
 		# Extract es coefficients
 		tidy_did = broom::tidy(est_did)
@@ -151,17 +164,14 @@ event_study = function(data, yname, idname, gname, tname, xformla = NULL, horizo
 		# Subset columns
 		tidy_did$term = tidy_did$event.time
 		tidy_did = tidy_did[, c("term", "estimate", "std.error")]
-
-		tidy_did$estimator = "Callaway and Sant'Anna (2020)"
 	})
 
 	if(is.null(tidy_did)) cli::cli_warn("Callaway and Sant'Anna (2020) Failed")
+}
 
 # sunab ------------------------------------------------------------------------
-
+if(estimator %in% c("sunab", "all")) {
 	cli::cli_text("Estimating using Sun and Abraham (2020)")
-
-	tidy_sunab = NULL
 
 	try({
 		# Format xformla for inclusion
@@ -171,7 +181,7 @@ event_study = function(data, yname, idname, gname, tname, xformla = NULL, horizo
 			sunab_xformla = paste0("1 + ", as.character(xformla)[[2]])
 		}
 
-		sunab_formla = stats::as.formula(glue::glue("{yname} ~ {sunab_xformla} + sunab({gname}, zz000event_time, ref.c =0, ref.p = -1)"))
+		sunab_formla = stats::as.formula(glue::glue("{yname} ~ {sunab_xformla} + sunab({gname}, zz000event_time, ref.c =0, ref.p = -1) | {idname} + {tname}"))
 
 		est_sunab = fixest::feols(sunab_formla, data = data)
 
@@ -186,18 +196,14 @@ event_study = function(data, yname, idname, gname, tname, xformla = NULL, horizo
 
 		# Subset columns
 		tidy_sunab = tidy_sunab[, c("term", "estimate", "std.error")]
-
-		# Add estimator column
-		tidy_sunab$estimator = "Sun and Abraham (2020)"
 	})
 
 	if(is.null(tidy_sunab)) cli::cli_warn("Sun and Abraham (2020) Failed")
+}
 
 # did_imputation ---------------------------------------------------------------
-
+if(estimator %in% c("impute", "all")) {
 	cli::cli_text("Estimating using Borusyak, Jaravel, Spiess (2021)")
-
-	tidy_impute = NULL
 
 	try({
 		impute_first_stage = stats::as.formula(glue::glue("~ 1 + {xformla_null} + i({tname}) | {idname}"))
@@ -213,19 +219,15 @@ event_study = function(data, yname, idname, gname, tname, xformla = NULL, horizo
 
 		# Make event time into a numeric
 		tidy_impute$term = as.numeric(tidy_impute$term)
-
-		# Add estimator column
-		tidy_impute$estimator = "Borusyak, Jaravel, Spiess (2021)"
 	})
 
 	if(is.null(tidy_impute)) cli::cli_warn("Borusyak, Jaravel, Spiess (2021) Failed")
+}
 
 # staggered --------------------------------------------------------------------
-
+if(estimator %in% c("staggered", "all")) {
 	# Waiting for staggered on CRAN
-	cli::cli_text("Estimatng using Roth and Sant'Anna (2021)")
-
-	tidy_staggered = NULL
+	cli::cli_text("Estimating using Roth and Sant'Anna (2021)")
 
 	try({
 		# Make untreated g = Inf
@@ -251,19 +253,21 @@ event_study = function(data, yname, idname, gname, tname, xformla = NULL, horizo
 		tidy_staggered$std.error = tidy_staggered$se
 
 		tidy_staggered = tidy_staggered[, c("term", "estimate", "std.error")]
-
-		# Add estimator column
-		tidy_staggered$estimator = "Roth and Sant'Anna (2021)"
 	})
 
 	if(is.null(tidy_staggered)) cli::cli_warn("Roth and Sant'Anna (2021) Failed")
-
-
-
+}
 
 # Bind results together --------------------------------------------------------
 
-	out = dplyr::bind_rows(tidy_twfe, tidy_did2s, tidy_did, tidy_sunab, tidy_impute, tidy_staggered)
+	out = data.table::rbindlist(list(
+		"TWFE" = tidy_twfe,
+		"Gardner (2021)" = tidy_did2s,
+		"Callaway and Sant'Anna (2020)" = tidy_did,
+		"Sun and Abraham (2020)" = tidy_sunab,
+		"Roth and Sant'Anna (2021)" = tidy_staggered,
+		"Borusyak, Jaravel, Spiess (2021)" = tidy_impute
+	), idcol = "estimator")
 
 	return(out)
 
@@ -302,7 +306,6 @@ plot_event_study = function(out, seperate = TRUE, horizon = NULL) {
 	# create confidence intervals
 	out$ci_lower = out$estimate - 1.96 * out$std.error
 	out$ci_upper = out$estimate + 1.96 * out$std.error
-
 
 
 	# position depending on sepreate

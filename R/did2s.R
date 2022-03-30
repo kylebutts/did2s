@@ -94,6 +94,8 @@ did2s <- function(data, yname, first_stage, second_stage, treatment, cluster_var
 
 	# Check Parameters ---------------------------------------------------------
 
+	if(!inherits(data, "data.frame")) stop("`did2s` requires a data.frame like object for analysis.")
+
 	# Extract vars from formula
 	if(inherits(first_stage, "formula")) first_stage = as.character(first_stage)[[2]]
 	if(inherits(second_stage, "formula")) second_stage = as.character(second_stage)[[2]]

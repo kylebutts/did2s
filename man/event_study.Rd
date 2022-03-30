@@ -13,7 +13,8 @@ event_study(
   tname,
   xformla = NULL,
   horizon = NULL,
-  weights = NULL
+  weights = NULL,
+  estimator = c("TWFE", "did2s", "did", "impute", "sunab", "staggered", "all")
 )
 
 plot_event_study(out, seperate = TRUE, horizon = NULL)
@@ -25,15 +26,21 @@ plot_event_study(out, seperate = TRUE, horizon = NULL)
 
 \item{idname}{Variable name for unique unit id}
 
-\item{gname}{Variable name for unit-specific date of initial treatment (never-treated should be zero or NA)}
+\item{gname}{Variable name for unit-specific date of initial treatment
+(never-treated should be zero or NA)}
 
 \item{tname}{Variable name for calendar period}
 
-\item{xformla}{A formula for the covariates to include in the model. It should be of the form \code{~ X1 + X2}. Default is NULL.}
+\item{xformla}{A formula for the covariates to include in the model.
+It should be of the form \code{~ X1 + X2}. Default is NULL.}
 
 \item{horizon}{Numeric. Vector of length 2. First element is min and second element is max of event_time to plot}
 
-\item{weights}{Variable name for estimation weights. This is used in estimating Y(0) and also augments treatment effect weights}
+\item{weights}{Variable name for estimation weights. This is used in
+estimating Y(0) and also augments treatment effect weights}
+
+\item{estimator}{Estimator you would like to use. Use "all" to estimate all.
+Otherwise see table to know advantages and requirements for each of these.}
 
 \item{out}{Output from \code{\link[=event_study]{event_study()}}}
 

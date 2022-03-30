@@ -29,15 +29,15 @@ There is certainly many more nuances to each estimator, hence this is a simplifi
 ```{r, echo = F}
 
 methods <- tribble(
-  ~Estimator, ~`R function`, ~Type, ~`Comparison group`, ~`Main Assumptions`, ~`Covers use of pre-treatment covariates`, ~`Uniform Inference`,
-  "Gardner (2021)", "`did2s`", "Imputes Y(0)", "Not-yet- and Never-treated", "- Correct specification of Y(0) \n - Parallel Trends for all units \n - Limited anticipation<sup>*</sup>", "✔", "",
-  "Borusyak, Jaravel, and Spiess (2021)", "`didimputation`", "Imputes Y(0)", "Not-yet- and Never-treated", "- Correct specification of Y(0) \n - Parallel Trends for all units \n - Limited anticipation<sup>*</sup>", "✔", "",
-  "Callaway and Sant'Anna (2021)", "`did`", "2x2 Aggregation", "Either Not-yet- or Never-treated", "- Correct specification of evolution of Y(0) *or* Propensity Score \n - Parallel Trends for Not-yet- *or* Never-treated \n - Limited anticipation<sup>*</sup>", "✔", "✔",
-  "Roth and Sant'Anna (2021)", "`staggered`", "2x2 Aggregation", "Not-yet-treated", "- Treatment timing is random", "", "",
-  "Sun and Abraham (2020)", "`fixest::sunab`", "Interacted TWFE", "Not-yet- and Never-treated", "- Parallel Trends for all units \n - No Anticipation", "", "",
+  ~Estimator, ~`R package`, ~Type, ~`Comparison group`, ~`Main Assumptions`, ~`Covers use of pre-treatment covariates`, ~`Uniform inference of estimates`,
+  "Gardner (2021)", "`{did2s}`", "Imputes Y(0)", "Not-yet- and Never-treated", "- Correct specification of Y(0) \n - Parallel Trends for all units \n - Limited anticipation<sup>*</sup>", "✔", "",
+  "Borusyak, Jaravel, and Spiess (2021)", "`{didimputation}`", "Imputes Y(0)", "Not-yet- and Never-treated", "- Correct specification of Y(0) \n - Parallel Trends for all units \n - Limited anticipation<sup>*</sup>", "✔", "",
+  "Callaway and Sant'Anna (2021)", "`{did}`", "2x2 Aggregation", "Either Not-yet- or Never-treated", "- Correct specification of evolution of Y(0) *or* Propensity Score \n - Parallel Trends for Not-yet- *or* Never-treated \n - Limited anticipation<sup>*</sup>", "✔", "✔",
+  "Roth and Sant'Anna (2021)", "`{staggered}`", "2x2 Aggregation", "Not-yet-treated", "- Treatment timing is random", "", "",
+  "Sun and Abraham (2020)", "`{fixest}`", "Interacted TWFE", "Not-yet- and Never-treated", "- Parallel Trends for all units \n - Limited anticipation<sup>*</sup>", "", "",
 )
 
-gt(methods) |>
+gt::gt(methods) |>
   gt::opt_table_font(
     font = list(
       gt::google_font("Fira Code"),
@@ -46,24 +46,24 @@ gt(methods) |>
   ) |>
   gt::tab_options(
     table.border.top.width = gt::px(3),
-    table.border.top.color = "transparent", table.border.bottom.color = "transparent",
+    table.border.top.color = "#ffffff00", table.border.bottom.color = "#ffffff00",
     table.border.bottom.width = gt::px(3), column_labels.border.top.width = gt::px(3),
-    column_labels.border.top.color = "transparent", column_labels.border.bottom.width = gt::px(3),
+    column_labels.border.top.color = "#ffffff00", column_labels.border.bottom.width = gt::px(3),
     column_labels.border.bottom.color = "black", data_row.padding = gt::px(5),
     source_notes.font.size = 12, table.font.size = 16, heading.align = "left"
   ) |>
-  tab_header(title = kfbmisc::make_gt_title("Event Study Estimators")) |>
-  tab_options(
+  gt::tab_header(title = kfbmisc::make_gt_title("Event Study Estimators")) |>
+  gt::tab_options(
     data_row.padding = gt::px(10),
     table.width = gt::px(1000),
     source_notes.font.size = gt::px(14)
   ) |>
-  fmt_markdown(columns = `Main Assumptions`) |>
-  cols_align(
+  gt::fmt_markdown(columns = c(`Main Assumptions`, `R package`)) |>
+  gt::cols_align(
     align = "center",
     columns = `Covers use of pre-treatment covariates`
   ) |>
-  tab_source_note(
-    source_note = gt::md("<sup>*</sup> Anticipation can be accounted for by adjusting initial treatment day back x number of years \n\n <sup>**</sup> Misclassifications are my own fault.")
+  gt::tab_source_note(
+    source_note = gt::md("<sup>*</sup> Anticipation can be accounted for by adjusting 'initial treatment day' back \\(x\\) number of years, where \\(x\\) is the number of years before treatment that anticipation can occur. \n\n <sup>**</sup> Misclassifications are my own fault.")
   )
 ```
