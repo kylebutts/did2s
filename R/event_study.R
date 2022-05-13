@@ -276,7 +276,7 @@ if(estimator %in% c("staggered", "all")) {
 
 #' Plot results of [event_study()]
 #' @param out Output from [event_study()]
-#' @param seperate Logical. Should the estimators be on seperate plots? Default is TRUE.
+#' @param separate Logical. Should the estimators be on separate plots? Default is TRUE.
 #' @param horizon Numeric. Vector of length 2. First element is min and second element is max of event_time to plot
 #'
 #' @return `plot_event_study` returns a ggplot object that can be fully customized
@@ -285,7 +285,7 @@ if(estimator %in% c("staggered", "all")) {
 #'
 #' @importFrom rlang .data
 #' @export
-plot_event_study = function(out, seperate = TRUE, horizon = NULL) {
+plot_event_study = function(out, separate = TRUE, horizon = NULL) {
 
 	# Get list of estimators
 	estimators = unique(out$estimator)
@@ -308,8 +308,8 @@ plot_event_study = function(out, seperate = TRUE, horizon = NULL) {
 	out$ci_upper = out$estimate + 1.96 * out$std.error
 
 
-	# position depending on sepreate
-	if(seperate) position = "identity" else position = ggplot2::position_dodge(width = 0.5)
+	# position depending on separate
+	if(separate) position = "identity" else position = ggplot2::position_dodge(width = 0.5)
 
 	# Subset plot if horizon is specified
 	if(!is.null(horizon)) {
@@ -326,14 +326,14 @@ plot_event_study = function(out, seperate = TRUE, horizon = NULL) {
 						 color = .data$estimator,
 						 ymin = .data$ci_lower, ymax = .data$ci_upper)
 		) +
-		{ if(seperate) ggplot2::facet_wrap(~ estimator, scales="free") } +
+		{ if(separate) ggplot2::facet_wrap(~ estimator, scales="free") } +
 		ggplot2::geom_point(position = position) +
 		ggplot2::geom_errorbar(position = position) +
 		ggplot2::geom_vline(xintercept = -0.5, linetype = "dashed") +
 		ggplot2::geom_hline(yintercept = 0, linetype = "dashed") +
 		ggplot2::labs(y = "Point Estimate and 95% Confidence Interval", x = "Event Time", color = "Estimator") +
-		{ if(seperate) ggplot2::scale_y_continuous(limits = y_lims) } +
-		{ if(seperate) ggplot2::scale_x_continuous(limits = x_lims) } +
+		{ if(separate) ggplot2::scale_y_continuous(limits = y_lims) } +
+		{ if(separate) ggplot2::scale_x_continuous(limits = x_lims) } +
 		ggplot2::theme_minimal(base_size = 16) +
 		ggplot2::scale_color_manual(values = color_scale) +
 		ggplot2::guides(
