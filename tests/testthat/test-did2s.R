@@ -7,6 +7,8 @@ data(df_hom)
 library(haven)
 castle = haven::read_dta("https://github.com/scunning1975/mixtape/raw/master/castle.dta")
 
+# Add random 0/1 variable
+df_hom[, temp := as.numeric(runif(.N) > 0.5)]
 
 test_that("estimation runs", {
 	# Static
@@ -35,6 +37,12 @@ test_that("estimation runs", {
 		second_stage = ~ i(post, ref=0),
 		treatment = "post", cluster_var = "state", weights = "popwt"),
 		NA)
+	# Interacted FEs
+	expect_error(did2s(
+		data = df_hom, yname = "dep_var", first_stage = ~ 0 | unit + temp^year,
+		second_stage = ~ i(treat, ref=FALSE), weight = "weight",
+		treatment = "treat", cluster_var = "state"),
+NA)
 })
 
 

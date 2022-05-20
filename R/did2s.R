@@ -197,7 +197,7 @@ did2s <- function(data, yname, first_stage, second_stage, treatment, cluster_var
 	# Bootstrap Standard Errors ------------------------------------------------
 	if(bootstrap) {
 
-		cli::cli_alert("Starting {n_bootstraps} bootstraps at cluster level: {cluster_var}")
+		cli::cli_li("Starting {n_bootstraps} bootstraps at cluster level: {cluster_var}")
 
 		# Unique values of cluster variable
 		cl = unique(data[[cluster_var]])
@@ -271,6 +271,7 @@ did2s_estimate = function(data, yname, first_stage, second_stage, treatment,
 	first_stage = fixest::feols(fixest::xpd(~ 0 + ..first_stage, lhs = yname),
 								data = untreat,
 								weights = weights_vector,
+								combine.quick = FALSE, # allows var1^var2 in FEs
 								warn=FALSE,
 								notes=FALSE)
 
