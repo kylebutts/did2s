@@ -11,3 +11,4 @@
 ^vignettes/event_study.Rmd$
 ^\.Renviron$
 ^cran-comments\.md$
+.*did3s.*

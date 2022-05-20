@@ -27,7 +27,7 @@
 #'     te1 = 2, te2 = 1, te3 = 0,
 #'     te_m1 = 0.05, te_m2 = 0.15, te_m3 = 0)
 #'
-gen_data <- function(g1 = 2000, g2 = 2010, g3 = 0, panel = c(1990, 2020), te1 = 2, te2 = 2, te3 = 2, te_m1 = 0, te_m2 = 0, te_m3 = 0, n = 1000) {
+gen_data <- function(g1 = 2000, g2 = 2010, g3 = 0, panel = c(1990, 2020), te1 = 2, te2 = 2, te3 = 2, te_m1 = 0, te_m2 = 0, te_m3 = 0, n = 1500) {
 
 	# CRAN problem
 	unit_fe <- state <- group <- g <- unit <- year_fe <- treat <- rel_year <- rel_year_binned <- error <- te <- te_dynamic <- dep_var <- NULL
@@ -59,7 +59,7 @@ gen_data <- function(g1 = 2000, g2 = 2010, g3 = 0, panel = c(1990, 2020), te1 = 
 
 
 	# Add year FE
-	df[, year_fe := stats::rnorm(1), by = year]
+	df[, year_fe := stats::rnorm(1, 0, 0.2), by = year]
 
 	# Add treatment variables
 	df[,

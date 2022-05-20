@@ -1,3 +1,8 @@
+# did2s 0.6.0
+
+- Added `estimator` argument to `event_study` and added vignette discussing the different estimators' assumptions
+
+
 # did2s 0.5.0
 
 - Made code more robust by improving sparse model matrix creation

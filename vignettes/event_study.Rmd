@@ -16,54 +16,82 @@ knitr::opts_chunk$set(
 ```
 
 ```{r setup, echo = F, message = F, warning = FALSE}
-library(tidyverse)
+library(ggplot2)
 library(gt)
 ```
 
+The command `event_study` presents a common syntax that estimates the event-study TWFE model for treatment-effect heterogeneity robust estimators recommended by the literature and returns all the estimates in a data.frame for easy plotting by the command `plot_event_study`. The general syntax is
 
-# Comparison Table
-
-There is certainly many more nuances to each estimator, hence this is a simplified version of the table. 
-
-
-```{r, echo = F}
-
-methods <- tribble(
-  ~Estimator, ~`R package`, ~Type, ~`Comparison group`, ~`Main Assumptions`, ~`Covers use of pre-treatment covariates`, ~`Uniform inference of estimates`,
-  "Gardner (2021)", "`{did2s}`", "Imputes Y(0)", "Not-yet- and Never-treated", "- Correct specification of Y(0) \n - Parallel Trends for all units \n - Limited anticipation<sup>*</sup>", "✔", "",
-  "Borusyak, Jaravel, and Spiess (2021)", "`{didimputation}`", "Imputes Y(0)", "Not-yet- and Never-treated", "- Correct specification of Y(0) \n - Parallel Trends for all units \n - Limited anticipation<sup>*</sup>", "✔", "",
-  "Callaway and Sant'Anna (2021)", "`{did}`", "2x2 Aggregation", "Either Not-yet- or Never-treated", "- Correct specification of evolution of Y(0) *or* Propensity Score \n - Parallel Trends for Not-yet- *or* Never-treated \n - Limited anticipation<sup>*</sup>", "✔", "✔",
-  "Roth and Sant'Anna (2021)", "`{staggered}`", "2x2 Aggregation", "Not-yet-treated", "- Treatment timing is random", "", "",
-  "Sun and Abraham (2020)", "`{fixest}`", "Interacted TWFE", "Not-yet- and Never-treated", "- Parallel Trends for all units \n - Limited anticipation<sup>*</sup>", "", "",
+```{r, echo = T, eval = F}
+event_study(
+	data, yname, idname, tname, gname, 
+	estimator,
+	xformla = NULL, horizon = NULL, weights = NULL
 )
+```
 
-gt::gt(methods) |>
-  gt::opt_table_font(
-    font = list(
-      gt::google_font("Fira Code"),
-      gt::default_fonts()
-    )
-  ) |>
+The option `data` specifies the data set that contains the variables for the analysis. The four other required options are all names of variables: `yname` corresponds with the outcome variable of interest; `idname` is the variable corresponding to the (unique) unit identifier, $i$; `tname` is the variable corresponding to the time-period, $t$; and `gname` is a variable indicating the period when treatment first starts (group-status). 
+
+```{r estimators-html, echo = F, layout="l-page", include = knitr::is_html_output()}
+methods <- tibble::tribble(
+  ~Estimator, ~`R package and Estimator Option`, ~Type, ~`Comparison group`, ~`Main Assumptions`, ~`Uniform inference of estimates`,
+  "Gardner (2021)", "<code>{did2s}</code>", "Imputes \\(Y(0)\\)", "Not-yet- and/or Never-treated", "<ul><li>Parallel Trends for all units</li><li>Limited anticipation<sup>*</sup></li><li>Correct specification of \\(Y(0)\\)</li></ul>", "",
+  "Borusyak, Jaravel, and Spiess (2021)", "<code>{didimputation}</code>", "Imputes \\(Y(0)\\)", "Not-yet- and/or Never-treated", "<ul><li>Parallel Trends for all units</li><li>Limited anticipation<sup>*</sup></li><li>Correct specification of \\(Y(0)\\)</li></ul>", "",
+  "Callaway and Sant'Anna (2021)", "<code>{did}</code>", "2x2 Aggregation", "Either Not-yet- or Never-treated", "<ul><li>Parallel Trends for Not-yet-treated <i>or</i> Never-treated</li><li>Limited anticipation<sup>*</sup></li></ul>", "✔",
+  "Sun and Abraham (2020)", "<code>{fixest/sunab}</code>", "2x2 Aggregation", "Not-yet- and/or Never-treated", "<ul><li>Parallel Trends for all units</li><li>Limited anticipation<sup>*</sup></li></ul>", "",
+  "Roth and Sant'Anna (2021)", "<code>{staggered}</code>", "2x2 Aggregation", "Not-yet-treated", "<ul><li>Treatment timing is random</li><li>Limited anticipation<sup>*</sup></ul>", "",
+) |> 
+  dplyr::mutate(`Main Assumptions` = purrr::map(`Main Assumptions`, gt::html))
+
+gt::gt(methods, caption="Event Study Estimators") |>
+  gt::cols_align(
+    align = "center",
+    columns = c(`Uniform inference of estimates`)
+  ) |> 
   gt::tab_options(
-    table.border.top.width = gt::px(3),
-    table.border.top.color = "#ffffff00", table.border.bottom.color = "#ffffff00",
-    table.border.bottom.width = gt::px(3), column_labels.border.top.width = gt::px(3),
-    column_labels.border.top.color = "#ffffff00", column_labels.border.bottom.width = gt::px(3),
-    column_labels.border.bottom.color = "black", data_row.padding = gt::px(5),
-    source_notes.font.size = 12, table.font.size = 16, heading.align = "left"
-  ) |>
-  gt::tab_header(title = kfbmisc::make_gt_title("Event Study Estimators")) |>
-  gt::tab_options(
+  	table.font.size = 16,
     data_row.padding = gt::px(10),
     table.width = gt::px(1000),
     source_notes.font.size = gt::px(14)
   ) |>
-  gt::fmt_markdown(columns = c(`Main Assumptions`, `R package`)) |>
-  gt::cols_align(
-    align = "center",
-    columns = `Covers use of pre-treatment covariates`
+  gt::fmt_markdown(
+  	columns = c(`Main Assumptions`, `R package and Estimator Option`, `Estimator`)
   ) |>
   gt::tab_source_note(
-    source_note = gt::md("<sup>*</sup> Anticipation can be accounted for by adjusting 'initial treatment day' back \\(x\\) number of years, where \\(x\\) is the number of years before treatment that anticipation can occur. \n\n <sup>**</sup> Misclassifications are my own fault.")
+    source_note = gt::html("<sup>*</sup> Anticipation can be accounted for by adjusting 'initial treatment day' back \\(x\\) periods, where \\(x\\) is the number of periods before treatment that anticipation can occur.")
   )
+```
+
+There are five main estimators available and the choice is specified for the `estimator` argument and are described in the table above.^[Except for Sun and Abraham, the `estimator` option is the package name. For Sun and Abraham, the `estimator` option is `sunab`. A value of "all" will estimate all 5 estimators.] The following paragraphs will aim to highlight the differences and commonalities between estimators. These estimators fall into two broad categories of estimators. First, `{did2s}` and `{didimputation}` are **imputation-based** estimators as described above. Both rely on "residualizing" the outcome variable $\tilde{Y} = Y_{it} - \hat{\mu}_g - \hat{\eta}_t$ and then averaging those $\tilde{Y}$ to estimate the event-study average treatment effect $\tau^k$. These two estimators return identical point estimates, but differ in their asymptotic regime and hence their standard errors.
+
+The second type of estimator, which we label **2x2 aggregation**, takes a different approach for estimating event-study average treatment effects. The packages `{did}`, `{fixest}` and `{staggered}` first estimate $\tau_{gt}$ for all group-time pairs. To estimate a particular $\tau_{gt}$, they use a two-period (periods $t$ and $g-1$) and two-group (group $g$ and a "control group") difference-in-differences estimator, known as a `2x2` difference-in-differences. The particular "control group" they use will differ based on estimator and is discussed in the next paragraph. Then, the estimator manually aggregate $\tau_{gt}$ across all groups that were treated for (at least) $k$ periods to estimate the event-study average treatment effect $\tau^k$.
+
+These estimators do not all rely on the same underlying assumptions, so the rest of the table tries to concisely summarize the differences between estimators. The comparison group column describes which units are utilized as comparison groups in the estimator and hence will determine which units need to satisfy a parallel trends assumption. For example, in some circumstances, treated units will look very different from never-treated units. In this case, parallel trends may only hold between ever-treated units and hence only these units should be used in estimation. In other cases, for example if treatment is assigned randomly, then it's reasonable to assume that both not-yet- and never-treated units would all satisfy parallel trends. 
+
+For estimators labeled "Not-yet- and/or never-treated", the default is to use both not-yet- and never-treated units in the estimator. However, if all never-treated units are dropped from the data set before using the estimator, then these estimators will use only not-yet-treated groups as the comparison group. `{did}` provides an option to use either the not-yet- treated *or* the never- treated group as a comparison group depending on which group a researcher thinks will make a better comparison group. `{staggered}` will automatically drop units that are never treated from the sample and hence only use not-yet-treated groups as a comparison group. 
+
+The next column, `Main Assumptions`, tries to summarize concisely the main theoretical assumptions underlying each estimator. First, the assumptions about parallel trends match the previous discussion on the correct comparison group. The only estimator that doesn't rely on a parallel trends assumption is `{staggered}`, instead relying on the assumption that *when* a unit receives treatment is random. 
+
+The next assumption, that is common across all estimators, is that there should be "limited anticipation" of treatment. In general, anticipatory effects are when units respond to treatment before it is *actually* implemented. For example, this can be common if the news of a treatment triggers behavior responses before the treatment is put in place. "Limited anticipation" is when these anticipatory effects can only exist in a "few" pre-periods.^[There should be more periods before treatment in the sample than whatever number a "few" is.] In any of these cases, "treatment" should be manually moved back by the maximum number of periods where anticipation can occur. For example, if treatment starts in 2012 and anticipatory effects are reasonably only possible 2 years before, this units' "group" should be labelled as 2010 in the data.
+
+The **imputation-based** estimators require an additional assumption that the parametric model of $Y(0) = \mu_i + \eta_t + \varepsilon_{it}$ is correctly specified. This is because in the first stage, you have to accurately impute $Y(0)$ when residualizing $Y$ which relies on the correct specification of $Y(0)$.  The **2x2 aggregation** models does not impute $Y(0)$ and hence only relies on a parallel trends assumption. The last column highlights that `{did}` allows for uniform inference of estimates. This addresses the problem that multiple hypotheses tests are being done by researchers (e.g. checking individually if all post periods significant) by creating standard errors that adjust for multiple testing. 
+
+#### Example usage of `event_study`
+
+The result of `event_study` is a tibble in a `tidy` format that contains point estimates and standard errors for each relative time indicator for each individual estimator. The results of `event_study` is a dataframe with event-study term, the estimate, standard error, and a column containing a character for which estimator is used. This output dataframe will in turn be passed to `plot_event_study` for easy comparison. We return to the `df_het` dataset to see example usage of these functions. 
+
+```{r es-estimate, cache=TRUE, collapse=TRUE}
+library(did2s)
+data(df_het, package = "did2s")
+out = event_study(
+  data = df_het, yname = "dep_var", idname = "unit",
+  tname = "year", gname = "g", estimator = "all"
+)
+
+head(out)
+
+```
+
+```{r es-alternatives, cache=TRUE, fig.width = 12, fig.height = 8, out.width = "100%", layout="l-page", fig.cap="Event-study Estimators"}
+plot_event_study(out, horizon = c(-5,10))
 ```

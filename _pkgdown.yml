@@ -1,7 +1,8 @@
 params:
     toggle: manual
 url: http://kylebutts.com/did2s
-
+template:
+  bootstrap: 5
 home:
   links:
     - text: Source Code
@@ -10,7 +11,7 @@ home:
       href: https://github.com/kylebutts/did2s/issues
 
 reference:
-  - title: "Imputation Estimators"
+  - title: "Imputation Estimator"
     desc: >
       Imputation estimators of difference-in-differences uses
       not-treated/not-yet-treated observations to estimate `Y(0)`. Then treatment

@@ -15,7 +15,7 @@ gen_data(
   te_m1 = 0,
   te_m2 = 0,
   te_m3 = 0,
-  n = 1000
+  n = 1500
 )
 }
 \arguments{

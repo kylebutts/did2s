@@ -10,9 +10,6 @@
 #'   (never-treated should be zero or NA)
 #' @param xformla A formula for the covariates to include in the model.
 #'   It should be of the form `~ X1 + X2`. Default is NULL.
-#' @param horizon Integer of length two. The first integer is the earliest
-#'   pre-effect to include and the second is the latest post-effect to include.
-#'   Default is all horizons.
 #' @param weights Variable name for estimation weights. This is used in
 #'   estimating Y(0) and also augments treatment effect weights
 #' @param estimator Estimator you would like to use. Use "all" to estimate all.
@@ -24,21 +21,26 @@
 #' \donttest{
 #' out = event_study(
 #'   data = did2s::df_het, yname = "dep_var", idname = "unit",
-#'   tname = "year", gname = "g"
+#'   tname = "year", gname = "g", estimator = "all"
 #' )
 #' plot_event_study(out)
 #' }
 #' @export
 event_study = function(data, yname, idname, gname, tname,
-					   xformla = NULL, horizon = NULL, weights = NULL,
-					   estimator = c("TWFE", "did2s", "did", "impute", "sunab",
-					   			  "staggered", "all")
+					   xformla = NULL, weights = NULL,
+					   estimator = c("all", "TWFE", "did2s", "did", "impute", "sunab",
+					   			  "staggered")
 			   ){
 
 # Check Parameters -------------------------------------------------------------
 
 	# Select estimator
 	estimator <- match.arg(estimator)
+
+	# Display message about estimator's different assumptions
+	if(estimator == "all") {
+		cli::cli_alert_info("Note these estimators rely on different underlying assumptions. See Table 2 of {.url https://arxiv.org/abs/2109.05913} for an overview.")
+	}
 
 	# Test that gname is in tname or 0/NA for untreated
 	if(!all(
@@ -59,6 +61,12 @@ event_study = function(data, yname, idname, gname, tname,
 		)
 	}
 
+	# If `xformla` is included, note
+	if(!is.null(xformla)) {
+		if(estimator %in% c("all", "staggered")) {
+			cli::cli_text("Warning: {.code xformla} is ignored for {.code staggered} estimator")
+		}
+	}
 
 # Setup ------------------------------------------------------------------------
 
@@ -78,8 +86,6 @@ event_study = function(data, yname, idname, gname, tname,
 
 	event_time = unique(data$zz000event_time)
 	event_time = event_time[!is.na(event_time) & is.finite(event_time)]
-	# All horizons
-	if(is.null(horizon)) horizon = event_time
 
 	# Format xformla for inclusion
 	if(!is.null(xformla)) {
@@ -277,7 +283,8 @@ if(estimator %in% c("staggered", "all")) {
 #' Plot results of [event_study()]
 #' @param out Output from [event_study()]
 #' @param separate Logical. Should the estimators be on separate plots? Default is TRUE.
-#' @param horizon Numeric. Vector of length 2. First element is min and second element is max of event_time to plot
+#' @param horizon Numeric. Vector of length 2. First element is min and
+#'   second element is max of event_time to plot
 #'
 #' @return `plot_event_study` returns a ggplot object that can be fully customized
 #'

@@ -85,12 +85,12 @@ fixest::esttable(static)
 #>                            static
 #> Dependent Var.:           dep_var
 #>                                  
-#> treat = TRUE    1.949*** (0.0240)
+#> treat = TRUE    2.005*** (0.0202)
 #> _______________ _________________
 #> S.E. type                  Custom
-#> Observations               31,000
-#> R2                        0.46302
-#> Adj. R2                   0.46302
+#> Observations               46,500
+#> R2                        0.47520
+#> Adj. R2                   0.47520
 #> ---
 #> Signif. codes: 0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 }\if{html}{\out{</div>}}
@@ -109,54 +109,54 @@ Or you can use relative-treatment indicators to estimate an event study estimate
 #> • Standard errors will be clustered by `state`
 
 fixest::esttable(es)
-#>                                  es
-#> Dependent Var.:             dep_var
-#>                                    
-#> rel_year = -20      0.0398 (0.0463)
-#> rel_year = -19      0.0761 (0.0471)
-#> rel_year = -18      0.0065 (0.0437)
-#> rel_year = -17     0.0811* (0.0408)
-#> rel_year = -16     -0.0039 (0.0506)
-#> rel_year = -15     -0.0178 (0.0403)
-#> rel_year = -14      0.0154 (0.0488)
-#> rel_year = -13     -0.0211 (0.0480)
-#> rel_year = -12     -0.0394 (0.0497)
-#> rel_year = -11      0.0052 (0.0390)
-#> rel_year = -10      0.0010 (0.0245)
-#> rel_year = -9      -0.0371 (0.0288)
-#> rel_year = -8      -0.0133 (0.0242)
-#> rel_year = -7   -0.0808*** (0.0230)
-#> rel_year = -6      -0.0076 (0.0305)
-#> rel_year = -5       0.0361 (0.0242)
-#> rel_year = -4       0.0199 (0.0261)
-#> rel_year = -3       0.0164 (0.0285)
-#> rel_year = -2      -0.0412 (0.0321)
-#> rel_year = 0      1.955*** (0.0526)
-#> rel_year = 1      1.923*** (0.0515)
-#> rel_year = 2      1.900*** (0.0530)
-#> rel_year = 3      2.002*** (0.0556)
-#> rel_year = 4      2.052*** (0.0541)
-#> rel_year = 5      1.942*** (0.0565)
-#> rel_year = 6      1.922*** (0.0504)
-#> rel_year = 7      1.959*** (0.0598)
-#> rel_year = 8      1.960*** (0.0554)
-#> rel_year = 9      1.919*** (0.0500)
-#> rel_year = 10     1.945*** (0.0496)
-#> rel_year = 11     1.945*** (0.0720)
-#> rel_year = 12     1.897*** (0.0800)
-#> rel_year = 13     1.940*** (0.0803)
-#> rel_year = 14     1.995*** (0.0811)
-#> rel_year = 15     1.989*** (0.0801)
-#> rel_year = 16     1.986*** (0.0820)
-#> rel_year = 17     1.911*** (0.0817)
-#> rel_year = 18     1.986*** (0.0819)
-#> rel_year = 19     1.896*** (0.0650)
-#> rel_year = 20     1.865*** (0.0750)
-#> _______________ ___________________
-#> S.E. type                    Custom
-#> Observations                 31,000
-#> R2                          0.46359
-#> Adj. R2                     0.46291
+#>                                es
+#> Dependent Var.:           dep_var
+#>                                  
+#> rel_year = -20    0.0043 (0.0322)
+#> rel_year = -19    0.0222 (0.0296)
+#> rel_year = -18   -0.0358 (0.0308)
+#> rel_year = -17    0.0043 (0.0337)
+#> rel_year = -16   -0.0186 (0.0353)
+#> rel_year = -15   -0.0045 (0.0346)
+#> rel_year = -14   -0.0393 (0.0384)
+#> rel_year = -13    0.0453 (0.0323)
+#> rel_year = -12    0.0324 (0.0309)
+#> rel_year = -11   -0.0245 (0.0349)
+#> rel_year = -10   -0.0017 (0.0241)
+#> rel_year = -9     0.0155 (0.0242)
+#> rel_year = -8    -0.0073 (0.0210)
+#> rel_year = -7   -0.0513* (0.0202)
+#> rel_year = -6     0.0269 (0.0237)
+#> rel_year = -5     0.0136 (0.0237)
+#> rel_year = -4    0.0381. (0.0223)
+#> rel_year = -3    -0.0228 (0.0284)
+#> rel_year = -2     0.0041 (0.0228)
+#> rel_year = 0    1.971*** (0.0470)
+#> rel_year = 1    2.050*** (0.0466)
+#> rel_year = 2    2.033*** (0.0441)
+#> rel_year = 3    1.966*** (0.0400)
+#> rel_year = 4    1.965*** (0.0430)
+#> rel_year = 5    2.030*** (0.0456)
+#> rel_year = 6    2.040*** (0.0447)
+#> rel_year = 7    1.995*** (0.0370)
+#> rel_year = 8    2.019*** (0.0485)
+#> rel_year = 9    1.955*** (0.0468)
+#> rel_year = 10   1.950*** (0.0455)
+#> rel_year = 11   2.117*** (0.0664)
+#> rel_year = 12   2.132*** (0.0741)
+#> rel_year = 13   2.019*** (0.0640)
+#> rel_year = 14   2.013*** (0.0522)
+#> rel_year = 15   1.961*** (0.0605)
+#> rel_year = 16   1.916*** (0.0584)
+#> rel_year = 17   1.938*** (0.0607)
+#> rel_year = 18   2.070*** (0.0666)
+#> rel_year = 19   2.066*** (0.0609)
+#> rel_year = 20   1.964*** (0.0612)
+#> _______________ _________________
+#> S.E. type                  Custom
+#> Observations               46,500
+#> R2                        0.47577
+#> Adj. R2                   0.47533
 #> ---
 #> Signif. codes: 0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 }\if{html}{\out{</div>}}\if{html}{\out{<div class="sourceCode r">}}\preformatted{# plot rel_year coefficients and standard errors
