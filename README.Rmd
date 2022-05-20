@@ -21,6 +21,8 @@ knitr::opts_chunk$set(
 
 The goal of did2s is to estimate TWFE models without running into the problem of staggered treatment adoption. 
 
+For common issues, see this issue: [https://github.com/kylebutts/did2s/issues/12](https://github.com/kylebutts/did2s/issues/12)
+
 ## Installation
 
 You can install did2s from CRAN with:

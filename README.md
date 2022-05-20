@@ -9,6 +9,9 @@
 The goal of did2s is to estimate TWFE models without running into the
 problem of staggered treatment adoption.
 
+For common issues, see this issue:
+<https://github.com/kylebutts/did2s/issues/12>
+
 ## Installation
 
 You can install did2s from CRAN with:
@@ -65,11 +68,11 @@ among the groups.
 # Automatically loads fixest
 library(did2s)
 #> Loading required package: fixest
-#> ℹ did2s (v0.4.0). For more information on the methodology, visit <https://www.kylebutts.com/did2s>
+#> ℹ did2s (v0.6.0). For more information on the methodology, visit <https://www.kylebutts.com/did2s>
 #> To cite did2s in publications use:
 #> 
 #>   Butts, Kyle (2021).  did2s: Two-Stage Difference-in-Differences
-#>   Following Gardner (2021). R package version 0.4.0.
+#>   Following Gardner (2021). R package version 0.6.0.
 #> 
 #> A BibTeX entry for LaTeX users is
 #> 
@@ -136,12 +139,12 @@ fixest::etable(static)
 #>                            static
 #> Dependent Var.:           dep_var
 #>                                  
-#> treat = TRUE    2.203*** (0.0559)
+#> treat = TRUE    2.152*** (0.0476)
 #> _______________ _________________
 #> S.E. type                  Custom
-#> Observations               31,000
-#> R2                        0.26097
-#> Adj. R2                   0.26097
+#> Observations               46,500
+#> R2                        0.33790
+#> Adj. R2                   0.33790
 #> ---
 #> Signif. codes: 0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 ```
@@ -210,7 +213,7 @@ citation(package = "did2s")
 #> To cite did2s in publications use:
 #> 
 #>   Butts, Kyle (2021).  did2s: Two-Stage Difference-in-Differences
-#>   Following Gardner (2021). R package version 0.4.0.
+#>   Following Gardner (2021). R package version 0.6.0.
 #> 
 #> A BibTeX entry for LaTeX users is
 #> 
