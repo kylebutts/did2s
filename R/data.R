@@ -1,6 +1,6 @@
 #' @title Simulated data with two treatment groups and homogenous effects
 #'
-#' Generated using the following call:
+#' @description Generated using the following call:
 #'   \code{did2s::gen_data(panel = c(1990, 2020),
 #'   g1 = 2000, g2 = 2010, g3 = 0,
 #'   te1 = 2, te2 = 2, te3 = 0,
@@ -29,7 +29,7 @@
 
 #' @title Simulated data with two treatment groups and heterogenous effects
 #'
-#' Generated using the following call:
+#' @description Generated using the following call:
 #'   \code{did2s::gen_data(panel = c(1990, 2020),
 #'   g1 = 2000, g2 = 2010, g3 = 0,
 #'   te1 = 2, te2 = 1, te3 = 0,

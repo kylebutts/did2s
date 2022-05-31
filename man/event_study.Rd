@@ -12,12 +12,11 @@ event_study(
   gname,
   tname,
   xformla = NULL,
-  horizon = NULL,
   weights = NULL,
-  estimator = c("TWFE", "did2s", "did", "impute", "sunab", "staggered", "all")
+  estimator = c("all", "TWFE", "did2s", "did", "impute", "sunab", "staggered")
 )
 
-plot_event_study(out, seperate = TRUE, horizon = NULL)
+plot_event_study(out, separate = TRUE, horizon = NULL)
 }
 \arguments{
 \item{data}{The dataframe containing all the variables}
@@ -34,8 +33,6 @@ plot_event_study(out, seperate = TRUE, horizon = NULL)
 \item{xformla}{A formula for the covariates to include in the model.
 It should be of the form \code{~ X1 + X2}. Default is NULL.}
 
-\item{horizon}{Numeric. Vector of length 2. First element is min and second element is max of event_time to plot}
-
 \item{weights}{Variable name for estimation weights. This is used in
 estimating Y(0) and also augments treatment effect weights}
 
@@ -44,7 +41,10 @@ Otherwise see table to know advantages and requirements for each of these.}
 
 \item{out}{Output from \code{\link[=event_study]{event_study()}}}
 
-\item{seperate}{Logical. Should the estimators be on seperate plots? Default is TRUE.}
+\item{separate}{Logical. Should the estimators be on separate plots? Default is TRUE.}
+
+\item{horizon}{Numeric. Vector of length 2. First element is min and
+second element is max of event_time to plot}
 }
 \value{
 \code{event_study} returns a data.frame of point estimates for each estimator
@@ -58,7 +58,7 @@ Uses the estimation procedures recommended from Borusyak, Jaravel, Spiess (2021)
 \donttest{
 out = event_study(
   data = did2s::df_het, yname = "dep_var", idname = "unit",
-  tname = "year", gname = "g"
+  tname = "year", gname = "g", estimator = "all"
 )
 plot_event_study(out)
 }

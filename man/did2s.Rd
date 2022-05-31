@@ -66,12 +66,16 @@ Calculate two-stage difference-in-differences following Gardner (2021)
 \section{Examples}{
 
 
-Load example dataset which has two treatment groups and homogeneous treatment effects\if{html}{\out{<div class="sourceCode r">}}\preformatted{# Load Example Dataset
+Load example dataset which has two treatment groups and homogeneous treatment effects
+
+\if{html}{\out{<div class="sourceCode r">}}\preformatted{# Load Example Dataset
 data("df_hom")
 }\if{html}{\out{</div>}}
 \subsection{Static TWFE}{
 
-You can run a static TWFE fixed effect model for a simple treatment indicator\if{html}{\out{<div class="sourceCode r">}}\preformatted{static <- did2s(df_hom,
+You can run a static TWFE fixed effect model for a simple treatment indicator
+
+\if{html}{\out{<div class="sourceCode r">}}\preformatted{static <- did2s(df_hom,
     yname = "dep_var", treatment = "treat", cluster_var = "state",
     first_stage = ~ 0 | unit + year,
     second_stage = ~ i(treat, ref=FALSE))
@@ -98,7 +102,9 @@ fixest::esttable(static)
 
 \subsection{Event Study}{
 
-Or you can use relative-treatment indicators to estimate an event study estimate\if{html}{\out{<div class="sourceCode r">}}\preformatted{es <- did2s(df_hom,
+Or you can use relative-treatment indicators to estimate an event study estimate
+
+\if{html}{\out{<div class="sourceCode r">}}\preformatted{es <- did2s(df_hom,
     yname = "dep_var", treatment = "treat", cluster_var = "state",
     first_stage = ~ 0 | unit + year,
     second_stage = ~ i(rel_year, ref=c(-1, Inf)))
@@ -159,14 +165,18 @@ fixest::esttable(es)
 #> Adj. R2                   0.47533
 #> ---
 #> Signif. codes: 0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
-}\if{html}{\out{</div>}}\if{html}{\out{<div class="sourceCode r">}}\preformatted{# plot rel_year coefficients and standard errors
+}\if{html}{\out{</div>}}
+
+\if{html}{\out{<div class="sourceCode r">}}\preformatted{# plot rel_year coefficients and standard errors
 fixest::coefplot(es, keep = "rel_year::(.*)")
 }\if{html}{\out{</div>}}
 }
 
 \subsection{Example from Cheng and Hoekstra (2013)}{
 
-Here's an example using data from Cheng and Hoekstra (2013)\if{html}{\out{<div class="sourceCode r">}}\preformatted{# Castle Data
+Here's an example using data from Cheng and Hoekstra (2013)
+
+\if{html}{\out{<div class="sourceCode r">}}\preformatted{# Castle Data
 castle <- haven::read_dta("https://github.com/scunning1975/mixtape/raw/master/castle.dta")
 
 did2s(
