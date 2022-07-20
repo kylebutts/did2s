@@ -1,10 +1,10 @@
 pandoc: 2.17.1.1
-pkgdown: 2.0.2
+pkgdown: 2.0.5
 pkgdown_sha: ~
 articles:
   Two-Stage-Difference-in-Differences: Two-Stage-Difference-in-Differences.html
   event_study: event_study.html
-last_built: 2022-04-07T18:13Z
+last_built: 2022-07-20T22:47Z
 urls:
   reference: http://kylebutts.com/did2s/reference
   article: http://kylebutts.com/did2s/articles

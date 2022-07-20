@@ -1,3 +1,7 @@
+# did2s 0.7.0
+
+- Add `ARMA_64_BIT` for larger matricies
+
 # did2s 0.6.0
 
 - Added `estimator` argument to `event_study` and added vignette discussing the different estimators' assumptions

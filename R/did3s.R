@@ -88,7 +88,6 @@
 #' )
 #' ```
 #'
-#' @export
 did3s <- function(data, yname, gname, tname, time_varying,
 				  third_stage, treatment, cluster_var,
 				  time_invariant = c("1"), weights = NULL,
@@ -203,10 +202,10 @@ did3s_estimate = function(data, yname, gname, tname, time_invariant, time_varyin
 		weights_vector = untreat[[weights]]
 	}
 
-# ------------------------------------------------------------------------------
-# Stage 1: Regress X_{it}(0) on FEs and time-invariant
-#          and estimate X_{it}(0) for treated
-# ------------------------------------------------------------------------------
+	# ------------------------------------------------------------------------------
+	# Stage 1: Regress X_{it}(0) on FEs and time-invariant
+	#          and estimate X_{it}(0) for treated
+	# ------------------------------------------------------------------------------
 
 	# interact time-invariant with time coefficients
 	time_inv_fml = "1 "
@@ -233,11 +232,11 @@ did3s_estimate = function(data, yname, gname, tname, time_invariant, time_varyin
 
 
 	first_stage = fixest::feols(first_stage_formula,
-				  data = untreat,
-				  weights = weights_vector,
-				  warn = FALSE,
-				  notes = FALSE
-				  )
+								data = untreat,
+								weights = weights_vector,
+								warn = FALSE,
+								notes = FALSE
+	)
 
 	if(inherits(first_stage, "fixest_multi")) {
 		for(est in as.list(first_stage)) {
@@ -249,10 +248,10 @@ did3s_estimate = function(data, yname, gname, tname, time_invariant, time_varyin
 		data[[varname]] = data[[varname]] - predict(est, newdata = data)
 	}
 
-# ------------------------------------------------------------------------------
-# Stage 2: Regress y on FEs, time-invariant, and X_{it}(0)
-#          and residualize y for treated observations
-# ------------------------------------------------------------------------------
+	# ------------------------------------------------------------------------------
+	# Stage 2: Regress y on FEs, time-invariant, and X_{it}(0)
+	#          and residualize y for treated observations
+	# ------------------------------------------------------------------------------
 
 	time_var_fml = " "
 	for(var in time_varying) {
@@ -269,10 +268,10 @@ did3s_estimate = function(data, yname, gname, tname, time_invariant, time_varyin
 
 
 	second_stage = fixest::feols(second_stage_formula,
-								data = untreat,
-								weights = weights_vector,
-								warn=FALSE,
-								notes=FALSE)
+								 data = untreat,
+								 weights = weights_vector,
+								 warn=FALSE,
+								 notes=FALSE)
 
 	# Residualize outcome variable but keep same yname
 	second_u = data[[yname]] - stats::predict(second_stage, newdata = data)
@@ -282,17 +281,17 @@ did3s_estimate = function(data, yname, gname, tname, time_invariant, time_varyin
 	if (!bootstrap)	second_u[data[[treatment]] == 1] = 0
 
 
-# ------------------------------------------------------------------------------
-# Stage 3: Regress tilde{y} on third_stage
-# ------------------------------------------------------------------------------
+	# ------------------------------------------------------------------------------
+	# Stage 3: Regress tilde{y} on third_stage
+	# ------------------------------------------------------------------------------
 
 	if(!is.null(weights)) weights_vector = data[[weights]]
 
 	third_stage = fixest::feols(fixest::xpd(~ 0 + ..third_stage, lhs = yname),
-								 data = data,
-								 weights = weights_vector,
-								 warn=FALSE,
-								 notes=FALSE)
+								data = data,
+								weights = weights_vector,
+								warn=FALSE,
+								notes=FALSE)
 
 
 	ret = list(third_stage = third_stage)

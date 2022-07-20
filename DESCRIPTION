@@ -1,6 +1,6 @@
 Package: did2s
 Title: Two-Stage Difference-in-Differences Following Gardner (2021)
-Version: 0.6.0
+Version: 0.7.0
 Authors@R: 
     c(person(given = "Kyle",
              family = "Butts",

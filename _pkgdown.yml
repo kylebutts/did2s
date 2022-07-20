@@ -19,7 +19,6 @@ reference:
       are estimated depends on the function).
     contents:
       - did2s
-      - did3s
   - title: "Event Study 'Robustness Checks'"
     desc: >
       Uses the estimation procedures recommended from

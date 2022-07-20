@@ -26,7 +26,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">did2s</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.6.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.7.0</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -64,7 +64,7 @@
 
 
 <div class="row">
-  <main id="main"><div class="page-header">
+  <main id="main" class="col-md-9"><div class="page-header">
       <img src="" class="logo" alt=""><h1>So you're trying to choose an event-study estimator...</h1>
             
       
@@ -80,11 +80,11 @@ robust estimators recommended by the literature and returns all the
 estimates in a data.frame for easy plotting by the command
 <code>plot_event_study</code>. The general syntax is</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="../reference/event_study.html">event_study</a></span><span class="op">(</span>
-    <span class="va">data</span>, <span class="va">yname</span>, <span class="va">idname</span>, <span class="va">tname</span>, <span class="va">gname</span>, 
-    <span class="va">estimator</span>,
-    xformla <span class="op">=</span> <span class="cn">NULL</span>, horizon <span class="op">=</span> <span class="cn">NULL</span>, weights <span class="op">=</span> <span class="cn">NULL</span>
-<span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/event_study.html">event_study</a></span><span class="op">(</span></span>
+<span>    <span class="va">data</span>, <span class="va">yname</span>, <span class="va">idname</span>, <span class="va">tname</span>, <span class="va">gname</span>, </span>
+<span>    <span class="va">estimator</span>,</span>
+<span>    xformla <span class="op">=</span> <span class="cn">NULL</span>, horizon <span class="op">=</span> <span class="cn">NULL</span>, weights <span class="op">=</span> <span class="cn">NULL</span></span>
+<span><span class="op">)</span></span></code></pre></div>
 <p>The option <code>data</code> specifies the data set that contains the
 variables for the analysis. The four other required options are all
 names of variables: <code>yname</code> corresponds with the outcome
@@ -94,12 +94,12 @@ to the (unique) unit identifier, <span class="math inline">\(i\)</span>;
 <span class="math inline">\(t\)</span>; and <code>gname</code> is a
 variable indicating the period when treatment first starts
 (group-status).</p>
-<div id="qllplqzext" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<div id="fdpynlwqsa" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
 <style>html {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
 }
 
-#qllplqzext .gt_table {
+#fdpynlwqsa .gt_table {
   display: table;
   border-collapse: collapse;
   margin-left: auto;
@@ -124,7 +124,7 @@ variable indicating the period when treatment first starts
   border-left-color: #D3D3D3;
 }
 
-#qllplqzext .gt_heading {
+#fdpynlwqsa .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -136,7 +136,7 @@ variable indicating the period when treatment first starts
   border-right-color: #D3D3D3;
 }
 
-#qllplqzext .gt_title {
+#fdpynlwqsa .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -148,7 +148,7 @@ variable indicating the period when treatment first starts
   border-bottom-width: 0;
 }
 
-#qllplqzext .gt_subtitle {
+#fdpynlwqsa .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -160,13 +160,13 @@ variable indicating the period when treatment first starts
   border-top-width: 0;
 }
 
-#qllplqzext .gt_bottom_border {
+#fdpynlwqsa .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#qllplqzext .gt_col_headings {
+#fdpynlwqsa .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -181,7 +181,7 @@ variable indicating the period when treatment first starts
   border-right-color: #D3D3D3;
 }
 
-#qllplqzext .gt_col_heading {
+#fdpynlwqsa .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -201,7 +201,7 @@ variable indicating the period when treatment first starts
   overflow-x: hidden;
 }
 
-#qllplqzext .gt_column_spanner_outer {
+#fdpynlwqsa .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -213,15 +213,15 @@ variable indicating the period when treatment first starts
   padding-right: 4px;
 }
 
-#qllplqzext .gt_column_spanner_outer:first-child {
+#fdpynlwqsa .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#qllplqzext .gt_column_spanner_outer:last-child {
+#fdpynlwqsa .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#qllplqzext .gt_column_spanner {
+#fdpynlwqsa .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -233,7 +233,7 @@ variable indicating the period when treatment first starts
   width: 100%;
 }
 
-#qllplqzext .gt_group_heading {
+#fdpynlwqsa .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -258,7 +258,7 @@ variable indicating the period when treatment first starts
   vertical-align: middle;
 }
 
-#qllplqzext .gt_empty_group_heading {
+#fdpynlwqsa .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -273,15 +273,15 @@ variable indicating the period when treatment first starts
   vertical-align: middle;
 }
 
-#qllplqzext .gt_from_md > :first-child {
+#fdpynlwqsa .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#qllplqzext .gt_from_md > :last-child {
+#fdpynlwqsa .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#qllplqzext .gt_row {
+#fdpynlwqsa .gt_row {
   padding-top: 10px;
   padding-bottom: 10px;
   padding-left: 5px;
@@ -300,7 +300,7 @@ variable indicating the period when treatment first starts
   overflow-x: hidden;
 }
 
-#qllplqzext .gt_stub {
+#fdpynlwqsa .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -313,7 +313,7 @@ variable indicating the period when treatment first starts
   padding-right: 5px;
 }
 
-#qllplqzext .gt_stub_row_group {
+#fdpynlwqsa .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -327,11 +327,11 @@ variable indicating the period when treatment first starts
   vertical-align: top;
 }
 
-#qllplqzext .gt_row_group_first td {
+#fdpynlwqsa .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#qllplqzext .gt_summary_row {
+#fdpynlwqsa .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -341,16 +341,16 @@ variable indicating the period when treatment first starts
   padding-right: 5px;
 }
 
-#qllplqzext .gt_first_summary_row {
+#fdpynlwqsa .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#qllplqzext .gt_first_summary_row.thick {
+#fdpynlwqsa .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#qllplqzext .gt_last_summary_row {
+#fdpynlwqsa .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -360,7 +360,7 @@ variable indicating the period when treatment first starts
   border-bottom-color: #D3D3D3;
 }
 
-#qllplqzext .gt_grand_summary_row {
+#fdpynlwqsa .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -370,7 +370,7 @@ variable indicating the period when treatment first starts
   padding-right: 5px;
 }
 
-#qllplqzext .gt_first_grand_summary_row {
+#fdpynlwqsa .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -380,11 +380,11 @@ variable indicating the period when treatment first starts
   border-top-color: #D3D3D3;
 }
 
-#qllplqzext .gt_striped {
+#fdpynlwqsa .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#qllplqzext .gt_table_body {
+#fdpynlwqsa .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -393,7 +393,7 @@ variable indicating the period when treatment first starts
   border-bottom-color: #D3D3D3;
 }
 
-#qllplqzext .gt_footnotes {
+#fdpynlwqsa .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -407,7 +407,7 @@ variable indicating the period when treatment first starts
   border-right-color: #D3D3D3;
 }
 
-#qllplqzext .gt_footnote {
+#fdpynlwqsa .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-left: 4px;
@@ -416,7 +416,7 @@ variable indicating the period when treatment first starts
   padding-right: 5px;
 }
 
-#qllplqzext .gt_sourcenotes {
+#fdpynlwqsa .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -430,7 +430,7 @@ variable indicating the period when treatment first starts
   border-right-color: #D3D3D3;
 }
 
-#qllplqzext .gt_sourcenote {
+#fdpynlwqsa .gt_sourcenote {
   font-size: 14px;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -438,60 +438,69 @@ variable indicating the period when treatment first starts
   padding-right: 5px;
 }
 
-#qllplqzext .gt_left {
+#fdpynlwqsa .gt_left {
   text-align: left;
 }
 
-#qllplqzext .gt_center {
+#fdpynlwqsa .gt_center {
   text-align: center;
 }
 
-#qllplqzext .gt_right {
+#fdpynlwqsa .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#qllplqzext .gt_font_normal {
+#fdpynlwqsa .gt_font_normal {
   font-weight: normal;
 }
 
-#qllplqzext .gt_font_bold {
+#fdpynlwqsa .gt_font_bold {
   font-weight: bold;
 }
 
-#qllplqzext .gt_font_italic {
+#fdpynlwqsa .gt_font_italic {
   font-style: italic;
 }
 
-#qllplqzext .gt_super {
+#fdpynlwqsa .gt_super {
   font-size: 65%;
 }
 
-#qllplqzext .gt_footnote_marks {
+#fdpynlwqsa .gt_two_val_uncert {
+  display: inline-block;
+  line-height: 1em;
+  text-align: right;
+  font-size: 60%;
+  vertical-align: -0.25em;
+  margin-left: 0.1em;
+}
+
+#fdpynlwqsa .gt_footnote_marks {
   font-style: italic;
   font-weight: normal;
   font-size: 75%;
   vertical-align: 0.4em;
 }
 
-#qllplqzext .gt_asterisk {
+#fdpynlwqsa .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#qllplqzext .gt_slash_mark {
+#fdpynlwqsa .gt_slash_mark {
   font-size: 0.7em;
   line-height: 0.7em;
   vertical-align: 0.15em;
 }
 
-#qllplqzext .gt_fraction_numerator {
+#fdpynlwqsa .gt_fraction_numerator {
   font-size: 0.6em;
   line-height: 0.6em;
   vertical-align: 0.45em;
 }
 
-#qllplqzext .gt_fraction_denominator {
+#fdpynlwqsa .gt_fraction_denominator {
   font-size: 0.6em;
   line-height: 0.6em;
   vertical-align: -0.05em;
@@ -600,7 +609,10 @@ variable indicating the period when treatment first starts
 </div>
 <p>There are five main estimators available and the choice is specified
 for the <code>estimator</code> argument and are described in the table
-above.<a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a>
+above.<a class="footnote-ref" tabindex="0" data-bs-toggle="popover" data-bs-content="&lt;p&gt;Except for Sun and Abraham, the &lt;code&gt;estimator&lt;/code&gt;
+option is the package name. For Sun and Abraham, the
+&lt;code&gt;estimator&lt;/code&gt; option is &lt;code&gt;sunab&lt;/code&gt;. A value of “all”
+will estimate all 5 estimators.&lt;/p&gt;"><sup>1</sup></a>
 The following paragraphs will aim to highlight the differences and
 commonalities between estimators. These estimators fall into two broad
 categories of estimators. First, <a href="http://kylebutts.com/did2s/">did2s</a> and
@@ -658,7 +670,8 @@ anticipatory effects are when units respond to treatment before it is
 <em>actually</em> implemented. For example, this can be common if the
 news of a treatment triggers behavior responses before the treatment is
 put in place. “Limited anticipation” is when these anticipatory effects
-can only exist in a “few” pre-periods.<a href="#fn2" class="footnote-ref" id="fnref2"><sup>2</sup></a> In any of these cases,
+can only exist in a “few” pre-periods.<a class="footnote-ref" tabindex="0" data-bs-toggle="popover" data-bs-content="&lt;p&gt;There should be more periods before treatment in the
+sample than whatever number a “few” is.&lt;/p&gt;"><sup>2</sup></a> In any of these cases,
 “treatment” should be manually moved back by the maximum number of
 periods where anticipation can occur. For example, if treatment starts
 in 2012 and anticipatory effects are reasonably only possible 2 years
@@ -688,47 +701,53 @@ passed to <code>plot_event_study</code> for easy comparison. We return
 to the <code>df_het</code> dataset to see example usage of these
 functions.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="http://kylebutts.com/did2s/">did2s</a></span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">df_het</span>, package <span class="op">=</span> <span class="st">"did2s"</span><span class="op">)</span>
-<span class="va">out</span> <span class="op">=</span> <span class="fu"><a href="../reference/event_study.html">event_study</a></span><span class="op">(</span>
-  data <span class="op">=</span> <span class="va">df_het</span>, yname <span class="op">=</span> <span class="st">"dep_var"</span>, idname <span class="op">=</span> <span class="st">"unit"</span>,
-  tname <span class="op">=</span> <span class="st">"year"</span>, gname <span class="op">=</span> <span class="st">"g"</span>, estimator <span class="op">=</span> <span class="st">"all"</span>
-<span class="op">)</span>
-<span class="co">#&gt; Estimating TWFE Model</span>
-<span class="co">#&gt; Estimating using Gardner (2021)</span>
-<span class="co">#&gt; Estimating using Callaway and Sant'Anna (2020)</span>
-<span class="co">#&gt; Estimating using Sun and Abraham (2020)</span>
-<span class="co">#&gt; Estimating using Borusyak, Jaravel, Spiess (2021)</span>
-<span class="co">#&gt; Estimating using Roth and Sant'Anna (2021)</span>
-
-<span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">out</span><span class="op">)</span>
-<span class="co">#&gt;    estimator  term   estimate  std.error</span>
-<span class="co">#&gt;       &lt;char&gt; &lt;num&gt;      &lt;num&gt;      &lt;num&gt;</span>
-<span class="co">#&gt; 1:      TWFE   -20 0.04097725 0.07167704</span>
-<span class="co">#&gt; 2:      TWFE   -19 0.13665695 0.07147683</span>
-<span class="co">#&gt; 3:      TWFE   -18 0.14015820 0.07245520</span>
-<span class="co">#&gt; 4:      TWFE   -17 0.15793252 0.07431871</span>
-<span class="co">#&gt; 5:      TWFE   -16 0.09910002 0.07379570</span>
-<span class="co">#&gt; 6:      TWFE   -15 0.20561127 0.07116478</span></code></pre></div>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="http://kylebutts.com/did2s/">did2s</a></span><span class="op">)</span></span>
+<span><span class="co">#&gt; Loading required package: fixest</span></span>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> did2s (v0.7.0). For more information on the methodology, visit <span style="color: #0000BB; font-style: italic;">&lt;https://www.kylebutts.com/did2s&gt;</span></span></span>
+<span><span class="co">#&gt; To cite did2s in publications use:</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;   Butts, Kyle (2021).  did2s: Two-Stage Difference-in-Differences</span></span>
+<span><span class="co">#&gt;   Following Gardner (2021). R package version 0.7.0.</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; A BibTeX entry for LaTeX users is</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;   @Manual{,</span></span>
+<span><span class="co">#&gt;     title = {did2s: Two-Stage Difference-in-Differences Following Gardner (2021)},</span></span>
+<span><span class="co">#&gt;     author = {Kyle Butts},</span></span>
+<span><span class="co">#&gt;     year = {2021},</span></span>
+<span><span class="co">#&gt;     url = {https://github.com/kylebutts/did2s/},</span></span>
+<span><span class="co">#&gt;   }</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">df_het</span>, package <span class="op">=</span> <span class="st">"did2s"</span><span class="op">)</span></span>
+<span><span class="va">out</span> <span class="op">=</span> <span class="fu"><a href="../reference/event_study.html">event_study</a></span><span class="op">(</span></span>
+<span>  data <span class="op">=</span> <span class="va">df_het</span>, yname <span class="op">=</span> <span class="st">"dep_var"</span>, idname <span class="op">=</span> <span class="st">"unit"</span>,</span>
+<span>  tname <span class="op">=</span> <span class="st">"year"</span>, gname <span class="op">=</span> <span class="st">"g"</span>, estimator <span class="op">=</span> <span class="st">"all"</span></span>
+<span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Note these estimators rely on different underlying assumptions. See Table 2 of <span style="color: #0000BB; font-style: italic;">&lt;https://arxiv.org/abs/2109.05913&gt;</span> for an overview.</span></span>
+<span><span class="co">#&gt; Estimating TWFE Model</span></span>
+<span><span class="co">#&gt; Estimating using Gardner (2021)</span></span>
+<span><span class="co">#&gt; Estimating using Callaway and Sant'Anna (2020)</span></span>
+<span><span class="co">#&gt; Estimating using Sun and Abraham (2020)</span></span>
+<span><span class="co">#&gt; Estimating using Borusyak, Jaravel, Spiess (2021)</span></span>
+<span><span class="co">#&gt; Estimating using Roth and Sant'Anna (2021)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">out</span><span class="op">)</span></span>
+<span><span class="co">#&gt;    estimator  term   estimate  std.error</span></span>
+<span><span class="co">#&gt;       &lt;char&gt; &lt;num&gt;      &lt;num&gt;      &lt;num&gt;</span></span>
+<span><span class="co">#&gt; 1:      TWFE   -20 0.04097725 0.07167704</span></span>
+<span><span class="co">#&gt; 2:      TWFE   -19 0.13665695 0.07147683</span></span>
+<span><span class="co">#&gt; 3:      TWFE   -18 0.14015820 0.07245520</span></span>
+<span><span class="co">#&gt; 4:      TWFE   -17 0.15793252 0.07431871</span></span>
+<span><span class="co">#&gt; 5:      TWFE   -16 0.09910002 0.07379570</span></span>
+<span><span class="co">#&gt; 6:      TWFE   -15 0.20561127 0.07116478</span></span></code></pre></div>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="../reference/event_study.html">plot_event_study</a></span><span class="op">(</span><span class="va">out</span>, horizon <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">5</span>,<span class="fl">10</span><span class="op">)</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/event_study.html">plot_event_study</a></span><span class="op">(</span><span class="va">out</span>, horizon <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">5</span>,<span class="fl">10</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <div class="figure">
 <img src="event_study_files/figure-html/es-alternatives-1.png" alt="Event-study Estimators" width="100%"><p class="caption">
 Event-study Estimators
 </p>
 </div>
 </div>
-<div class="footnotes footnotes-end-of-document">
-<hr>
-<ol>
-<li id="fn1"><p>Except for Sun and Abraham, the <code>estimator</code>
-option is the package name. For Sun and Abraham, the
-<code>estimator</code> option is <code>sunab</code>. A value of “all”
-will estimate all 5 estimators.<a href="#fnref1" class="footnote-back">↩︎</a></p></li>
-<li id="fn2"><p>There should be more periods before treatment in the
-sample than whatever number a “few” is.<a href="#fnref2" class="footnote-back">↩︎</a></p></li>
-</ol>
-</div>
+
   </main>
 </div>
 
@@ -741,8 +760,7 @@ sample than whatever number a “few” is.<a href="#fnref2" class="footnote-bac
 
 <div class="pkgdown-footer-right">
   <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a>
-2.0.2.</p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.5.</p>
 </div>
 
     </footer>

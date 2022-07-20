@@ -10,7 +10,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">did2s</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.6.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.7.0</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -45,13 +45,9 @@
     </div>
 
     <div class="section level2">
-      <h2 id="imputation-estimators">Imputation Estimators<a class="anchor" aria-label="anchor" href="#imputation-estimators"></a></h2>
+      <h2 id="imputation-estimator">Imputation Estimator<a class="anchor" aria-label="anchor" href="#imputation-estimator"></a></h2>
       
-      <p class="section-desc"></p><p>Imputation estimators of difference-in-differences uses
-not-treated/not-yet-treated observations to estimate <code>Y(0)</code>.
-Then treatment effects are estimated using <code>Y(1) - Yhat(0)</code>
-(how aggregate treatment effects are estimated depends on the
-function).</p>
+      <p class="section-desc"></p><p>Imputation estimators of difference-in-differences uses not-treated/not-yet-treated observations to estimate <code>Y(0)</code>. Then treatment effects are estimated using <code>Y(1) - Yhat(0)</code> (how aggregate treatment effects are estimated depends on the function).</p>
 
       
     </div><div id="" class="section level2">
@@ -65,11 +61,9 @@ function).</p>
         </dt>
         <dd>Calculate two-stage difference-in-differences following Gardner (2021)</dd>
       </dl></div><div class="section level2">
-      <h2 id="event-study-robustness-checks-">Event Study 'Robustness Checks'<a class="anchor" aria-label="anchor" href="#event-study-robustness-checks-"></a></h2>
+      <h2 id="event-study-robustness-checks-">Event Study ‘Robustness Checks’<a class="anchor" aria-label="anchor" href="#event-study-robustness-checks-"></a></h2>
       
-      <p class="section-desc"></p><p>Uses the estimation procedures recommended from Borusyak, Jaravell,
-Spiess (2021); Callaway and Sant’Anna (2020); Gardner (2021); Roth and
-Sant’Anna (2021); and Sun and Abraham (2020)</p>
+      <p class="section-desc"></p><p>Uses the estimation procedures recommended from Borusyak, Jaravell, Spiess (2021); Callaway and Sant’Anna (2020); Gardner (2021); Roth and Sant’Anna (2021); and Sun and Abraham (2020)</p>
 
       
     </div><div id="" class="section level2">
@@ -102,24 +96,12 @@ Sant’Anna (2021); and Sun and Abraham (2020)</p>
           
           <code><a href="df_het.html">df_het</a></code> 
         </dt>
-        <dd>Simulated data with two treatment groups and heterogenous effects
-
-Generated using the following call:
-<code>did2s::gen_data(panel = c(1990, 2020),
-  g1 = 2000, g2 = 2010, g3 = 0,
-  te1 = 2, te2 = 1, te3 = 0,
-  te_m1 = 0.05, te_m2 = 0.15, te_m3 = 0)</code></dd>
+        <dd>Simulated data with two treatment groups and heterogenous effects</dd>
       </dl><dl><dt>
           
           <code><a href="df_hom.html">df_hom</a></code> 
         </dt>
-        <dd>Simulated data with two treatment groups and homogenous effects
-
-Generated using the following call:
-<code>did2s::gen_data(panel = c(1990, 2020),
-  g1 = 2000, g2 = 2010, g3 = 0,
-  te1 = 2, te2 = 2, te3 = 0,
-  te_m1 = 0, te_m2 = 0, te_m3 = 0)</code></dd>
+        <dd>Simulated data with two treatment groups and homogenous effects</dd>
       </dl><dl><dt>
           
           <code><a href="castle.html">castle</a></code> 
@@ -135,8 +117,7 @@ Generated using the following call:
 </div>
 
 <div class="pkgdown-footer-right">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a>
-2.0.2.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.5.</p>
 </div>
 
     </footer></div>

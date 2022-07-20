@@ -68,11 +68,11 @@ among the groups.
 # Automatically loads fixest
 library(did2s)
 #> Loading required package: fixest
-#> ℹ did2s (v0.6.0). For more information on the methodology, visit <https://www.kylebutts.com/did2s>
+#> ℹ did2s (v0.7.0). For more information on the methodology, visit <https://www.kylebutts.com/did2s>
 #> To cite did2s in publications use:
 #> 
 #>   Butts, Kyle (2021).  did2s: Two-Stage Difference-in-Differences
-#>   Following Gardner (2021). R package version 0.6.0.
+#>   Following Gardner (2021). R package version 0.7.0.
 #> 
 #> A BibTeX entry for LaTeX users is
 #> 
@@ -213,7 +213,7 @@ citation(package = "did2s")
 #> To cite did2s in publications use:
 #> 
 #>   Butts, Kyle (2021).  did2s: Two-Stage Difference-in-Differences
-#>   Following Gardner (2021). R package version 0.6.0.
+#>   Following Gardner (2021). R package version 0.7.0.
 #> 
 #> A BibTeX entry for LaTeX users is
 #> 

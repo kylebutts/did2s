@@ -10,7 +10,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">did2s</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.6.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.7.0</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -46,32 +46,29 @@
     </div>
 
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="0.6.0" id="did2s-060">did2s 0.6.0<a class="anchor" aria-label="anchor" href="#did2s-060"></a></h2>
-<ul><li>Added <code>estimator</code> argument to <code>event_study</code>
-and added vignette discussing the different estimators’ assumptions</li>
+<h2 class="pkg-version" data-toc-text="0.7.0" id="did2s-070">did2s 0.7.0<a class="anchor" aria-label="anchor" href="#did2s-070"></a></h2>
+<ul><li>Add <code>ARMA_64_BIT</code> for larger matricies</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.6.0" id="did2s-060">did2s 0.6.0<a class="anchor" aria-label="anchor" href="#did2s-060"></a></h2><p class="text-muted">CRAN release: 2022-04-07</p>
+<ul><li>Added <code>estimator</code> argument to <code>event_study</code> and added vignette discussing the different estimators’ assumptions</li>
+<li>Fixed “seperate” argument typo in <code>plot_event_study</code>, which may break some previous code (<a href="https://github.com/kylebutts/did2s/pull/15" class="external-link uri">https://github.com/kylebutts/did2s/pull/15</a>)</li>
 </ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.5.0" id="did2s-050">did2s 0.5.0<a class="anchor" aria-label="anchor" href="#did2s-050"></a></h2>
-<ul><li><p>Made code more robust by improving sparse model matrix
-creation</p></li>
-<li><p>Rewrote covariance matrix creation to be faster and more
-robust</p></li>
-<li><p>Improved block bootstrapping code using
-<code><a href="https://rdrr.io/pkg/boot/man/boot.html" class="external-link">boot::boot</a></code></p></li>
-<li><p>Fixed Sun and Abraham bug in <code>event_study</code>, h/t
-Frederik Noack</p></li>
+<ul><li><p>Made code more robust by improving sparse model matrix creation</p></li>
+<li><p>Rewrote covariance matrix creation to be faster and more robust</p></li>
+<li><p>Improved block bootstrapping code using <code><a href="https://rdrr.io/pkg/boot/man/boot.html" class="external-link">boot::boot</a></code></p></li>
+<li><p>Fixed Sun and Abraham bug in <code>event_study</code>, h/t Frederik Noack</p></li>
 </ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.4.0" id="did2s-040">did2s 0.4.0<a class="anchor" aria-label="anchor" href="#did2s-040"></a></h2><p class="text-muted">CRAN release: 2021-09-27</p>
-<ul><li><p>Add <code>event_study</code> and <code>plot_event_study</code>
-functions</p></li>
-<li><p>Seperated <code>did_imputation</code> to new package
-<code>didimputation</code></p></li>
+<ul><li><p>Add <code>event_study</code> and <code>plot_event_study</code> functions</p></li>
+<li><p>Seperated <code>did_imputation</code> to new package <code>didimputation</code></p></li>
 </ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.3.0" id="did2s-030">did2s 0.3.0<a class="anchor" aria-label="anchor" href="#did2s-030"></a></h2>
-<ul><li><p>Add <code>did_imputation</code> following Borusyak, Jaravel, and
-Spiess (2021)</p></li>
+<ul><li><p>Add <code>did_imputation</code> following Borusyak, Jaravel, and Spiess (2021)</p></li>
 <li><p>Speed up did2s</p></li>
 </ul></div>
     <div class="section level2">
@@ -92,8 +89,7 @@ Spiess (2021)</p></li>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a>
-2.0.2.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.5.</p>
 </div>
 
     </footer></div>
