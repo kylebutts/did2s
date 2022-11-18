@@ -15,6 +15,11 @@
 #' @param treatment A variable that = 1 if treated, = 0 otherwise
 #' @param cluster_var What variable to cluster standard errors. This can be IDs
 #'   or a higher aggregate level (state for example)
+#' @param id_var Optional. This can speed up your code a lot if you have a lot
+#'   of units by using a computational trick. Note that `cluster_var` must be
+#'   equal to `id_var` or a higher aggregate level for this trick to work.
+#'   You can include `id_var` in `first_stage` as a fixed effect, or not. It
+#'   will be added to `first_stage` if missing
 #' @param weights Optional. Variable name for regression weights.
 #' @param bootstrap Optional. Should standard errors be calculated using bootstrap?
 #'   Default is `FALSE`.
@@ -89,7 +94,8 @@
 #'
 #' @export
 did2s <- function(data, yname, first_stage, second_stage, treatment, cluster_var,
-				  weights = NULL, bootstrap = FALSE, n_bootstraps = 250,
+				  id_var = NULL, weights = NULL,
+				  bootstrap = FALSE, n_bootstraps = 250,
 				  return_bootstrap = FALSE, verbose = TRUE) {
 
 	# Check Parameters ---------------------------------------------------------
@@ -133,6 +139,7 @@ did2s <- function(data, yname, first_stage, second_stage, treatment, cluster_var
 		first_stage = first_stage,
 		second_stage = second_stage,
 		treatment = treatment,
+		id_var = id_var,
 		weights = weights,
 		bootstrap = bootstrap
 	)
@@ -157,24 +164,57 @@ did2s <- function(data, yname, first_stage, second_stage, treatment, cluster_var
 		if(!is.null(removed_rows)) first_u = first_u[removed_rows]
 
 		# x1 is matrix used to predict Y(0)
-		x1 = did2s_sparse(data, est$first_stage, weights_vector)
+		x1 = did2s_sparse(data, est$first_stage, weights_vector, id_var)
+
+		# If id_var is passed, need to subtract of id `weighted.mean` of each
+		# column
+		if(!is.null(id_var)) {
+			ids = data[[id_var]]
+			treat_vector = as.numeric(data[[treatment]])
+
+			x1 = as.data.frame(as.matrix(x1))
+			x1$ids = data[[id_var]]
+			x1$treat_vector = as.numeric(data[[treatment]])
+			x1$weights_vector = weights_vector
+			setDT(x1)
+
+
+			x1 = x1[,
+			   lapply(.SD, function(column) {
+					return(
+						column - weighted.mean(column[treat_vector == 0], weights_vector[treat_vector == 0])
+					)
+			   }),
+			   by = c("ids"),
+			   .SDcols = !c("ids", "treat_vector", "weights_vector")
+			]
+			# Remove ids column
+			x1$ids = NULL
+
+			x1 = as.matrix(x1)
+		}
 
 		# Extract second stage
 		second_u = stats::residuals(est$second_stage)
-		x2 = did2s_sparse(data, est$second_stage, weights_vector)
+		x2 = did2s_sparse(data, est$second_stage, weights_vector, id_var)
 
 		# multiply by weights
-		first_u = weights_vector * first_u
-		x1 = weights_vector * x1
-		second_u = weights_vector * second_u
-		x2 = weights_vector * x2
+		first_u = sqrt(weights_vector) * first_u
+		x1 = sqrt(weights_vector) * x1
+		second_u = sqrt(weights_vector) * second_u
+		x2 = sqrt(weights_vector) * x2
 
 		# x10 is matrix used to estimate first stage (zero out rows with D_it = 1)
 		x10 = x1
 		x10[data[[treatment]] == 1L, ] = 0
 
+
 		# x2'x1 (x10'x10)^-1
-		V = make_V(x1, x10, x2)
+		if(!is.null(id_var)) {
+			# V = t(as.matrix(x2)) %*% x1 %*% solve(t(x10) %*% x10)
+		} else {
+			V = make_V(x1, x10, x2)
+		}
 
 		# Unique values of cluster variable
 		cl = as.numeric(as.factor(data[[cluster_var]]))
@@ -182,11 +222,21 @@ did2s <- function(data, yname, first_stage, second_stage, treatment, cluster_var
 
 		# W_g = X_2g' e_2g - (X_2' X_12) (X_11' X_11)^-1 X_11g' e_1g
 		# W_g = X_2g' e_2g - V X_11g' e_1g
-		meat = lapply(unique(cl), function(cl_id) {
-			make_meat(
-				make_g(x2, cl, cl_id), make_g(x10, cl, cl_id),
-				make_g(first_u, cl, cl_id), make_g(second_u, cl, cl_id), V)
-		})
+		if(!is.null(id_var)) {
+			meat = lapply(unique(cl), function(cl_id) {
+				make_meat_nonsparse(
+					make_g(as.matrix(x2), cl, cl_id), make_g(x10, cl, cl_id),
+					make_g(first_u, cl, cl_id), make_g(second_u, cl, cl_id), V
+				)
+			})
+		} else {
+			meat = lapply(unique(cl), function(cl_id) {
+				make_meat(
+					make_g(x2, cl, cl_id), make_g(x10, cl, cl_id),
+					make_g(first_u, cl, cl_id), make_g(second_u, cl, cl_id), V
+				)
+			})
+		}
 
 		meat_sum = Reduce("+", meat)
 		# (X_2'X_2)^-1 (sum W_g W_g') (X_2'X_2)^-1
@@ -208,11 +258,12 @@ did2s <- function(data, yname, first_stage, second_stage, treatment, cluster_var
 			# run regression for given replicate, return estimated coefficients
 			stats::coefficients(
 				did2s_estimate(
-					data = data[block_obs,],
+					data = data[block_obs, ],
 					yname = yname,
 					first_stage = first_stage,
 					second_stage = second_stage,
 					treatment = treatment,
+					id_var = id_var,
 					weights = weights,
 					bootstrap = TRUE
 				)$second_stage
@@ -223,12 +274,13 @@ did2s <- function(data, yname, first_stage, second_stage, treatment, cluster_var
 
 		# Get estimates and fix names
 		estimates = boot$t
+    estimates = as.matrix(estimates)
 		colnames(estimates) = names(stats::coef(est$second_stage))
 
 		# Bootstrap Var-Cov Matrix
 		cov = stats::cov(estimates)
 
-		if(return_bootstrap) {
+		if (return_bootstrap) {
 			return(estimates)
 		}
 	}
@@ -253,11 +305,18 @@ did2s <- function(data, yname, first_stage, second_stage, treatment, cluster_var
 
 # Point estimate for did2s
 did2s_estimate = function(data, yname, first_stage, second_stage, treatment,
-						  weights = NULL, bootstrap = FALSE) {
+						  weights = NULL, bootstrap = FALSE, id_var = NULL) {
 	## We'll use fixest's formula expansion macros to swap out first and second
 	## stages (see: ?fixest::xpd)
 	fixest::setFixest_fml(..first_stage = first_stage,
 						  ..second_stage = second_stage)
+
+	if(!is.null(id_var)) {
+		fixest::setFixest_fml(..id_var = id_var)
+		first_stage_formula = fixest::xpd(~ 0 + ..first_stage + ..id_var, lhs = yname)
+	} else {
+		first_stage_formula = fixest::xpd(~ 0 + ..first_stage, lhs = yname)
+	}
 
 
 	# First stage among untreated
@@ -268,7 +327,7 @@ did2s_estimate = function(data, yname, first_stage, second_stage, treatment,
 		weights_vector = untreat[[weights]]
 	}
 
-	first_stage = fixest::feols(fixest::xpd(~ 0 + ..first_stage, lhs = yname),
+	first_stage = fixest::feols(first_stage_formula,
 								data = untreat,
 								weights = weights_vector,
 								combine.quick = FALSE, # allows var1^var2 in FEs
