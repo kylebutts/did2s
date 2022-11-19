@@ -1,7 +1,6 @@
 # Make a sparse_model_matrix for fixest estimate. This only keeps the variables that are not removed from `fixest::feols`
-# Note weights_vector is required for `stats::update` call
-did2s_sparse = function(data, fixest, weights_vector, id_var = NULL) {
-	mat_list = sparse_model_matrix(data, fixest, weights_vector, id_var)
+did2s_sparse = function(data, fixest, weights_vector) {
+	mat_list = sparse_model_matrix(data, fixest, weights_vector)
 	Z = NULL
 
 	# Coefficients
@@ -29,7 +28,7 @@ did2s_sparse = function(data, fixest, weights_vector, id_var = NULL) {
 		Z_fixef = mat_list$mat_FE
 
 		temp = fixest::fixef(fixest)
-		select = lapply(names(temp), function(var){
+		select =	lapply(names(temp), function(var){
 			names = names(temp[[var]])
 			names = names[temp[[var]] != 0]
 
@@ -37,7 +36,7 @@ did2s_sparse = function(data, fixest, weights_vector, id_var = NULL) {
 		})
 
 		# Subset mat_FE
-		idx = which(colnames(Z_fixef) %in% unlist(select))
+		idx = which(unlist(select) %in% colnames(Z_fixef))
 		Z = cbind(Z, Z_fixef[, idx])
 	}
 
@@ -51,7 +50,7 @@ did2s_sparse = function(data, fixest, weights_vector, id_var = NULL) {
 ####
 
 # x: fixest estimation
-sparse_model_matrix = function(data, x, weights_vector, id_var = NULL){
+sparse_model_matrix = function(data, x, weights_vector){
 
 	# Linear formula
 	fml_lin = stats::formula(x, "lin")
@@ -148,8 +147,24 @@ sparse_model_matrix = function(data, x, weights_vector, id_var = NULL){
 		# Same process, but easier
 		x_full = stats::update(x, .~1, data = data)
 		rowid = 1:nrow(data)
+		total_cols = sum(x_full$fixef_sizes)
+		running_cols = c(0, x_full$fixef_sizes)
+		n_FE = length(x_full$fixef_sizes)
+		id_all = names_all = vector("list", n_FE)
 
-		mat_FE = fe_sparse(x_full, rowid, exclude = id_var)
+
+		for(i in 1:n_FE){
+			xi = x_full$fixef_id[[i]]
+			id_all[[i]] = cbind(rowid, running_cols[i] + xi)
+			names_all[[i]] = paste0(names(x_full$fixef_id)[i], "::", attr(xi, "fixef_names"))
+		}
+
+		id_mat = do.call(rbind, id_all)
+		names_vec = unlist(names_all)
+
+		mat_FE = Matrix::Matrix(0, nrow(data), total_cols, dimnames = list(NULL, names_vec))
+		mat_FE[id_mat] = 1
+
 	}
 
 
@@ -157,42 +172,6 @@ sparse_model_matrix = function(data, x, weights_vector, id_var = NULL){
 
 	res
 }
-
-
-#' @param x_full Full `fixest` object
-#' @param rowid Row id from data
-#' @param exclude Character vector. Which `fixef_names` to exclude
-# Internal: Sparse fixed effects
-fe_sparse = function(x_full, rowid, exclude = NULL) {
-	fixefs = names(x_full$fixef_sizes)
-	fixef_sizes = x_full$fixef_sizes
-
-	if(!is.null(exclude)) {
-		fixefs = fixefs[!(fixefs %in% exclude)]
-		fixef_sizes = fixef_sizes[!(names(fixef_sizes) %in% exclude)]
-	}
-
-	total_cols = sum(fixef_sizes)
-	running_cols = c(0, fixef_sizes)
-	n_FE = length(fixef_sizes)
-	id_all = names_all = vector("list", n_FE)
-
-	for(i in seq_along(fixefs)){
-		fixef = fixefs[[i]]
-		xi = x_full$fixef_id[[fixef]]
-		id_all[[i]] = cbind(rowid, running_cols[i] + xi)
-		names_all[[i]] = paste0(fixef, "::", attr(xi, "fixef_names"))
-	}
-
-	id_mat = do.call(rbind, id_all)
-	names_vec = unlist(names_all)
-
-	mat_FE = Matrix::Matrix(0, length(rowid), total_cols, dimnames = list(NULL, names_vec))
-	mat_FE[id_mat] = 1
-
-	return(mat_FE)
-}
-
 
 # Internal: modifies the calls so that each variable/interaction is evaluated with mult_sparse
 mult_wrap = function(x){
