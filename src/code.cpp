@@ -45,3 +45,16 @@ arma::mat make_meat(
 	W = A-B;
 	return W * W.t();
 }
+
+// [[Rcpp::export]]
+arma::mat make_meat_nonsparse(
+		arma::mat& x2g, arma::mat& x10g,
+		arma::vec first_ug, arma::vec second_ug,
+		arma::mat& V
+) {
+	arma::mat A, B, W;
+	A = x2g.t() * second_ug;
+	B = V * x10g.t() * first_ug;
+	W = A-B;
+	return W * W.t();
+}

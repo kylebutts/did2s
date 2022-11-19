@@ -51,11 +51,27 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// make_meat_nonsparse
+arma::mat make_meat_nonsparse(arma::mat& x2g, arma::mat& x10g, arma::vec first_ug, arma::vec second_ug, arma::mat& V);
+RcppExport SEXP _did2s_make_meat_nonsparse(SEXP x2gSEXP, SEXP x10gSEXP, SEXP first_ugSEXP, SEXP second_ugSEXP, SEXP VSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::mat& >::type x2g(x2gSEXP);
+    Rcpp::traits::input_parameter< arma::mat& >::type x10g(x10gSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type first_ug(first_ugSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type second_ug(second_ugSEXP);
+    Rcpp::traits::input_parameter< arma::mat& >::type V(VSEXP);
+    rcpp_result_gen = Rcpp::wrap(make_meat_nonsparse(x2g, x10g, first_ug, second_ug, V));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_did2s_make_V", (DL_FUNC) &_did2s_make_V, 3},
     {"_did2s_make_sandwich", (DL_FUNC) &_did2s_make_sandwich, 2},
     {"_did2s_make_meat", (DL_FUNC) &_did2s_make_meat, 5},
+    {"_did2s_make_meat_nonsparse", (DL_FUNC) &_did2s_make_meat_nonsparse, 5},
     {NULL, NULL, 0}
 };
 

@@ -13,3 +13,7 @@ make_meat <- function(x2g, x10g, first_ug, second_ug, V) {
     .Call(`_did2s_make_meat`, x2g, x10g, first_ug, second_ug, V)
 }
 
+make_meat_nonsparse <- function(x2g, x10g, first_ug, second_ug, V) {
+    .Call(`_did2s_make_meat_nonsparse`, x2g, x10g, first_ug, second_ug, V)
+}
+
