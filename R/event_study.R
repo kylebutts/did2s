@@ -109,7 +109,7 @@ if(estimator %in% c("TWFE", "all")) {
 	cli::cli_text("Estimating TWFE Model")
 
 	try({
-		twfe_formula = stats::as.formula(glue::glue("{yname} ~ 1 + {xformla_null} + i(zz000event_time, ref = -1) | {idname} + {tname}"))
+		twfe_formula = stats::as.formula(glue::glue("{yname} ~ 1 + {xformla_null} + i(zz000event_time, ref = c(-1, -Inf)) | {idname} + {tname}"))
 		est_twfe = fixest::feols(twfe_formula, data = data, warn = F, notes = F)
 
 		# Extract coefficients and standard errors
