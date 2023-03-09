@@ -45,7 +45,7 @@ Imports:
     staggered,
     didimputation,
     boot
-URL: http://kylebutts.com/did2s/
+URL: http://kylebutts.github.io/did2s/
 Suggests: 
     rmarkdown,
     knitr,

@@ -29,7 +29,7 @@ devtools::install_github("kylebutts/did2s")
 ## Two-stage Difference-in-differences (Gardner 2021)
 
 For details on the methodology, view this
-[vignette](http://kylebutts.com/did2s/articles/Two-Stage-Difference-in-Differences.html)
+[vignette](http://kylebutts.github.io/did2s/articles/Two-Stage-Difference-in-Differences.html)
 
 To view the documentation, type `?did2s` into the console.
 
@@ -68,7 +68,7 @@ among the groups.
 # Automatically loads fixest
 library(did2s)
 #> Loading required package: fixest
-#> ℹ did2s (v0.7.0). For more information on the methodology, visit <https://www.kylebutts.com/did2s>
+#> ℹ did2s (v0.7.0). For more information on the methodology, visit <https://www.kylebutts.github.io/did2s>
 #> To cite did2s in publications use:
 #> 
 #>   Butts, Kyle (2021).  did2s: Two-Stage Difference-in-Differences

@@ -1,6 +1,6 @@
 params:
     toggle: manual
-url: http://kylebutts.com/did2s
+url: http://kylebutts.github.io/did2s
 template:
   bootstrap: 5
 home:
