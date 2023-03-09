@@ -1,6 +1,6 @@
 Package: did2s
 Title: Two-Stage Difference-in-Differences Following Gardner (2021)
-Version: 0.7.0
+Version: 1.0.0
 Authors@R: 
     c(person(given = "Kyle",
              family = "Butts",
@@ -26,7 +26,7 @@ License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.2.0
+RoxygenNote: 7.2.3
 Depends: 
     R (>= 2.10),
     fixest (>= 0.10.1)
@@ -37,7 +37,6 @@ Imports:
     stats,
     stringr,
     rlang,
-    cli,
     Matrix,
     Rcpp,
     did,

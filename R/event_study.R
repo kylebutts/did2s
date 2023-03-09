@@ -39,7 +39,7 @@ event_study = function(data, yname, idname, gname, tname,
 
 	# Display message about estimator's different assumptions
 	if(estimator == "all") {
-		cli::cli_alert_info("Note these estimators rely on different underlying assumptions. See Table 2 of {.url https://arxiv.org/abs/2109.05913} for an overview.")
+		message("Note these estimators rely on different underlying assumptions. See Table 2 of `https://arxiv.org/abs/2109.05913` for an overview.")
 	}
 
 	# Test that gname is in tname or 0/NA for untreated
@@ -64,7 +64,7 @@ event_study = function(data, yname, idname, gname, tname,
 	# If `xformla` is included, note
 	if(!is.null(xformla)) {
 		if(estimator %in% c("all", "staggered")) {
-			cli::cli_text("Warning: {.code xformla} is ignored for {.code staggered} estimator")
+			message("Warning: {.code xformla} is ignored for {.code staggered} estimator")
 		}
 	}
 
@@ -106,7 +106,7 @@ tidy_staggered = NULL
 
 # TWFE -------------------------------------------------------------------------
 if(estimator %in% c("TWFE", "all")) {
-	cli::cli_text("Estimating TWFE Model")
+	message("Estimating TWFE Model")
 
 	try({
 		twfe_formula = stats::as.formula(glue::glue("{yname} ~ 1 + {xformla_null} + i(zz000event_time, ref = c(-1, -Inf)) | {idname} + {tname}"))
@@ -126,12 +126,12 @@ if(estimator %in% c("TWFE", "all")) {
 		tidy_twfe = tidy_twfe[, c("term", "estimate", "std.error")]
 	})
 
-	if(is.null(tidy_twfe)) cli::cli_warn("TWFE Failed")
+	if(is.null(tidy_twfe)) warning("TWFE Failed")
 }
 
 # did2s ------------------------------------------------------------------------
 if(estimator %in% c("did2s", "all")) {
-	cli::cli_text("Estimating using Gardner (2021)")
+	message("Estimating using Gardner (2021)")
 
 	try({
 		did2s_first_stage = stats::as.formula(glue::glue("~ 0 + {xformla_null} | {idname} + {tname}"))
@@ -152,12 +152,12 @@ if(estimator %in% c("did2s", "all")) {
 		tidy_did2s = tidy_did2s[, c("term", "estimate", "std.error")]
 	})
 
-	if(is.null(tidy_did2s)) cli::cli_warn("Gardner (2021) Failed")
+	if(is.null(tidy_did2s)) warning("Gardner (2021) Failed")
 }
 
 # did --------------------------------------------------------------------------
 if(estimator %in% c("did", "all")) {
-	cli::cli_text("Estimating using Callaway and Sant'Anna (2020)")
+	message("Estimating using Callaway and Sant'Anna (2020)")
 
 	try({
 		est_did = did::att_gt(yname = yname, tname = tname, idname = idname, gname = gname, xformla = xformla, data = data)
@@ -172,12 +172,12 @@ if(estimator %in% c("did", "all")) {
 		tidy_did = tidy_did[, c("term", "estimate", "std.error")]
 	})
 
-	if(is.null(tidy_did)) cli::cli_warn("Callaway and Sant'Anna (2020) Failed")
+	if(is.null(tidy_did)) warning("Callaway and Sant'Anna (2020) Failed")
 }
 
 # sunab ------------------------------------------------------------------------
 if(estimator %in% c("sunab", "all")) {
-	cli::cli_text("Estimating using Sun and Abraham (2020)")
+	message("Estimating using Sun and Abraham (2020)")
 
 	try({
 		# Format xformla for inclusion
@@ -204,12 +204,12 @@ if(estimator %in% c("sunab", "all")) {
 		tidy_sunab = tidy_sunab[, c("term", "estimate", "std.error")]
 	})
 
-	if(is.null(tidy_sunab)) cli::cli_warn("Sun and Abraham (2020) Failed")
+	if(is.null(tidy_sunab)) warning("Sun and Abraham (2020) Failed")
 }
 
 # did_imputation ---------------------------------------------------------------
 if(estimator %in% c("impute", "all")) {
-	cli::cli_text("Estimating using Borusyak, Jaravel, Spiess (2021)")
+	message("Estimating using Borusyak, Jaravel, Spiess (2021)")
 
 	try({
 		impute_first_stage = stats::as.formula(glue::glue("~ 1 + {xformla_null} + i({tname}) | {idname}"))
@@ -227,13 +227,13 @@ if(estimator %in% c("impute", "all")) {
 		tidy_impute$term = as.numeric(tidy_impute$term)
 	})
 
-	if(is.null(tidy_impute)) cli::cli_warn("Borusyak, Jaravel, Spiess (2021) Failed")
+	if(is.null(tidy_impute)) warning("Borusyak, Jaravel, Spiess (2021) Failed")
 }
 
 # staggered --------------------------------------------------------------------
 if(estimator %in% c("staggered", "all")) {
 	# Waiting for staggered on CRAN
-	cli::cli_text("Estimating using Roth and Sant'Anna (2021)")
+	message("Estimating using Roth and Sant'Anna (2021)")
 
 	try({
 		# Make untreated g = Inf
@@ -261,7 +261,7 @@ if(estimator %in% c("staggered", "all")) {
 		tidy_staggered = tidy_staggered[, c("term", "estimate", "std.error")]
 	})
 
-	if(is.null(tidy_staggered)) cli::cli_warn("Roth and Sant'Anna (2021) Failed")
+	if(is.null(tidy_staggered)) warning("Roth and Sant'Anna (2021) Failed")
 }
 
 # Bind results together --------------------------------------------------------
