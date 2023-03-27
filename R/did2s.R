@@ -173,7 +173,7 @@ did2s <- function(data, yname, first_stage, second_stage, treatment, cluster_var
 
     # x10 is matrix used to estimate first stage (zero out rows with D_it = 1)
     x10 <- x1
-    x10[data[[treatment]] == 1L, ] <- 0
+    x10@x[x10@i %in% data[[treatment]] == 1L] <- 0
 
     # x2'x1 (x10'x10)^-1
     V <- make_V(x1, x10, x2)
