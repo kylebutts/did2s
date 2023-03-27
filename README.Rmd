@@ -39,7 +39,7 @@ devtools::install_github("kylebutts/did2s")
 
 ## Two-stage Difference-in-differences [@Gardner_2021]
 
-For details on the methodology, view this [vignette](http://kylebutts.github.io/did2s/articles/Two-Stage-Difference-in-Differences.html)
+For details on the methodology, view this [vignette](https://kylebutts.github.io/did2s/articles/Two-Stage-Difference-in-Differences.html)
 
 To view the documentation, type `?did2s` into the console.
 

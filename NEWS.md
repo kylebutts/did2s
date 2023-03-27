@@ -1,3 +1,7 @@
+# did2s 1.0.1
+
+- One line change sped-up big datasets something like 15x *facepalm*
+
 # did2s 0.7.0
 
 - Add `ARMA_64_BIT` for larger matricies
@@ -5,7 +9,7 @@
 # did2s 0.6.0
 
 - Added `estimator` argument to `event_study` and added vignette discussing the different estimators' assumptions
-- Fixed "seperate" argument typo in `plot_event_study`, which may break some previous code (https://github.com/kylebutts/did2s/pull/15) 
+- Fixed "seperate" argument typo in `plot_event_study`, which may break some previous code (https://github.com/kylebutts/did2s/pull/15/) 
 
 
 # did2s 0.5.0

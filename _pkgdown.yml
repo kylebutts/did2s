@@ -1,14 +1,14 @@
 params:
     toggle: manual
-url: http://kylebutts.github.io/did2s
+url: https://kylebutts.github.io/did2s/
 template:
   bootstrap: 5
 home:
   links:
     - text: Source Code
-      href: https://github.com/kylebutts/did2s
+      href: https://github.com/kylebutts/did2s/
     - text: Report Bugs or Feature Requests
-      href: https://github.com/kylebutts/did2s/issues
+      href: https://github.com/kylebutts/did2s/issues/
 
 reference:
   - title: "Imputation Estimator"

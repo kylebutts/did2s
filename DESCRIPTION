@@ -1,6 +1,6 @@
 Package: did2s
 Title: Two-Stage Difference-in-Differences Following Gardner (2021)
-Version: 1.0.0
+Version: 1.0.1
 Authors@R: 
     c(person(given = "Kyle",
              family = "Butts",
@@ -45,7 +45,7 @@ Imports:
     staggered,
     didimputation,
     boot
-URL: http://kylebutts.github.io/did2s/
+URL: https://kylebutts.github.io/did2s/
 Suggests: 
     rmarkdown,
     knitr,

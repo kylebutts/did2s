@@ -8,10 +8,10 @@
 <meta name="description" content="did2s">
 <title>Two-Stage Difference-in-Differences • did2s</title>
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<link href="../deps/bootstrap-5.1.0/bootstrap.min.css" rel="stylesheet">
-<script src="../deps/bootstrap-5.1.0/bootstrap.bundle.min.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
+<link href="../deps/bootstrap-5.2.2/bootstrap.min.css" rel="stylesheet">
+<script src="../deps/bootstrap-5.2.2/bootstrap.bundle.min.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
-<!-- bootstrap-toc --><script src="https://cdn.rawgit.com/afeld/bootstrap-toc/v1.0.1/dist/bootstrap-toc.min.js"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- search --><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/autocomplete.js/0.38.0/autocomplete.jquery.min.js" integrity="sha512-GU9ayf+66Xx2TmpxqJpliWbT5PiGYxpaG8rfnBEk1LL8l1KGkRShhngwdXK1UgqhAzWpZHSiYPc09/NwDQIGyg==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Two-Stage Difference-in-Differences">
+<!-- bootstrap-toc --><script src="https://cdn.jsdelivr.net/gh/afeld/bootstrap-toc@v1.0.1/dist/bootstrap-toc.min.js" integrity="sha256-4veVQbu7//Lk5TSmc7YV48MxtMy98e26cf5MrgZYnwo=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- search --><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/autocomplete.js/0.38.0/autocomplete.jquery.min.js" integrity="sha512-GU9ayf+66Xx2TmpxqJpliWbT5PiGYxpaG8rfnBEk1LL8l1KGkRShhngwdXK1UgqhAzWpZHSiYPc09/NwDQIGyg==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Two-Stage Difference-in-Differences">
 <meta property="og:description" content="did2s">
 <!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
@@ -26,7 +26,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">did2s</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.7.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.1</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -232,13 +232,14 @@ regressions and whether to cluster or bootstrap standard errors.</p>
 </h4>
 <p>Let’s walk through an example dataset from the package.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="http://kylebutts.github.io/did2s/">did2s</a></span><span class="op">)</span> <span class="co">## The main package. Will automatically load fixest as well.</span></span>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://kylebutts.github.io/did2s/">did2s</a></span><span class="op">)</span> <span class="co">## The main package. Will automatically load fixest as well.</span></span>
 <span><span class="co">#&gt; Loading required package: fixest</span></span>
-<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> did2s (v0.7.0). For more information on the methodology, visit <span style="color: #0000BB; font-style: italic;">&lt;https://www.kylebutts.github.io/did2s&gt;</span></span></span>
+<span><span class="co">#&gt; did2s (v1.0.1). For more information on the methodology, visit &lt;https://www.kylebutts.github.io/did2s&gt;</span></span>
+<span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; To cite did2s in publications use:</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;   Butts, Kyle (2021).  did2s: Two-Stage Difference-in-Differences</span></span>
-<span><span class="co">#&gt;   Following Gardner (2021). R package version 0.7.0.</span></span>
+<span><span class="co">#&gt;   Following Gardner (2021). R package version 1.0.1.</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; A BibTeX entry for LaTeX users is</span></span>
 <span><span class="co">#&gt; </span></span>
@@ -317,16 +318,16 @@ and <code><a href="https://lrberge.github.io/fixest/reference/coefplot.html" cla
 <span>                second_stage <span class="op">=</span> <span class="op">~</span><span class="fu"><a href="https://lrberge.github.io/fixest/reference/i.html" class="external-link">i</a></span><span class="op">(</span><span class="va">treat</span>, ref<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span>, treatment <span class="op">=</span> <span class="st">"treat"</span>, </span>
 <span>                cluster_var <span class="op">=</span> <span class="st">"state"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Running Two-stage Difference-in-Differences</span></span>
-<span><span class="co">#&gt; • first stage formula `~ 0 | state + year`</span></span>
-<span><span class="co">#&gt; • second stage formula `~ i(treat, ref = FALSE)`</span></span>
-<span><span class="co">#&gt; • The indicator variable that denotes when treatment is on is `treat`</span></span>
-<span><span class="co">#&gt; • Standard errors will be clustered by `state`</span></span>
+<span><span class="co">#&gt;  - first stage formula `~ 0 | state + year`</span></span>
+<span><span class="co">#&gt;  - second stage formula `~ i(treat, ref = FALSE)`</span></span>
+<span><span class="co">#&gt;  - The indicator variable that denotes when treatment is on is `treat`</span></span>
+<span><span class="co">#&gt;  - Standard errors will be clustered by `state`</span></span>
 <span></span>
 <span><span class="fu">fixest</span><span class="fu">::</span><span class="fu"><a href="https://lrberge.github.io/fixest/reference/etable.html" class="external-link">esttable</a></span><span class="op">(</span><span class="va">static</span><span class="op">)</span></span>
 <span><span class="co">#&gt;                            static</span></span>
 <span><span class="co">#&gt; Dependent Var.:           dep_var</span></span>
 <span><span class="co">#&gt;                                  </span></span>
-<span><span class="co">#&gt; treat = TRUE    2.152*** (0.0476)</span></span>
+<span><span class="co">#&gt; treat = TRUE    2.152*** (0.0379)</span></span>
 <span><span class="co">#&gt; _______________ _________________</span></span>
 <span><span class="co">#&gt; S.E. type                  Custom</span></span>
 <span><span class="co">#&gt; Observations               46,500</span></span>
@@ -346,10 +347,10 @@ reference in the second stage formula.</p>
 <span>            second_stage <span class="op">=</span> <span class="op">~</span><span class="fu"><a href="https://lrberge.github.io/fixest/reference/i.html" class="external-link">i</a></span><span class="op">(</span><span class="va">rel_year</span>, ref<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">1</span>, <span class="cn">Inf</span><span class="op">)</span><span class="op">)</span>, treatment <span class="op">=</span> <span class="st">"treat"</span>, </span>
 <span>            cluster_var <span class="op">=</span> <span class="st">"state"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Running Two-stage Difference-in-Differences</span></span>
-<span><span class="co">#&gt; • first stage formula `~ 0 | state + year`</span></span>
-<span><span class="co">#&gt; • second stage formula `~ i(rel_year, ref = c(-1, Inf))`</span></span>
-<span><span class="co">#&gt; • The indicator variable that denotes when treatment is on is `treat`</span></span>
-<span><span class="co">#&gt; • Standard errors will be clustered by `state`</span></span></code></pre></div>
+<span><span class="co">#&gt;  - first stage formula `~ 0 | state + year`</span></span>
+<span><span class="co">#&gt;  - second stage formula `~ i(rel_year, ref = c(-1, Inf))`</span></span>
+<span><span class="co">#&gt;  - The indicator variable that denotes when treatment is on is `treat`</span></span>
+<span><span class="co">#&gt;  - Standard errors will be clustered by `state`</span></span></code></pre></div>
 <p>And plot the results:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
@@ -398,7 +399,7 @@ publications, please cite according to:</p>
 <span><span class="co">#&gt; To cite did2s in publications use:</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;   Butts, Kyle (2021).  did2s: Two-Stage Difference-in-Differences</span></span>
-<span><span class="co">#&gt;   Following Gardner (2021). R package version 0.7.0.</span></span>
+<span><span class="co">#&gt;   Following Gardner (2021). R package version 1.0.1.</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; A BibTeX entry for LaTeX users is</span></span>
 <span><span class="co">#&gt; </span></span>
@@ -445,7 +446,7 @@ effects.”</a>, <em>Journal of Econometrics</em>.</p></li>
 
 <div class="pkgdown-footer-right">
   <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.5.</p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
     </footer>
