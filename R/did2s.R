@@ -172,11 +172,14 @@ did2s <- function(data, yname, first_stage, second_stage, treatment, cluster_var
     x2 <- weights_vector * x2
 
     # x10 is matrix used to estimate first stage (zero out rows with D_it = 1)
-    x10 <- x1
-    x10@x[x10@i %in% data[[treatment]] == 1L] <- 0
+    x10 <- copy(x1)
+    # treated rows. Note dgcMatrix is 0-index !!
+    treated_rows = which(data[[treatment]] == 1L) - 1
+    idx = x10@i %in% treated_rows
+    x10@x[idx] <- 0
 
     # x2'x1 (x10'x10)^-1
-    V <- make_V(x1, x10, x2)
+    V <- Matrix::crossprod(x2, x1) %*% Rfast::spdinv(as.matrix(Matrix::crossprod(x10)))
 
     # Unique values of cluster variable
     cl <- as.numeric(as.factor(data[[cluster_var]]))
@@ -190,16 +193,17 @@ did2s <- function(data, yname, first_stage, second_stage, treatment, cluster_var
       first_u_g = make_g(first_u, cl, cl_id)
       second_u_g = make_g(second_u, cl, cl_id)
 
-      # call to C++
-      make_meat(
-        x2_g, x10_g, first_u_g, second_u_g, V
-      )
+      W = Matrix::crossprod(x2_g, second_u_g) - V %*% Matrix::crossprod(x10_g, first_u_g)
+      
+      # W' W
+      Matrix::tcrossprod(W)
     })
     
     meat_sum <- Reduce("+", meat)
-    
+
     # (X_2'X_2)^-1 (sum W_g W_g') (X_2'X_2)^-1
-    cov <- make_sandwich(x2, meat_sum)
+    bread = Rfast::spdinv(as.matrix(Matrix::crossprod(x2)))
+    cov <- as.matrix(bread %*% meat_sum %*% bread)
   }
 
 
