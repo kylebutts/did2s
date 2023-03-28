@@ -1,6 +1,6 @@
 Package: did2s
 Title: Two-Stage Difference-in-Differences Following Gardner (2021)
-Version: 1.0.1
+Version: 1.0.2
 Authors@R: 
     c(person(given = "Kyle",
              family = "Butts",
@@ -32,13 +32,13 @@ Depends:
     fixest (>= 0.10.1)
 Imports: 
     data.table,
+    Rfast,
+    Matrix,
     ggplot2,
     glue,
     stats,
     stringr,
     rlang,
-    Matrix,
-    Rcpp,
     did,
     broom,
     methods,
@@ -52,7 +52,4 @@ Suggests:
     haven,
     testthat (>= 3.0.0)
 VignetteBuilder: knitr
-LinkingTo: 
-    RcppArmadillo,
-    Rcpp
 Config/testthat/edition: 3

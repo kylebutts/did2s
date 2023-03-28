@@ -4,7 +4,7 @@ pkgdown_sha: ~
 articles:
   Two-Stage-Difference-in-Differences: Two-Stage-Difference-in-Differences.html
   event_study: event_study.html
-last_built: 2023-03-27T19:27Z
+last_built: 2023-03-28T03:44Z
 urls:
   reference: https://kylebutts.github.io/did2s/reference
   article: https://kylebutts.github.io/did2s/articles

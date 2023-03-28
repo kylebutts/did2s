@@ -194,6 +194,7 @@ did2s(
 #>  - Standard errors will be clustered by `state`
 #> OLS estimation, Dep. Var.: l_homicide
 #> Observations: 550 
+#> Weights: weights_vector 
 #> Standard-errors: Custom 
 #>         Estimate Std. Error t value Pr(>|t|)    
 #> post::1 0.075142    0.03538 2.12387 0.034127 *  
