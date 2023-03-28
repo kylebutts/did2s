@@ -44,7 +44,9 @@ Imports:
     methods,
     staggered,
     didimputation,
-    boot
+    boot,
+    SparseM,
+    MatrixExtra
 URL: https://kylebutts.github.io/did2s/
 Suggests: 
     rmarkdown,

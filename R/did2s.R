@@ -179,7 +179,14 @@ did2s <- function(data, yname, first_stage, second_stage, treatment, cluster_var
     x10@x[idx] <- 0
 
     # x2'x1 (x10'x10)^-1
-    V <- Matrix::crossprod(x2, x1) %*% Rfast::spdinv(as.matrix(Matrix::crossprod(x10)))
+    # Note: MatrixExtra makes transposing sparse matrices easy
+    # Note: SparseM relies on A (x10'x10) being positive symmetric for solving
+    V <- MatrixExtra::t_deep(
+      SparseM::solve(
+        Matrix::crossprod(x10), 
+        MatrixExtra::t_shallow(Matrix::crossprod(x2, x1))
+      )
+    )
 
     # Unique values of cluster variable
     cl <- as.numeric(as.factor(data[[cluster_var]]))
@@ -202,7 +209,7 @@ did2s <- function(data, yname, first_stage, second_stage, treatment, cluster_var
     meat_sum <- Reduce("+", meat)
 
     # (X_2'X_2)^-1 (sum W_g W_g') (X_2'X_2)^-1
-    bread = Rfast::spdinv(as.matrix(Matrix::crossprod(x2)))
+    bread = SparseM::solve(Matrix::crossprod(x2))
     cov <- as.matrix(bread %*% meat_sum %*% bread)
   }
 
