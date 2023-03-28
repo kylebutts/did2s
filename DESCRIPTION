@@ -32,7 +32,8 @@ Depends:
     fixest (>= 0.10.1)
 Imports: 
     data.table,
-    Rfast,
+    SparseM,
+    MatrixExtra,
     Matrix,
     ggplot2,
     glue,
@@ -44,9 +45,7 @@ Imports:
     methods,
     staggered,
     didimputation,
-    boot,
-    SparseM,
-    MatrixExtra
+    boot
 URL: https://kylebutts.github.io/did2s/
 Suggests: 
     rmarkdown,
