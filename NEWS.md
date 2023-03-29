@@ -1,3 +1,7 @@
+# did2s 1.0.2
+
+- Huge speedup with many fixed effects with the assist from @etiennebacher
+
 # did2s 1.0.1
 
 - One line change sped-up big datasets something like 15x *facepalm*
