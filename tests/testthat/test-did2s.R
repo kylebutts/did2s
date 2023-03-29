@@ -45,6 +45,17 @@ test_that("estimation runs", {
 NA)
 })
 
+test_that("estimates match previous runs", {
+  static = did2s(
+    data = df_hom, yname = "dep_var", first_stage = ~ 0 | unit + year,
+    second_stage = ~ i(treat, ref=FALSE),
+    treatment = "treat", cluster_var = "state"
+  )
+
+  expect_true(abs(coef(static) - 2.004653) < 0.0001, )
+  expect_true(abs(se(static) - 0.02023667) < 0.0001, )
+})
+
 
 test_that("parameter checking works", {
 	# Treatment not 0/1 or T/F
