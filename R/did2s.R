@@ -189,26 +189,26 @@ did2s <- function(data, yname, first_stage, second_stage, treatment, cluster_var
     )
 
     # Unique values of cluster variable
-    cl <- as.numeric(as.factor(data[[cluster_var]]))
-    nrow <- nrow(data)
+    cl = data[[cluster_var]]
+    cls = split(1:length(cl), as.factor(cl))
 
-    # W_g = X_2g' e_2g - (X_2' X_12) (X_11' X_11)^-1 X_11g' e_1g
-    #     = X_2g' e_2g - V X_11g' e_1g
-    meat <- lapply(unique(cl), function(cl_id) {
-      in_cl = (cl == cl_id)
-      n_row = sum(in_cl)
-      x2_g = make_g(x2, in_cl, n_row)
-      x10_g = make_g(x10, in_cl, n_row)
-      first_u_g = make_g(first_u, in_cl, n_row)
-      second_u_g = make_g(second_u, in_cl, n_row)
-
+    for (i in 1:length(cls)) {
+      in_cl = cls[[i]]
+      
+      x2_g = x2[in_cl, , drop = FALSE]
+      x10_g = x10[in_cl, , drop = FALSE]
+      first_u_g = first_u[in_cl]
+      second_u_g = second_u[in_cl]
+      
       W = Matrix::crossprod(x2_g, second_u_g) - V %*% Matrix::crossprod(x10_g, first_u_g)
 
       # W' W
-      Matrix::tcrossprod(W)
-    })
-
-    meat_sum <- Reduce("+", meat)
+      if(i == 1) { 
+        meat_sum = Matrix::tcrossprod(W)
+      } else {
+        meat_sum = meat_sum + Matrix::tcrossprod(W)
+      }
+    }
 
     # (X_2'X_2)^-1 (sum W_g W_g') (X_2'X_2)^-1
     bread = SparseM::solve(Matrix::crossprod(x2))
@@ -333,28 +333,4 @@ did2s_estimate <- function(data, yname, first_stage, second_stage, treatment,
   }
 
   return(ret)
-}
-
-# Subset sparse matrices
-# This is needed when subset has 1 column or 1 row
-make_g <- function(x, in_cl, n_row) {
-  n_col <- dim(x)[[2]]
-
-  if (inherits(x, "dgCMatrix")) {
-    if (n_row == 1 | n_col == 1) {
-      return(
-        Matrix::Matrix(x[in_cl, ],
-          sparse = T,
-          nrow = n_row, ncol = n_col
-        )
-      )
-    } else {
-      return(
-        Matrix::Matrix(x[in_cl, ], sparse = T)
-      )
-    }
-  }
-  if (inherits(x, "numeric")) {
-    return(x[in_cl])
-  }
 }
