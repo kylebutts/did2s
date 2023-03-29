@@ -338,14 +338,14 @@ did2s_estimate <- function(data, yname, first_stage, second_stage, treatment,
 # Subset sparse matrices
 # This is needed when subset has 1 column or 1 row
 make_g <- function(x, in_cl, n_row) {
-  ncol <- dim(x)[[2]]
+  n_col <- dim(x)[[2]]
 
   if (inherits(x, "dgCMatrix")) {
-    if (n_row == 1 | ncol == 1) {
+    if (n_row == 1 | n_col == 1) {
       return(
         Matrix::Matrix(x[in_cl, ],
           sparse = T,
-          nrow = n_row, ncol = ncol
+          nrow = n_row, ncol = n_col
         )
       )
     } else {
