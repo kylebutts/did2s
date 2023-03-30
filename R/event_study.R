@@ -64,7 +64,7 @@ event_study = function(data, yname, idname, gname, tname,
 	# If `xformla` is included, note
 	if(!is.null(xformla)) {
 		if(estimator %in% c("all", "staggered")) {
-			message("Warning: {.code xformla} is ignored for {.code staggered} estimator")
+			message(paste0("Warning: `", xformla, "` is ignored for the `staggered` estimator"))
 		}
 	}
 
@@ -109,18 +109,21 @@ if(estimator %in% c("TWFE", "all")) {
 	message("Estimating TWFE Model")
 
 	try({
-		twfe_formula = stats::as.formula(glue::glue("{yname} ~ 1 + {xformla_null} + i(zz000event_time, ref = c(-1, -Inf)) | {idname} + {tname}"))
+		twfe_formula = stats::as.formula(
+      paste0(
+        yname, " ~ 1 + ", xformla_null, " + i(zz000event_time, ref = c(-1, -Inf)) | ", idname, " + ", tname
+      )
+    )
 		est_twfe = fixest::feols(twfe_formula, data = data, warn = F, notes = F)
 
 		# Extract coefficients and standard errors
 		tidy_twfe = broom::tidy(est_twfe)
 
 		# Extract zz000event_time
-		tidy_twfe = tidy_twfe[stringr::str_detect(tidy_twfe$term, "zz000event_time::"), ]
+		tidy_twfe = tidy_twfe[grep("zz000event_time::", tidy_twfe$term), ]
 
 		# Make event time into a numeric
-		tidy_twfe$term = stringr::str_replace(tidy_twfe$term, "zz000event_time::", "")
-		tidy_twfe$term = as.numeric(tidy_twfe$term)
+		tidy_twfe$term = as.numeric(gsub("zz000event_time::", "", tidy_twfe$term))
 
 		# Subset column
 		tidy_twfe = tidy_twfe[, c("term", "estimate", "std.error")]
@@ -134,7 +137,11 @@ if(estimator %in% c("did2s", "all")) {
 	message("Estimating using Gardner (2021)")
 
 	try({
-		did2s_first_stage = stats::as.formula(glue::glue("~ 0 + {xformla_null} | {idname} + {tname}"))
+		did2s_first_stage = stats::as.formula(
+      paste0(
+        "~ 0 + ", xformla_null, " | ", idname, " + ", tname
+      )
+    )
 
 		est_did2s = did2s::did2s(data, yname = yname, first_stage = did2s_first_stage, second_stage = ~i(zz000event_time, ref=-Inf), treatment = "zz000treat", cluster_var = idname, verbose = FALSE)
 
@@ -142,11 +149,10 @@ if(estimator %in% c("did2s", "all")) {
 		tidy_did2s = broom::tidy(est_did2s)
 
 		# Extract zz000event_time
-		tidy_did2s = tidy_did2s[stringr::str_detect(tidy_did2s$term, "zz000event_time::"), ]
+		tidy_did2s = tidy_did2s[grep("zz000event_time::", tidy_did2s$term), ]
 
 		# Make event time into a numeric
-		tidy_did2s$term = stringr::str_replace(tidy_did2s$term, "zz000event_time::", "")
-		tidy_did2s$term = as.numeric(tidy_did2s$term)
+		tidy_did2s$term = as.numeric(gsub("zz000event_time::", "", tidy_did2s$term))
 
 		# Subset columns
 		tidy_did2s = tidy_did2s[, c("term", "estimate", "std.error")]
@@ -187,18 +193,21 @@ if(estimator %in% c("sunab", "all")) {
 			sunab_xformla = paste0("1 + ", as.character(xformla)[[2]])
 		}
 
-		sunab_formla = stats::as.formula(glue::glue("{yname} ~ {sunab_xformla} + sunab({gname}, zz000event_time, ref.c =0, ref.p = -1) | {idname} + {tname}"))
+		sunab_formla = stats::as.formula(
+      paste0(
+        yname, " ~ ", sunab_xformla, " + sunab(", gname, ", zz000event_time, ref.c =0, ref.p = -1) | ", idname, " + ", tname
+      )
+    )
 
 		est_sunab = fixest::feols(sunab_formla, data = data)
 
 		tidy_sunab = broom::tidy(est_sunab)
 
-		# Extract zz000event_time
-		tidy_sunab = tidy_sunab[stringr::str_detect(tidy_sunab$term, glue::glue("zz000event_time::")), ]
+    # Extract zz000event_time
+		tidy_sunab = tidy_sunab[grep("zz000event_time::", tidy_sunab$term), ]
 
 		# Make event time into a numeric
-		tidy_sunab$term = stringr::str_replace(tidy_sunab$term, glue::glue("zz000event_time::"), "")
-		tidy_sunab$term = as.numeric(tidy_sunab$term)
+		tidy_sunab$term = as.numeric(gsub("zz000event_time::", "", tidy_sunab$term))
 
 		# Subset columns
 		tidy_sunab = tidy_sunab[, c("term", "estimate", "std.error")]
@@ -212,7 +221,11 @@ if(estimator %in% c("impute", "all")) {
 	message("Estimating using Borusyak, Jaravel, Spiess (2021)")
 
 	try({
-		impute_first_stage = stats::as.formula(glue::glue("~ 1 + {xformla_null} + i({tname}) | {idname}"))
+		impute_first_stage = stats::as.formula(
+      paste0(
+        "~ 1 + ", xformla_null, "+ i(", tname, ") | ", idname
+      )
+    )
 
 		tidy_impute = didimputation::did_imputation(data,
 									 yname = yname, gname = gname, tname = tname, idname = idname,
@@ -221,7 +234,7 @@ if(estimator %in% c("impute", "all")) {
 		# Subset columns
 		tidy_impute = tidy_impute[, c("term", "estimate", "std.error")]
 
-		tidy_impute = tidy_impute[stringr::str_detect(tidy_impute$term, "^(-)?[0-9]+$"), ]
+		tidy_impute = tidy_impute[grep("^(-)?[0-9]+$", tidy_impute$term), ]
 
 		# Make event time into a numeric
 		tidy_impute$term = as.numeric(tidy_impute$term)
@@ -328,10 +341,12 @@ plot_event_study = function(out, separate = TRUE, horizon = NULL) {
 	x_lims = c(min(out$term) - 1, max(out$term) + 1)
 
 	ggplot2::ggplot(
-			data = out,
-			ggplot2::aes(x = .data$term, y = .data$estimate,
-						 color = .data$estimator,
-						 ymin = .data$ci_lower, ymax = .data$ci_upper)
+      data = out,
+      mapping = ggplot2::aes(
+        x = .data$term, y = .data$estimate,
+        color = .data$estimator,
+        ymin = .data$ci_lower, ymax = .data$ci_upper
+      )
 		) +
 		{ if(separate) ggplot2::facet_wrap(~ estimator, scales="free") } +
 		ggplot2::geom_point(position = position) +

@@ -31,21 +31,18 @@ Depends:
     R (>= 2.10),
     fixest (>= 0.10.1)
 Imports: 
-    data.table,
-    SparseM,
-    MatrixExtra,
-    Matrix,
-    ggplot2,
-    glue,
-    stats,
-    stringr,
-    rlang,
-    did,
-    broom,
-    methods,
-    staggered,
-    didimputation,
-    boot
+  data.table,
+  SparseM,
+  MatrixExtra,
+  Matrix,
+  stats,
+  boot,
+  broom,
+  ggplot2,
+  rlang,
+  did,
+  staggered,
+  didimputation
 URL: https://kylebutts.github.io/did2s/
 Suggests: 
     rmarkdown,

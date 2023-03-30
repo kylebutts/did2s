@@ -11,8 +11,8 @@ did2s_sparse = function(data, fixest, weights_vector) {
 		cols = colnames(Z)
 
 		# Fix i() names
-		i_idx = stringr::str_detect(cols, "^i\\(")
-		cols[i_idx] = stringr::str_remove(cols[i_idx], "^.*__CLEAN__")
+		i_idx = grep("^i\\(", cols)
+		cols[i_idx] = sub("^.*__CLEAN__", "", cols[i_idx])
 
 		# Subset mat_RHS
 		idx = which(select %in% cols)
