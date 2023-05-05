@@ -3,6 +3,8 @@
 export(did2s)
 export(event_study)
 export(gen_data)
+export(get_honestdid_obj_did2s)
+export(honest_did_did2s)
 export(plot_event_study)
 import(data.table)
 import(fixest)

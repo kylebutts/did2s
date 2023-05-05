@@ -67,7 +67,6 @@ did2s returns a list with two objects:
 I will load example data from the package and plot the average outcome among the groups.
 
 ```{r load-data}
-
 # Automatically loads fixest
 library(did2s)
 
@@ -78,9 +77,8 @@ data("df_het", package = "did2s")
 Here is a plot of the average outcome variable for each of the groups:
 
 ```{r plot-df-het, fig.width=8, fig.height=4, fig.cap="Example data with heterogeneous treatment effects"}
-
 # Mean for treatment group-year
-agg <- aggregate(df_het$dep_var, by=list(g = df_het$g, year = df_het$year), FUN = mean)
+agg <- aggregate(df_het$dep_var, by = list(g = df_het$g, year = df_het$year), FUN = mean)
 
 agg$g <- as.character(agg$g)
 agg$g <- ifelse(agg$g == "0", "Never Treated", agg$g)
@@ -90,17 +88,19 @@ g1 <- agg[agg$g == "2000", ]
 g2 <- agg[agg$g == "2010", ]
 
 
-plot(0, 0, xlim = c(1990,2020), ylim = c(4,7.2), type = "n",
-     main = "Data-generating Process", ylab = "Outcome", xlab = "Year")
+plot(0, 0,
+  xlim = c(1990, 2020), ylim = c(4, 7.2), type = "n",
+  main = "Data-generating Process", ylab = "Outcome", xlab = "Year"
+)
 abline(v = c(1999.5, 2009.5), lty = 2)
 lines(never$year, never$x, col = "#8e549f", type = "b", pch = 15)
 lines(g1$year, g1$x, col = "#497eb3", type = "b", pch = 17)
 lines(g2$year, g2$x, col = "#d2382c", type = "b", pch = 16)
-legend(x=1990, y=7.1, col = c("#8e549f", "#497eb3", "#d2382c"), 
-       pch = c(15, 17, 16),
-       legend = c("Never Treated", "2000", "2010"))
-
-
+legend(
+  x = 1990, y = 7.1, col = c("#8e549f", "#497eb3", "#d2382c"),
+  pch = c(15, 17, 16),
+  legend = c("Never Treated", "2000", "2010")
+)
 ```
 
 
@@ -109,15 +109,14 @@ legend(x=1990, y=7.1, col = c("#8e549f", "#497eb3", "#d2382c"),
 First, lets estimate a static did. There are two things to note here. First, note that I can use `fixest::feols` formula including the `|` for specifying fixed effects and `fixest::i` for improved factor variable support. Second, note that `did2s` returns a `fixest` estimate object, so `fixest::etable`, `fixest::coefplot`, and `fixest::iplot` all work as expected.
 
 ```{r static}
-
 # Static
-static <- did2s(df_het, 
-				yname = "dep_var", first_stage = ~ 0 | state + year, 
-				second_stage = ~i(treat, ref=FALSE), treatment = "treat", 
-				cluster_var = "state")
+static <- did2s(df_het,
+  yname = "dep_var", first_stage = ~ 0 | state + year,
+  second_stage = ~ i(treat, ref = FALSE), treatment = "treat",
+  cluster_var = "state"
+)
 
 fixest::etable(static)
-
 ```
 
 This is very close to the true treatment effect of ~2.23.
@@ -125,48 +124,97 @@ This is very close to the true treatment effect of ~2.23.
 Then, let's estimate an event study did. Note that relative year has a value of `Inf` for never treated, so I put this as a reference in the second stage formula.
 
 ```{r event-study}
-
 # Event Study
 es <- did2s(df_het,
-			yname = "dep_var", first_stage = ~ 0 | state + year, 
-			second_stage = ~i(rel_year, ref=c(-1, Inf)), treatment = "treat", 
-			cluster_var = "state")
-
+  yname = "dep_var", first_stage = ~ 0 | state + year,
+  second_stage = ~ i(rel_year, ref = c(-1, Inf)), treatment = "treat",
+  cluster_var = "state"
+)
 ```
 
 And plot the results:
 
 ```{r plot-es, fig.cap="Event-study plot with example data"}
-
 fixest::iplot(es, main = "Event study: Staggered treatment", xlab = "Relative time to treatment", col = "steelblue", ref.line = -0.5)
 
 # Add the (mean) true effects
-true_effects = head(tapply((df_het$te + df_het$te_dynamic), df_het$rel_year, mean), -1)
+true_effects <- head(tapply((df_het$te + df_het$te_dynamic), df_het$rel_year, mean), -1)
 points(-20:20, true_effects, pch = 20, col = "black")
 
 # Legend
-legend(x=-20, y=3, col = c("steelblue", "black"), pch = c(20, 20), 
-       legend = c("Two-stage estimate", "True effect"))
-
+legend(
+  x = -20, y = 3, col = c("steelblue", "black"), pch = c(20, 20),
+  legend = c("Two-stage estimate", "True effect")
+)
 ```
 
 
 ### Comparison to TWFE
 
 ```{r plot-compare, ig.cap="TWFE and Two-Stage estimates of Event-Study"}
+twfe <- feols(dep_var ~ i(rel_year, ref = c(-1, Inf)) | unit + year, data = df_het)
 
-twfe = feols(dep_var ~ i(rel_year, ref=c(-1, Inf)) | unit + year, data = df_het) 
-
-fixest::iplot(list(es, twfe), sep = 0.2, ref.line = -0.5,
-      col = c("steelblue", "#82b446"), pt.pch = c(20, 18), 
-      xlab = "Relative time to treatment", 
-      main = "Event study: Staggered treatment (comparison)")
+fixest::iplot(list(es, twfe),
+  sep = 0.2, ref.line = -0.5,
+  col = c("steelblue", "#82b446"), pt.pch = c(20, 18),
+  xlab = "Relative time to treatment",
+  main = "Event study: Staggered treatment (comparison)"
+)
 
 
 # Legend
-legend(x=-20, y=3, col = c("steelblue", "#82b446"), pch = c(20, 18), 
-       legend = c("Two-stage estimate", "TWFE"))
+legend(
+  x = -20, y = 3, col = c("steelblue", "#82b446"), pch = c(20, 18),
+  legend = c("Two-stage estimate", "TWFE")
+)
+```
 
+
+### Honest DID
+
+In version 1.1.0, we added support for computing a sensitivity analysis using the approach of Rambachan and Roth (2021). 
+
+Here's an example:
+
+```{r ehec-data-est, fig.cap="Estimates of the effect of the EHEC outbreak on the number of cases of HUS"}
+library(HonestDiD)
+library(ggplot2)
+
+df <- haven::read_dta("https://raw.githubusercontent.com/Mixtape-Sessions/Advanced-DID/main/Exercises/Data/ehec_data.dta")
+
+df$treated <- ifelse(is.na(df$yexp2), 0, 1 * (df$year >= df$yexp2))
+df$rel_year <- ifelse(is.na(df$yexp2), -100, df$year - df$yexp2)
+
+# Estimate did2s
+es_did2s <- did2s(
+  df,
+  yname = "dins",
+  first_stage = ~ 0 | stfips + year,
+  second_stage = ~ 0 + i(rel_year, ref = -100),
+  treatment = "treated",
+  cluster_var = "stfips"
+)
+
+coefplot(es_did2s)
+```
+
+```{r sensitivity, fig.cap="Sensitivity analysis for the example data"}
+# Relative Magnitude sensitivity analysis
+sensitivity_results <- es_did2s |> 
+  # Take fixest obj and convert for `honest_did_did2s`
+  get_honestdid_obj_did2s(coef_name = "rel_year") |>
+  # Run sensitivity analysis
+  honest_did_did2s(
+    e = 0,
+    type = "relative_magnitude",
+    Mbarvec = seq(from = 0.5, to = 2, by = 0.5)
+  )
+
+# Create plot
+HonestDiD::createSensitivityPlot_relativeMagnitudes(
+  sensitivity_results$robust_ci,
+  sensitivity_results$orig_ci
+)
 ```
 
 # Citation

@@ -1,3 +1,7 @@
+# did2s 1.1.0
+
+- Added `honest_did` function to compute a sensitivity analysis using the approach of Rambachan and Roth (2021)
+
 # did2s 1.0.2
 
 - Huge speedup with many fixed effects with the assist from @etiennebacher

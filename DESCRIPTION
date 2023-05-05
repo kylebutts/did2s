@@ -1,6 +1,6 @@
 Package: did2s
 Title: Two-Stage Difference-in-Differences Following Gardner (2021)
-Version: 1.0.2
+Version: 1.1.0
 Authors@R: 
     c(person(given = "Kyle",
              family = "Butts",
@@ -48,6 +48,7 @@ Suggests:
     rmarkdown,
     knitr,
     haven,
-    testthat (>= 3.0.0)
+    testthat (>= 3.0.0),
+    HonestDiD
 VignetteBuilder: knitr
 Config/testthat/edition: 3
