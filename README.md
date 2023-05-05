@@ -234,7 +234,14 @@ legend(
 In version 1.1.0, we added support for computing a sensitivity analysis
 using the approach of Rambachan and Roth (2021).
 
-Here’s an example:
+Here’s an example using data from
+[here](https://github.com/Mixtape-Sessions/Advanced-DID/tree/main/Exercises/Exercise-1).
+The provided dataset `ehec_data.dta` contains a state-level panel
+dataset on health insurance coverage and Medicaid expansion. The
+variable `dins` shows the share of low-income childless adults with
+health insurance in the state. The variable `yexp2` gives the year that
+a state expanded Medicaid coverage under the Affordable Care Act, and is
+missing if the state never expanded.
 
 ``` r
 library(HonestDiD)
@@ -265,10 +272,10 @@ coefplot(es_did2s)
 
 <div class="figure">
 
-<img src="man/figures/README-ehec-data-est-1.png" alt="Estimates of the effect of the EHEC outbreak on the number of cases of HUS" width="100%" />
+<img src="man/figures/README-ehec-data-est-1.png" alt="Estimates of the effect of Medicaid expansion on health insurance coverage" width="100%" />
 <p class="caption">
-Estimates of the effect of the EHEC outbreak on the number of cases of
-HUS
+Estimates of the effect of Medicaid expansion on health insurance
+coverage
 </p>
 
 </div>
