@@ -33,7 +33,9 @@ Fixed effects specified after "\code{|}".}
 Formula following \code{\link[fixest:feols]{fixest::feols}}.
 Use \code{i()} for factor variables, see \code{\link[fixest:i]{fixest::i}}.}
 
-\item{treatment}{A variable that = 1 if treated, = 0 otherwise}
+\item{treatment}{A variable that = 1 if treated, = 0 otherwise. The first
+stage will be estimated for \code{treatment == 0}. The second stage will be
+estimated for the \emph{full sample}.}
 
 \item{cluster_var}{What variable to cluster standard errors. This can be IDs
 or a higher aggregate level (state for example)}

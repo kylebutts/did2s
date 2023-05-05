@@ -12,7 +12,9 @@
 #'   (e.g. treatment variable or event-study leads/lags).
 #'   Formula following \code{\link[fixest:feols]{fixest::feols}}.
 #'   Use `i()` for factor variables, see \code{\link[fixest:i]{fixest::i}}.
-#' @param treatment A variable that = 1 if treated, = 0 otherwise
+#' @param treatment A variable that = 1 if treated, = 0 otherwise. The first
+#'   stage will be estimated for `treatment == 0`. The second stage will be
+#'   estimated for the *full sample*.
 #' @param cluster_var What variable to cluster standard errors. This can be IDs
 #'   or a higher aggregate level (state for example)
 #' @param weights Optional. Variable name for regression weights.
@@ -307,7 +309,6 @@ did2s_estimate <- function(data, yname, first_stage, second_stage, treatment,
   if (!bootstrap) first_u[data[[treatment]] == 1] <- 0
 
   # Second stage
-
   if (!is.null(weights)) weights_vector <- data[[weights]]
 
   second_stage <- fixest::feols(fixest::xpd(~ 0 + ..second_stage, lhs = yname),
