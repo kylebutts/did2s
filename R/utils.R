@@ -36,7 +36,7 @@ did2s_sparse = function(data, fixest, weights_vector) {
 		})
 
 		# Subset mat_FE
-		idx = which(unlist(select) %in% colnames(Z_fixef))
+		idx = which(colnames(Z_fixef) %in% unlist(select))
 		Z = cbind(Z, Z_fixef[, idx])
 	}
 
