@@ -161,11 +161,11 @@ did2s <- function(data, yname, first_stage, second_stage, treatment, cluster_var
     if (!is.null(removed_rows)) first_u <- first_u[removed_rows]
 
     # x1 is matrix used to predict Y(0)
-    x1 <- did2s_sparse(data, est$first_stage, weights_vector)
-
+    x1 <- fixest::sparse_model_matrix(est$first_stage, data, type = c("rhs", "fixef"), collin.rm = TRUE)
+    
     # Extract second stage
     second_u <- stats::residuals(est$second_stage)
-    x2 <- did2s_sparse(data, est$second_stage, weights_vector)
+    x2 <- fixest::sparse_model_matrix(est$second_stage, type = c("rhs", "fixef"), collin.rm = TRUE)
 
     # multiply by weights
     first_u <- weights_vector * first_u
@@ -181,12 +181,11 @@ did2s <- function(data, yname, first_stage, second_stage, treatment, cluster_var
     x10@x[idx] <- 0
 
     # x2'x1 (x10'x10)^-1
-    # Note: MatrixExtra makes transposing sparse matrices easy
-    # Note: SparseM relies on A (x10'x10) being positive symmetric for solving
-    V <- MatrixExtra::t_deep(
-      SparseM::solve(
+    # Note: Matrix::solve relies on A (x10'x10) being positive symmetric
+    V <- Matrix::t(
+      Matrix::solve(
         Matrix::crossprod(x10),
-        MatrixExtra::t_shallow(Matrix::crossprod(x2, x1))
+        Matrix::t(Matrix::crossprod(x2, x1))
       )
     )
 
@@ -194,27 +193,32 @@ did2s <- function(data, yname, first_stage, second_stage, treatment, cluster_var
     cl = data[[cluster_var]]
     cls = split(1:length(cl), as.factor(cl))
 
+    # (X_2'X_2)^-1 (sum_g W_g W_g') (X_2'X_2)^-1
+    tx2x2 = Matrix::crossprod(x2)
     for (i in 1:length(cls)) {
       in_cl = cls[[i]]
-      
+
       x2_g = x2[in_cl, , drop = FALSE]
       x10_g = x10[in_cl, , drop = FALSE]
       first_u_g = first_u[in_cl]
       second_u_g = second_u[in_cl]
       
-      W = Matrix::crossprod(x2_g, second_u_g) - V %*% Matrix::crossprod(x10_g, first_u_g)
+      # W_g = X_2g u_2g - V X_1g u_1g
+      W_g = Matrix::crossprod(x2_g, second_u_g) - 
+          V %*% Matrix::crossprod(x10_g, first_u_g)
 
-      # W' W
+      # Bread x Scores: (X_2'X_2)^-1 W_g
+      # VCOV = \sum_g (X_2'X_2)^-1 W_g W_g' (X_2'X_2)^-1 
+      cov_g = Matrix::tcrossprod(Matrix::solve(tx2x2, W_g))
       if(i == 1) { 
-        meat_sum = Matrix::tcrossprod(W)
+        cov = cov_g
       } else {
-        meat_sum = meat_sum + Matrix::tcrossprod(W)
+        cov = cov + cov_g
       }
     }
 
-    # (X_2'X_2)^-1 (sum W_g W_g') (X_2'X_2)^-1
-    bread = SparseM::solve(Matrix::crossprod(x2))
-    cov <- as.matrix(bread %*% meat_sum %*% bread)
+    cov = as.matrix(cov)
+
   }
 
 
