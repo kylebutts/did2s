@@ -40,7 +40,8 @@ Imports:
     rlang,
     did,
     staggered,
-    didimputation
+    didimputation,
+    dreamerr
 URL: https://kylebutts.github.io/did2s/
 Suggests: 
     rmarkdown,

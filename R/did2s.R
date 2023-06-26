@@ -161,11 +161,13 @@ did2s <- function(data, yname, first_stage, second_stage, treatment, cluster_var
     if (!is.null(removed_rows)) first_u <- first_u[removed_rows]
 
     # x1 is matrix used to predict Y(0)
-    x1 <- did2s_sparse(data, est$first_stage, weights_vector)
+    x1 <- sparse_model_matrix(
+      est$first_stage, data = data, type = c("rhs", "fixef")
+    )
 
     # Extract second stage
     second_u <- stats::residuals(est$second_stage)
-    x2 <- did2s_sparse(data, est$second_stage, weights_vector)
+    x2 <- sparse_model_matrix(est$second_stage, type = c("rhs", "fixef"))
 
     # multiply by weights
     first_u <- weights_vector * first_u
@@ -181,7 +183,7 @@ did2s <- function(data, yname, first_stage, second_stage, treatment, cluster_var
     x10@x[idx] <- 0
 
     # x2'x1 (x10'x10)^-1
-  # Note: Matrix::solve relies on A (x10'x10) being positive symmetric
+    # Note: Matrix::solve relies on A (x10'x10) being positive symmetric
     V <- Matrix::t(
       Matrix::solve(
         Matrix::crossprod(x10),
