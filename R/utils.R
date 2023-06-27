@@ -5,9 +5,9 @@ sparse_model_matrix = function(object, data, type = "rhs", na.rm = TRUE,  collin
     # if fixef => return a DF
 
     # Checking the arguments
-    if (fixest:::is_user_level_call()) {
-        dreamerr::validate_dots(suggest_args = c("data", "type"))
-    }
+    # if (fixest:::is_user_level_call()) {
+    #     dreamerr::validate_dots(suggest_args = c("data", "type"))
+    # }
 
     # We allow type to be used in the location of data if data is missing
     if (!missing(data) && missing(type)) {
