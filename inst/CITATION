@@ -1,7 +1,7 @@
 citHeader("To cite did2s in publications use:")
 
-PKG <- "did2s"
-vers <- paste("R package version", meta$Version)
+# PKG <- "did2s"
+# vers <- paste("R package version", meta$Version)
 # url <- paste0("https://CRAN.R-project.org/package=", PKG)
 
 bibentry(
@@ -11,11 +11,14 @@ bibentry(
     person("Kyle", "Butts",
       email = "kyle.butts@colorado.edu",
       role = c("aut", "cre")
+    ),
+    person("John", "Gardner",
+      email = "jrgardne@olemiss.edu",
+      role = c("aut", "cre")
     )
   ),
   year = 2021,
-  url = "https://github.com/kylebutts/did2s/",
-  textVersion = paste0(
-    "Butts, Kyle (2021).  did2s: Two-Stage Difference-in-Differences Following Gardner (2021). ", vers, "."
-  )
+  url = "https://journal.r-project.org/articles/RJ-2022-048/",
+  textVersion = 'Butts & Gardner, "The R Journal: did2s: Two-Stage Difference-in-Differences", The R Journal, 2022'
 )
+
