@@ -1,13 +1,492 @@
 # Copied directly from https://github.com/lrberge/fixest/pull/418/commits/869aeee1ac030fe787a217fbf9f358b7f0eef8f4
+#' Create, or interact variables with, factors
+#'
+#' Treat a variable as a factor, or interacts a variable with a factor. Values to be dropped/kept from the factor can be easily set. Note that to interact fixed-effects, this function should not be used: instead use directly the syntax `fe1^fe2`.
+#'
+#'
+#' @inheritParams bin
+#'
+#' @param factor_var  A vector (of any type) that will be treated as a factor. You can set references (i.e. exclude values for which to create dummies) with the `ref` argument.
+#' @param var A variable of the same length as `factor_var`. This variable will be interacted with the factor in `factor_var`. It can be numeric or factor-like. To force a numeric variable to be treated as a factor, you can add the `i.` prefix to a variable name. For instance take a numeric variable `x_num`: `i(x_fact, x_num)` will treat `x_num` as numeric while `i(x_fact, i.x_num)` will treat `x_num` as a factor (it's a shortcut to `as.factor(x_num)`).
+#' @param ref A vector of values to be taken as references from `factor_var`. Can also be a logical: if `TRUE`, then the first value of `factor_var` will be removed. If `ref` is a character vector, partial matching is applied to values; use "@" as the first character to enable regular expression matching. See examples.
+#' @param keep A vector of values to be kept from `factor_var` (all others are dropped). By default they should be values from `factor_var` and if `keep` is a character vector partial matching is applied. Use "@" as the first character to enable regular expression matching instead.
+#' @param ref2 A vector of values to be dropped from `var`. By default they should be values from `var` and if `ref2` is a character vector partial matching is applied. Use "@" as the first character to enable regular expression matching instead.
+#' @param keep2 A vector of values to be kept from `var` (all others are dropped). By default they should be values from `var` and if `keep2` is a character vector partial matching is applied. Use "@" as the first character to enable regular expression matching instead.
+#' @param bin2 A list or vector defining the binning of the second variable. See help for the argument `bin` for details (or look at the help of the function [`bin`]). You can use `.()` for `list()`.
+#' @param ... Not currently used.
+#'
+#' @details
+#' To interact fixed-effects, this function should not be used: instead use directly the syntax `fe1^fe2` in the fixed-effects part of the formula. Please see the details and examples in the help page of [`feols`].
+#'
+#' @return
+#' It returns a matrix with number of rows the length of `factor_var`. If there is no interacted variable or it is interacted with a numeric variable, the number of columns is equal to the number of cases contained in `factor_var` minus the reference(s). If the interacted variable is a factor, the number of columns is the number of combined cases between `factor_var` and `var`.
+#'
+#' @author
+#' Laurent Berge
+#'
+#' @seealso
+#' [`iplot`][fixest::coefplot] to plot interactions or factors created with `i()`, [`feols`] for OLS estimation with multiple fixed-effects.
+#'
+#' See the function [`bin`] for binning variables.
+#'
+#' @examples
+#'
+#' #
+#' # Simple illustration
+#' #
+#'
+#' x = rep(letters[1:4], 3)[1:10]
+#' y = rep(1:4, c(1, 2, 3, 4))
+#'
+#' # interaction
+#' data.frame(x, y, i(x, y, ref = TRUE))
+#'
+#' # without interaction
+#' data.frame(x, i(x, "b"))
+#'
+#' # you can interact factors too
+#' z = rep(c("e", "f", "g"), c(5, 3, 2))
+#' data.frame(x, z, i(x, z))
+#'
+#' # to force a numeric variable to be treated as a factor: use i.
+#' data.frame(x, y, i(x, i.y))
+#'
+#' # Binning
+#' data.frame(x, i(x, bin = list(ab = c("a", "b"))))
+#'
+#' # Same as before but using .() for list() and a regular expression
+#' # note that to trigger a regex, you need to use an @ first
+#' data.frame(x, i(x, bin = .(ab = "@a|b")))
+#'
+#' #
+#' # In fixest estimations
+#' #
+#'
+#' data(base_did)
+#' # We interact the variable 'period' with the variable 'treat'
+#' est_did = feols(y ~ x1 + i(period, treat, 5) | id + period, base_did)
+#'
+#' # => plot only interactions with iplot
+#' iplot(est_did)
+#'
+#' # Using i() for factors
+#' est_bis = feols(y ~ x1 + i(period, keep = 3:6) + i(period, treat, 5) | id, base_did)
+#'
+#' # we plot the second set of variables created with i()
+#' # => we need to use keep (otherwise only the first one is represented)
+#' coefplot(est_bis, keep = "trea")
+#'
+#' # => special treatment in etable
+#' etable(est_bis, dict = c("6" = "six"))
+#'
+#' #
+#' # Interact two factors
+#' #
+#'
+#' # We use the i. prefix to consider week as a factor
+#' data(airquality)
+#' aq = airquality
+#' aq$week = aq$Day %/% 7 + 1
+#'
+#' # Interacting Month and week:
+#' res_2F = feols(Ozone ~ Solar.R + i(Month, i.week), aq)
+#'
+#' # Same but dropping the 5th Month and 1st week
+#' res_2F_bis = feols(Ozone ~ Solar.R + i(Month, i.week, ref = 5, ref2 = 1), aq)
+#'
+#' etable(res_2F, res_2F_bis)
+#'
+#' #
+#' # Binning
+#' #
+#'
+#' data(airquality)
+#'
+#' feols(Ozone ~ i(Month, bin = "bin::2"), airquality)
+#'
+#' feols(Ozone ~ i(Month, bin = list(summer = 7:9)), airquality)
+#'
+#'
+#'
+i = function(factor_var, var, ref, keep, bin, ref2, keep2, bin2, ...){
+    # Used to create interactions
+
+    # Later: binning (bin = 1:3 // bin = list("a" = "[abc]")). Default name is bin name (eg "1:3")
+
+    # gt = function(x) cat(sfill(x, 20), ": ", -(t0 - (t0<<-proc.time()))[3], "s\n", sep = "")
+    # t0 = proc.time()
+
+    dreamerr:::validate_dots(valid_args = c("f2", "f_name", "ref_special", "sparse"))
+
+    dots = list(...)
+    is_sparse = isTRUE(dots$sparse)
+
+    mc = match.call()
+
+    # Finding if it's a call from fixest
+    FROM_FIXEST = fixest:::is_fixest_call()
+
+    # General checks
+    dreamerr::check_arg(factor_var, "mbt vector")
+
+    # NOTA:
+    # the user can use the prefix "i." to tell the algorithm to consider the
+    # variable var as a factor. This requires a non standard evaluation
+    #
+
+    var_name = NULL
+    if(!is.null(mc$f2)){
+        # should be only used internally
+
+        var_name = fixest:::deparse_long(mc$f2)
+        var = dots$f2
+        check_value(var, "vector", .arg_name = "f2")
+    }
+
+    # General information on the factor variable
+    if(!is.null(dots$f_name)){
+        f_name = dots$f_name
+    } else {
+        f_name = fixest:::deparse_long(mc$factor_var)
+    }
+    f = factor_var # renaming for clarity
+
+    # checking var
+    IS_INTER_NUMERIC = IS_INTER_FACTOR = FALSE
+    if(!missing(var)){
+        # Evaluation of var (with possibly, user prepending with i.)
+        if(is.null(var_name)){
+            var_name = fixest:::deparse_long(mc$var)
+            if(grepl("^i\\.", var_name)){
+                var_name = gsub("^i\\.", "", var_name)
+                var = str2lang(var_name)
+                check_value_plus(var, "evalset vector", .data = parent.frame(), .arg_name = "var")
+                IS_INTER_FACTOR = TRUE
+            } else {
+                check_value(var, "vector", .arg_name = "var")
+            }
+        } else {
+            # f2 was used
+            IS_INTER_FACTOR = TRUE
+        }
+
+        # is it an interaction with a factor or with a continuous variable?
+        if(length(var) == length(f)){
+            # Logical => numeric by default
+            # otherwise, just setting the flags
+
+            if(IS_INTER_FACTOR == FALSE){
+                # If previous condition == TRUE, means was requested by the user
+
+                if(is.logical(var)){
+                    var = as.numeric(var)
+                    IS_INTER_NUMERIC = TRUE
+                } else if(is.numeric(var)){
+                    IS_INTER_NUMERIC = TRUE
+                } else {
+                    IS_INTER_FACTOR = TRUE
+                }
+            }
+
+        } else if(length(var) <= 2 && !"ref" %in% names(mc)){
+            # ref is implicitly called via the location of var
+            ref = var
+            dots$ref_special = FALSE
+        } else {
+
+            if(grepl("^[[:alpha:]\\.][[:alnum:]\\._]*:[[:alpha:]\\.][[:alnum:]\\._]*$", var_name)){
+                info = strsplit(var_name, ":")[[1]]
+                stop("In i(): When `var` is equal to a product, please use I(", info[1], "*", info[2], ") instead of ", var_name, ".")
+            } else {
+                stop("The arguments `var` and `f` must be of the same length (currently ", length(var), " vs ", length(f), ").")
+            }
+        }
+    }
+
+    IS_INTER = IS_INTER_NUMERIC || IS_INTER_FACTOR
+
+    if(isTRUE(dots$ref_special) && (!IS_INTER || IS_INTER_FACTOR)){
+        ref = TRUE
+    }
+
+    #
+    # QUFing + NA
+    #
+
+    if(IS_INTER){
+        is_na_all = is.na(f) | is.na(var)
+    } else {
+        is_na_all = is.na(f)
+    }
+
+    if(!missing(bin)){
+        bin = error_sender(eval_dot(bin), arg_name = "bin")
+
+        if(!is.null(bin)){
+            f = bin_factor(bin, f, f_name)
+        }
+    }
+
+    if(IS_INTER_FACTOR && !fixest:::missnull(bin2)){
+        bin2 = error_sender(eval_dot(bin2), arg_name = "bin2")
+
+        if(!is.null(bin2)){
+            var = bin_factor(bin2, var, f_name)
+        }
+    }
+
+    if(IS_INTER_FACTOR){
+        info = to_integer(f, var, add_items = TRUE, items.list = TRUE, sorted = TRUE, multi.join = "__%%__")
+    } else {
+        info = to_integer(f, add_items = TRUE, items.list = TRUE, sorted = TRUE)
+    }
+
+    fe_num = info$x
+    items = info$items
+
+    if(!IS_INTER_NUMERIC){
+        # neutral var in C code
+        var = 1
+    }
+
+    if(IS_INTER_FACTOR){
+        items_split = strsplit(items, "__%%__", fixed = TRUE)
+
+        f_items = sapply(items_split, `[`, 1)
+        var_items = sapply(items_split, `[`, 2)
+    } else {
+        f_items = items
+    }
+
+    dreamerr::check_arg(ref, "logical scalar | vector no na")
+
+    dreamerr::check_arg(ref2, keep, keep2, "vector no na")
+
+    NO_ERROR = FALSE
+    if(fixest:::is_calling_fun("fixest_model_matrix_extra", full_search = TRUE, full_name = TRUE)){
+        NO_ERROR = TRUE
+    }
+
+    no_rm = TRUE
+    id_drop = c()
+    if(!missing(ref)){
+        if(isTRUE(ref)){
+            # We always delete the first value
+            # Que ce soit items ici est normal (et pas f_items)
+            id_drop = which(items == items[1])
+        } else {
+            id_drop = fixest:::items_to_drop(f_items, ref, "factor_var", no_error = NO_ERROR)
+        }
+        ref_id = id_drop
+    }
+
+
+    if(!missing(keep)){
+        id_drop = c(id_drop, fixest:::items_to_drop(f_items, keep, "factor_var", keep = TRUE, no_error = NO_ERROR))
+    }
+
+    if(IS_INTER_FACTOR){
+        if(!missing(ref2)){
+            id_drop = c(id_drop, fixest:::items_to_drop(var_items, ref2, "var", no_error = NO_ERROR))
+        }
+
+        if(!missing(keep2)){
+            id_drop = c(id_drop, fixest:::items_to_drop(var_items, keep2, "var", keep = TRUE, no_error = NO_ERROR))
+        }
+    }
+
+    if(length(id_drop) > 0){
+        id_drop = unique(sort(id_drop))
+        if(length(id_drop) == length(items)){
+            if(FROM_FIXEST) {
+                # we return something neutral in an estimation
+                return(rep(0, length(f)))
+            }
+
+            stop("All items from the interaction have been removed.")
+        }
+        who_is_dropped = id_drop
+        no_rm = FALSE
+    } else {
+        # -1 is neutral
+        who_is_dropped = -1
+    }
+
+    # The column names
+
+    if(length(id_drop) > 0){
+        items_name = items[-id_drop]
+        f_items = f_items[-id_drop]
+        if(IS_INTER_FACTOR){
+            var_items = var_items[-id_drop]
+        }
+    } else {
+        items_name = items
+    }
+
+    if(FROM_FIXEST || is_sparse){
+        # Pour avoir des jolis noms c'est un vrai gloubiboulga,
+        # mais j'ai pas trouve plus simple...
+        if(IS_INTER_FACTOR){
+            col_names = paste0("__CLEAN__", f_name, "::", f_items, ":", var_name, "::", var_items)
+            col_names_full = NULL
+
+        } else if(IS_INTER_NUMERIC){
+            col_names = paste0("__CLEAN__", f_name, "::", f_items, ":", var_name)
+            col_names_full = paste0(f_name, "::", items, ":", var_name)
+
+        } else {
+            col_names = paste0("__CLEAN__", f_name, "::", items_name)
+            col_names_full = paste0(f_name, "::", items)
+        }
+    } else {
+
+        if(IS_INTER_FACTOR){
+            items_name = gsub("__%%__", ":", items_name, fixed = TRUE)
+        }
+
+        col_names = items_name
+    }
+
+    if(is_sparse){
+        # Internal call: we return the row ids + the values + the indexes + the names
+
+        if(length(who_is_dropped) > 0){
+            valid_row = !is_na_all & !fe_num %in% who_is_dropped
+        } else {
+            valid_row = !is_na_all
+        }
+
+        # we need to ensure the IDs go from 1 to # Unique
+        fe_colid = to_integer(fe_num[valid_row], sorted = TRUE)
+
+        values = if(length(var) == 1) rep(1, length(valid_row)) else var
+
+        # Clean names
+        col_names = sub("^.*__CLEAN__", "", col_names)
+
+        res = list(rowid = which(valid_row), values = values,
+                   colid = fe_colid, col_names = col_names)
+
+        class(res) = "i_sparse"
+
+        return(res)
+    }
+
+    res = cpp_factor_matrix(fe_num, is_na_all, who_is_dropped, var, col_names)
+    # res => matrix with...
+    #  - NAs where appropriate
+    #  - appropriate number of columns
+    #  - interacted if needed
+    #
+
+
+    # We send the information on the reference
+    if(FROM_FIXEST){
+        is_GLOBAL = FALSE
+        for(where in 1:min(8, sys.nframe())){
+            if(exists("GLOBAL_fixest_mm_info", parent.frame(where))){
+                GLOBAL_fixest_mm_info = get("GLOBAL_fixest_mm_info", parent.frame(where))
+                is_GLOBAL = TRUE
+                break
+            }
+        }
+
+        if(is_GLOBAL && !IS_INTER_FACTOR){
+            # NOTA:
+            # if you change stuff here => change them also in sunab()
+
+            info = list()
+            info$coef_names_full = col_names_full
+            info$items = items
+            if(!missing(ref)){
+                info$ref_id = ref_id
+                info$ref = items[ref_id]
+            }
+            info$is_num = is.numeric(items)
+            info$f_name = f_name
+            info$is_inter_num = IS_INTER_NUMERIC
+            if(IS_INTER_NUMERIC){
+                info$var_name = var_name
+            }
+            info$is_inter_fact = IS_INTER_FACTOR
+
+            GLOBAL_fixest_mm_info[[length(GLOBAL_fixest_mm_info) + 1]] = info
+            # re assignment
+            assign("GLOBAL_fixest_mm_info", GLOBAL_fixest_mm_info, parent.frame(where))
+        }
+
+    }
+
+    res
+}
+
+
+i_ref = function(factor_var, var, ref, bin, keep, ref2, keep2, bin2){
+    # To automatically add references when i(x) is used
+
+    mc = match.call()
+
+    mc[[1]] = as.name("i")
+
+    if(!any(c("ref", "keep", "ref2", "keep2") %in% names(mc))){
+        mc$ref_special = TRUE
+    }
+
+    return(fixest:::deparse_long(mc))
+}
+
+i_noref = function(factor_var, var, ref, bin, keep, ref2, keep2, bin2){
+    # Used only in predict => to create data without restriction
+
+    mc = match.call()
+
+    mc[[1]] = as.name("i")
+
+    mc$ref = mc$keep = mc$ref2 = mc$keep2 = NULL
+
+    return(fixest:::deparse_long(mc))
+}
+
+#' Design matrix of a `fixest` object returned in sparse format
+#'
+#' This function creates the left-hand-side or the right-hand-side(s) of a [`femlm`], [`feols`] or [`feglm`] estimation. Note that this function currently does not accept a formula
+#'
+#' @inheritParams nobs.fixest
+#'
+#' @param data If missing (default) then the original data is obtained by evaluating the `call`. Otherwise, it should be a `data.frame`.
+#' @param type Character vector or one sided formula, default is "rhs". Contains the type of matrix/data.frame to be returned. Possible values are: "lhs", "rhs", "fixef", "iv.rhs1" (1st stage RHS), "iv.rhs2" (2nd stage RHS), "iv.endo" (endogenous vars.), "iv.exo" (exogenous vars), "iv.inst" (instruments).
+#' @param na.rm Default is `TRUE`. Should observations with NAs be removed from the matrix?
+#' @param collin.rm Logical scalar, default is `TRUE`. Whether to remove variables that were found to be collinear during the estimation. Beware: it does not perform a collinearity check.
+#' @param combine Logical scalar, default is `TRUE`. Whether to combine each resulting sparse matrix 
+#' @param ... Not currently used.
+#'
+#' @return
+#' It returns either a single sparse matrix a list of matrices, depending whether `combine` is `TRUE` or `FALSE`. The sparse matrix is of class `dgCMatrix` from the `Matrix` package.
+#'
+#' @seealso
+#' See also the main estimation functions [`femlm`], [`feols`] or [`feglm`]. [`formula.fixest`], [`update.fixest`], [`summary.fixest`], [`vcov.fixest`].
+#'
+#'
+#' @author
+#' Laurent Berge, Kyle Butts
+#'
+#' @examples
+#'
+#' est = feols(wt ~ i(vs) + hp | cyl, mtcars)
+#' sparse_model_matrix(est)
+#' 
+#'
+#' @export
 sparse_model_matrix = function(object, data, type = "rhs", na.rm = TRUE,  collin.rm = TRUE, combine = TRUE, ...) {
     # We evaluate the formula with the past call
     # type: lhs, rhs, fixef, iv.endo, iv.inst, iv.rhs1, iv.rhs2
     # if fixef => return a DF
 
     # Checking the arguments
-    # if (fixest:::is_user_level_call()) {
-    #     dreamerr::validate_dots(suggest_args = c("data", "type"))
-    # }
+    if (fixest:::is_user_level_call()) {
+        dreamerr:::validate_dots(suggest_args = c("data", "type"))
+    }
 
     # We allow type to be used in the location of data if data is missing
     if (!missing(data) && missing(type)) {
@@ -28,7 +507,7 @@ sparse_model_matrix = function(object, data, type = "rhs", na.rm = TRUE,  collin
     }
 
     if (any(grepl("^iv", type)) && !isTRUE(object$iv)) {
-        stop("The type", dreamerr::enumerate_items(grep("^iv", type, value = TRUE), "s.is"), " only valid for IV estimations.")
+        stop("The type", enumerate_items(grep("^iv", type, value = TRUE), "s.is"), " only valid for IV estimations.")
     }
 
     dreamerr::check_arg(subset, "logical scalar | character vector no na")
@@ -55,13 +534,13 @@ sparse_model_matrix = function(object, data, type = "rhs", na.rm = TRUE,  collin
         stop("The argument 'data' must be a data.frame or a matrix.")
     }
 
-    data = as.data.frame(data)
+    # data = as.data.frame(data)
 
     # Allows passage of formula to sparse_model_matrix. A bit inefficient, but it works.
     isFormula = FALSE
     split_fml = NULL
     if ("formula" %in% class(object)) {
-      split_fml = fixest:::fml_split_internal(object)
+      split_fml = fml_split_internal(object)
 
       if (collin.rm == TRUE | length(split_fml) == 3) {
         message("Formula passed to sparse_model_matrix with collin.rm == TRUE or iv. Estimating feols with formula.")
@@ -91,7 +570,7 @@ sparse_model_matrix = function(object, data, type = "rhs", na.rm = TRUE,  collin
       fake_intercept = !is.null(split_fml[[2]]) | fml_0
     
     } else {
-      fml_linear = stats::formula(object, type = "linear")
+      fml_linear = formula(object, type = "linear")
       
       # we kick out the intercept if there is presence of fixed-effects
       fml_0 = attr(stats::terms(fml_linear), "intercept") == 0
@@ -117,10 +596,10 @@ sparse_model_matrix = function(object, data, type = "rhs", na.rm = TRUE,  collin
 
         if (isFormula && (length(split_fml) == 3)) {
           fml_iv = split_fml[[3]]
-          fml = fixest:::.xpc(..lhs ~ ..endo + ..rhs, ..lhs = fml[[2]], ..endo = fml_iv[[2]], ..rhs = fml[[3]])
+          fml = .xpd(..lhs ~ ..endo + ..rhs, ..lhs = fml[[2]], ..endo = fml_iv[[2]], ..rhs = fml[[3]])
         } else if (isTRUE(object$iv)) {
           fml_iv = object$fml_all$iv
-          fml = fixest:::.xpc(..lhs ~ ..endo + ..rhs, ..lhs = fml[[2]], ..endo = fml_iv[[2]], ..rhs = fml[[3]])
+          fml = .xpd(..lhs ~ ..endo + ..rhs, ..lhs = fml[[2]], ..endo = fml_iv[[2]], ..rhs = fml[[3]])
         }
 
         vars = attr(stats::terms(fml), "term.labels")
@@ -139,7 +618,7 @@ sparse_model_matrix = function(object, data, type = "rhs", na.rm = TRUE,  collin
         } else { 
 
             if (isFormula) {
-              fixef_fml = fixest:::.xpc(~ ..fe, ..fe = split_fml[[2]])
+              fixef_fml = .xpd(~ ..fe, ..fe = split_fml[[2]])
             } else {
               fixef_fml = object$fml_all$fixef
             }
@@ -311,7 +790,7 @@ sparse_model_matrix = function(object, data, type = "rhs", na.rm = TRUE,  collin
         fml = object$fml
         if (object$iv_stage == 2) {
             fml_iv = object$fml_all$iv
-            fml = fixest:::.xpc(..lhs ~ ..inst + ..rhs, ..lhs = fml[[2]], ..inst = fml_iv[[3]], ..rhs = fml[[3]])
+            fml = .xpd(..lhs ~ ..inst + ..rhs, ..lhs = fml[[2]], ..inst = fml_iv[[3]], ..rhs = fml[[3]])
         }
         vars = attr(stats::terms(fml), "term.labels")
         iv_rhs1 = vars_to_sparse_mat(vars = vars, data = data, object = object, collin.rm = collin.rm, type = "iv.rhs1", add_intercept = !fake_intercept)
@@ -331,12 +810,12 @@ sparse_model_matrix = function(object, data, type = "rhs", na.rm = TRUE,  collin
         fit_vars = c()
         for (i in seq_along(stage_1)) {
             fit_vars[i] = v = paste0("fit_", names(stage_1)[i])
-            data[[v]] = stats::predict(stage_1[[i]], newdata = data, sample = "original")
+            data[[v]] = predict(stage_1[[i]], newdata = data, sample = "original")
         }
 
         # II) we create the variables
         fml = object$fml
-        fml = fixest:::.xpc(..lhs ~ ..fit + ..rhs, ..lhs = fml[[2]], ..fit = fit_vars, ..rhs = fml[[3]])
+        fml = .xpd(..lhs ~ ..fit + ..rhs, ..lhs = fml[[2]], ..fit = fit_vars, ..rhs = fml[[3]])
         vars = attr(stats::terms(fml), "term.labels")
         iv_rhs2 = vars_to_sparse_mat(vars = vars, data = data, object = object, collin.rm = collin.rm, type = "iv.rhs2", add_intercept = !fake_intercept)
 
@@ -600,7 +1079,7 @@ vars_to_sparse_mat = function(vars, data, collin.rm = FALSE, object = NULL, type
           endo = fml_iv[[2]]
           
           # Trick to get the rhs variables as a character vector
-          endo = fixest:::.xpc(~ ..endo, ..endo = endo)
+          endo = .xpd(~ ..endo, ..endo = endo)
           endo = attr(stats::terms(endo), "term.labels")
 
           exo = lapply(object$iv_first_stage, function(x) names(stats::coef(x)))
@@ -652,5 +1131,3 @@ vars_to_sparse_mat = function(vars, data, collin.rm = FALSE, object = NULL, type
 
     return(mat)
 }
-
-        

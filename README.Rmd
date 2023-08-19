@@ -72,6 +72,7 @@ library(did2s)
 
 # Load Data from R package
 data("df_het", package = "did2s")
+df_het = as.data.frame(df_het)
 ```
 
 Here is a plot of the average outcome variable for each of the groups:
@@ -89,7 +90,7 @@ g2 <- agg[agg$g == "2010", ]
 
 
 plot(0, 0,
-  xlim = c(1990, 2020), ylim = c(4, 7.2), type = "n",
+  xlim = c(1990, 2020), ylim = c(3.5, 7.2), type = "n",
   main = "Data-generating Process", ylab = "Outcome", xlab = "Year"
 )
 abline(v = c(1999.5, 2009.5), lty = 2)
@@ -110,7 +111,8 @@ First, lets estimate a static did. There are two things to note here. First, not
 
 ```{r static}
 # Static
-static <- did2s(df_het,
+static <- did2s(
+  df_het,
   yname = "dep_var", first_stage = ~ 0 | state + year,
   second_stage = ~ i(treat, ref = FALSE), treatment = "treat",
   cluster_var = "state"

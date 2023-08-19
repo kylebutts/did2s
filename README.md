@@ -72,20 +72,21 @@ library(did2s)
 #> 
 #> To cite did2s in publications use:
 #> 
-#>   Butts, Kyle (2021).  did2s: Two-Stage Difference-in-Differences
-#>   Following Gardner (2021). R package version 1.1.0.
+#>   Butts & Gardner, "The R Journal: did2s: Two-Stage
+#>   Difference-in-Differences", The R Journal, 2022
 #> 
 #> A BibTeX entry for LaTeX users is
 #> 
 #>   @Manual{,
 #>     title = {did2s: Two-Stage Difference-in-Differences Following Gardner (2021)},
-#>     author = {Kyle Butts},
+#>     author = {Kyle Butts and John Gardner},
 #>     year = {2021},
-#>     url = {https://github.com/kylebutts/did2s/},
+#>     url = {https://journal.r-project.org/articles/RJ-2022-048/},
 #>   }
 
 # Load Data from R package
 data("df_het", package = "did2s")
+df_het = as.data.frame(df_het)
 ```
 
 Here is a plot of the average outcome variable for each of the groups:
@@ -103,7 +104,7 @@ g2 <- agg[agg$g == "2010", ]
 
 
 plot(0, 0,
-  xlim = c(1990, 2020), ylim = c(4, 7.2), type = "n",
+  xlim = c(1990, 2020), ylim = c(3.5, 7.2), type = "n",
   main = "Data-generating Process", ylab = "Outcome", xlab = "Year"
 )
 abline(v = c(1999.5, 2009.5), lty = 2)
@@ -137,7 +138,8 @@ expected.
 
 ``` r
 # Static
-static <- did2s(df_het,
+static <- did2s(
+  df_het,
   yname = "dep_var", first_stage = ~ 0 | state + year,
   second_stage = ~ i(treat, ref = FALSE), treatment = "treat",
   cluster_var = "state"
@@ -291,7 +293,6 @@ sensitivity_results <- es_did2s |>
     type = "relative_magnitude",
     Mbarvec = seq(from = 0.5, to = 2, by = 0.5)
   )
-#> Warning: executing %dopar% sequentially: no parallel backend registered
 #> Warning in .ARP_computeCI(betahat = betahat, sigma = sigma, numPrePeriods =
 #> numPrePeriods, : CI is open at one of the endpoints; CI length may not be
 #> accurate
@@ -327,19 +328,18 @@ publications, please cite according to:
 
 ``` r
 citation(package = "did2s")
-#> 
 #> To cite did2s in publications use:
 #> 
-#>   Butts, Kyle (2021).  did2s: Two-Stage Difference-in-Differences
-#>   Following Gardner (2021). R package version 1.1.0.
+#>   Butts & Gardner, "The R Journal: did2s: Two-Stage
+#>   Difference-in-Differences", The R Journal, 2022
 #> 
 #> A BibTeX entry for LaTeX users is
 #> 
 #>   @Manual{,
 #>     title = {did2s: Two-Stage Difference-in-Differences Following Gardner (2021)},
-#>     author = {Kyle Butts},
+#>     author = {Kyle Butts and John Gardner},
 #>     year = {2021},
-#>     url = {https://github.com/kylebutts/did2s/},
+#>     url = {https://journal.r-project.org/articles/RJ-2022-048/},
 #>   }
 ```
 
