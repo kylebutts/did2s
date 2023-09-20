@@ -89,212 +89,212 @@
 #' ```
 #'
 did3s <- function(data, yname, gname, tname, time_varying,
-				  third_stage, treatment, cluster_var,
-				  time_invariant = c("1"), weights = NULL,
-				  n_bootstraps = 250,
-				  return_bootstrap = FALSE, verbose = TRUE) {
+                  third_stage, treatment, cluster_var,
+                  time_invariant = c("1"), weights = NULL,
+                  n_bootstraps = 250,
+                  return_bootstrap = FALSE, verbose = TRUE) {
+  bootstrap <- TRUE
 
-	bootstrap = TRUE
+  # Check Parameters ---------------------------------------------------------
 
-	# Check Parameters ---------------------------------------------------------
+  if (!inherits(data, "data.frame")) stop("`did3s` requires a data.frame like object for analysis.")
 
-	if(!inherits(data, "data.frame")) stop("`did3s` requires a data.frame like object for analysis.")
+  # Extract vars from formula
+  if (inherits(third_stage, "formula")) third_stage <- as.character(third_stage)[[2]]
 
-	# Extract vars from formula
-	if(inherits(third_stage, "formula")) third_stage = as.character(third_stage)[[2]]
+  # Check that treatment is a 0/1 or T/F variable
+  if (!all(
+    unique(data[[treatment]]) %in% c(1, 0, T, F)
+  )) {
+    stop(sprintf(
+      "'%s' must be a 0/1 or T/F variable indicating which observations are untreated/not-yet-treated.",
+      treatment
+    ))
+  }
 
-	# Check that treatment is a 0/1 or T/F variable
-	if(!all(
-		unique(data[[treatment]]) %in% c(1, 0, T, F)
-	)) {
-		stop(sprintf(
-			"'%s' must be a 0/1 or T/F variable indicating which observations are untreated/not-yet-treated.",
-			treatment
-		))
-	}
+  # Point Estimates ----------------------------------------------------------
 
-	# Point Estimates ----------------------------------------------------------
+  est <- did3s_estimate(
+    data = data,
+    yname = yname,
+    gname = gname,
+    tname = tname,
+    time_invariant = time_invariant,
+    time_varying = time_varying,
+    third_stage = third_stage,
+    treatment = treatment,
+    weights = weights,
+    bootstrap = bootstrap
+  )
 
-	est = did3s_estimate(
-		data = data,
-		yname = yname,
-		gname = gname,
-		tname = tname,
-		time_invariant = time_invariant,
-		time_varying = time_varying,
-		third_stage = third_stage,
-		treatment = treatment,
-		weights = weights,
-		bootstrap = bootstrap
-	)
+  # Bootstrap Standard Errors ------------------------------------------------
 
-	# Bootstrap Standard Errors ------------------------------------------------
+  cli::cli_alert("Starting {n_bootstraps} bootstraps at cluster level: {cluster_var}")
 
-	cli::cli_alert("Starting {n_bootstraps} bootstraps at cluster level: {cluster_var}")
+  # Unique values of cluster variable
+  cl <- unique(data[[cluster_var]])
 
-	# Unique values of cluster variable
-	cl = unique(data[[cluster_var]])
+  stat <- function(x, i) {
+    # select the observations to subset based on the cluster var
+    block_obs <- unlist(lapply(i, function(n) which(x[n] == data[[cluster_var]])))
+    # run regression for given replicate, return estimated coefficients
+    stats::coefficients(
+      did3s_estimate(
+        data = data[block_obs, ],
+        yname = yname,
+        gname = gname,
+        tname = tname,
+        time_invariant = time_invariant,
+        time_varying = time_varying,
+        third_stage = third_stage,
+        treatment = treatment,
+        weights = weights,
+        bootstrap = TRUE
+      )$third_stage
+    )
+  }
 
-	stat <- function(x, i) {
-		# select the observations to subset based on the cluster var
-		block_obs = unlist(lapply(i, function(n) which(x[n] == data[[cluster_var]])))
-		# run regression for given replicate, return estimated coefficients
-		stats::coefficients(
-			did3s_estimate(
-				data = data[block_obs,],
-				yname = yname,
-				gname = gname,
-				tname = tname,
-				time_invariant = time_invariant,
-				time_varying = time_varying,
-				third_stage = third_stage,
-				treatment = treatment,
-				weights = weights,
-				bootstrap = TRUE
-			)$third_stage
-		)
-	}
+  boot <- boot::boot(cl, stat, n_bootstraps)
 
-	boot = boot::boot(cl, stat, n_bootstraps)
+  # Get estimates and fix names
+  estimates <- boot$t
+  colnames(estimates) <- names(stats::coef(est$third_stage))
 
-	# Get estimates and fix names
-	estimates = boot$t
-	colnames(estimates) = names(stats::coef(est$third_stage))
+  # Bootstrap Var-Cov Matrix
+  cov <- stats::cov(estimates)
 
-	# Bootstrap Var-Cov Matrix
-	cov = stats::cov(estimates)
+  if (return_bootstrap) {
+    return(estimates)
+  }
 
-	if(return_bootstrap) {
-		return(estimates)
-	}
+  # summary creates fixest object with correct standard errors and vcov
 
-	# summary creates fixest object with correct standard errors and vcov
+  # Once fixest updates on CRAN
+  # rescale cov by G/(G-1) and use t(G-1) distribution
+  # G = length(cl)
+  # cov = cov * G/(G-1)
 
-	# Once fixest updates on CRAN
-	# rescale cov by G/(G-1) and use t(G-1) distribution
-	# G = length(cl)
-	# cov = cov * G/(G-1)
-
-	return(base::suppressWarnings(
-		# summary(
-		#   est$second_stage,
-		#   .vcov = list("Two-stage Adjusted" = cov),
-		#   ssc = ssc(adj = FALSE, t.df = G-1)
-		# )
-		summary(est$third_stage, .vcov = cov)
-	))
+  return(base::suppressWarnings(
+    # summary(
+    #   est$second_stage,
+    #   .vcov = list("Two-stage Adjusted" = cov),
+    #   ssc = ssc(adj = FALSE, t.df = G-1)
+    # )
+    summary(est$third_stage, .vcov = cov)
+  ))
 }
 
 
 # Point estimate for did2s
-did3s_estimate = function(data, yname, gname, tname, time_invariant, time_varying, third_stage, treatment,
-						  weights = NULL, bootstrap = FALSE) {
-
-	## We'll use fixest's formula expansion macros to swap out first and second
-	## stages (see: ?fixest::xpd)
-	fixest::setFixest_fml(..third_stage = third_stage)
-
-
-	untreat = data[data[[treatment]]==0, ]
-	if(is.null(weights)) {
-		weights_vector = NULL
-	} else {
-		weights_vector = untreat[[weights]]
-	}
-
-	# ------------------------------------------------------------------------------
-	# Stage 1: Regress X_{it}(0) on FEs and time-invariant
-	#          and estimate X_{it}(0) for treated
-	# ------------------------------------------------------------------------------
-
-	# interact time-invariant with time coefficients
-	time_inv_fml = "1 "
-	for(var in time_invariant) {
-		if(var == "1" | var == "0") {
-
-		} else {
-			time_inv_fml = paste0(time_inv_fml, " + ", "i(", tname, ", ", var, ")")
-		}
-	}
-
-	if(length(time_varying) > 1) {
-		time_var_fml = paste0("c(", paste(time_varying, collapse=", "), ")")
-	} else {
-		time_var_fml = time_varying
-	}
-
-	first_stage_formula = as.formula(paste0(
-		time_var_fml,
-		"~ ",
-		time_inv_fml,
-		" | ", gname, " + ", tname
-	))
+did3s_estimate <- function(data, yname, gname, tname, time_invariant, time_varying, third_stage, treatment,
+                           weights = NULL, bootstrap = FALSE) {
+  ## We'll use fixest's formula expansion macros to swap out first and second
+  ## stages (see: ?fixest::xpd)
+  fixest::setFixest_fml(..third_stage = third_stage)
 
 
-	first_stage = fixest::feols(first_stage_formula,
-								data = untreat,
-								weights = weights_vector,
-								warn = FALSE,
-								notes = FALSE
-	)
+  untreat <- data[data[[treatment]] == 0, ]
+  if (is.null(weights)) {
+    weights_vector <- NULL
+  } else {
+    weights_vector <- untreat[[weights]]
+  }
 
-	if(inherits(first_stage, "fixest_multi")) {
-		for(est in as.list(first_stage)) {
-			varname = all.vars(est$fml)[attr(terms(est$fml), "response")]
-			data[[varname]] = data[[varname]] - predict(est, newdata = data)
-		}
-	} else {
-		varname = all.vars(est$fml)[attr(terms(est$fml), "response")]
-		data[[varname]] = data[[varname]] - predict(est, newdata = data)
-	}
+  # ------------------------------------------------------------------------------
+  # Stage 1: Regress X_{it}(0) on FEs and time-invariant
+  #          and estimate X_{it}(0) for treated
+  # ------------------------------------------------------------------------------
 
-	# ------------------------------------------------------------------------------
-	# Stage 2: Regress y on FEs, time-invariant, and X_{it}(0)
-	#          and residualize y for treated observations
-	# ------------------------------------------------------------------------------
+  # interact time-invariant with time coefficients
+  time_inv_fml <- "1 "
+  for (var in time_invariant) {
+    if (var == "1" | var == "0") {
 
-	time_var_fml = " "
-	for(var in time_varying) {
-		time_var_fml = paste0(time_var_fml, " + ", "i(", tname, ", ", var, ")")
-	}
+    } else {
+      time_inv_fml <- paste0(time_inv_fml, " + ", "i(", tname, ", ", var, ")")
+    }
+  }
 
-	second_stage_formula = as.formula(paste0(
-		yname,
-		"~ ",
-		time_var_fml, " + ",
-		time_inv_fml,
-		" | ", gname, " + ", tname
-	))
+  if (length(time_varying) > 1) {
+    time_var_fml <- paste0("c(", paste(time_varying, collapse = ", "), ")")
+  } else {
+    time_var_fml <- time_varying
+  }
 
-
-	second_stage = fixest::feols(second_stage_formula,
-								 data = untreat,
-								 weights = weights_vector,
-								 warn=FALSE,
-								 notes=FALSE)
-
-	# Residualize outcome variable but keep same yname
-	second_u = data[[yname]] - stats::predict(second_stage, newdata = data)
-	data[[yname]] = second_u
-
-	# Zero out residual rows with D_it = 1 (for analytical SEs later on)
-	if (!bootstrap)	second_u[data[[treatment]] == 1] = 0
+  first_stage_formula <- as.formula(paste0(
+    time_var_fml,
+    "~ ",
+    time_inv_fml,
+    " | ", gname, " + ", tname
+  ))
 
 
-	# ------------------------------------------------------------------------------
-	# Stage 3: Regress tilde{y} on third_stage
-	# ------------------------------------------------------------------------------
+  first_stage <- fixest::feols(first_stage_formula,
+    data = untreat,
+    weights = weights_vector,
+    warn = FALSE,
+    notes = FALSE
+  )
 
-	if(!is.null(weights)) weights_vector = data[[weights]]
+  if (inherits(first_stage, "fixest_multi")) {
+    for (est in as.list(first_stage)) {
+      varname <- all.vars(est$fml)[attr(terms(est$fml), "response")]
+      data[[varname]] <- data[[varname]] - predict(est, newdata = data)
+    }
+  } else {
+    varname <- all.vars(est$fml)[attr(terms(est$fml), "response")]
+    data[[varname]] <- data[[varname]] - predict(est, newdata = data)
+  }
 
-	third_stage = fixest::feols(fixest::xpd(~ 0 + ..third_stage, lhs = yname),
-								data = data,
-								weights = weights_vector,
-								warn=FALSE,
-								notes=FALSE)
+  # ------------------------------------------------------------------------------
+  # Stage 2: Regress y on FEs, time-invariant, and X_{it}(0)
+  #          and residualize y for treated observations
+  # ------------------------------------------------------------------------------
+
+  time_var_fml <- " "
+  for (var in time_varying) {
+    time_var_fml <- paste0(time_var_fml, " + ", "i(", tname, ", ", var, ")")
+  }
+
+  second_stage_formula <- as.formula(paste0(
+    yname,
+    "~ ",
+    time_var_fml, " + ",
+    time_inv_fml,
+    " | ", gname, " + ", tname
+  ))
 
 
-	ret = list(third_stage = third_stage)
+  second_stage <- fixest::feols(second_stage_formula,
+    data = untreat,
+    weights = weights_vector,
+    warn = FALSE,
+    notes = FALSE
+  )
 
-	return(ret)
+  # Residualize outcome variable but keep same yname
+  second_u <- data[[yname]] - stats::predict(second_stage, newdata = data)
+  data[[yname]] <- second_u
+
+  # Zero out residual rows with D_it = 1 (for analytical SEs later on)
+  if (!bootstrap) second_u[data[[treatment]] == 1] <- 0
+
+
+  # ------------------------------------------------------------------------------
+  # Stage 3: Regress tilde{y} on third_stage
+  # ------------------------------------------------------------------------------
+
+  if (!is.null(weights)) weights_vector <- data[[weights]]
+
+  third_stage <- fixest::feols(fixest::xpd(~ 0 + ..third_stage, lhs = yname),
+    data = data,
+    weights = weights_vector,
+    warn = FALSE,
+    notes = FALSE
+  )
+
+
+  ret <- list(third_stage = third_stage)
+
+  return(ret)
 }
