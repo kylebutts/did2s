@@ -8,7 +8,8 @@ library(haven)
 castle = haven::read_dta("https://github.com/scunning1975/mixtape/raw/master/castle.dta")
 
 # Add random 0/1 variable
-df_hom[, temp := as.numeric(runif(.N) > 0.5)]
+
+df_hom$temp = as.numeric(runif(nrow(df_hom)) > 0.5)
 
 test_that("estimation runs", {
 	# Static

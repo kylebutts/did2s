@@ -10,7 +10,8 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
   fig.path = "man/figures/README-",
-  out.width = "100%"
+  out.width = "100%",
+  dpi = 300
 )
 ```
 
@@ -77,7 +78,7 @@ df_het = as.data.frame(df_het)
 
 Here is a plot of the average outcome variable for each of the groups:
 
-```{r plot-df-het, fig.width=8, fig.height=4, fig.cap="Example data with heterogeneous treatment effects"}
+```{r plot-df-het, fig.width=8, fig.height=4, dpi=300, fig.cap="Example data with heterogeneous treatment effects"}
 # Mean for treatment group-year
 agg <- aggregate(df_het$dep_var, by = list(g = df_het$g, year = df_het$year), FUN = mean)
 
@@ -136,7 +137,7 @@ es <- did2s(df_het,
 
 And plot the results:
 
-```{r plot-es, fig.cap="Event-study plot with example data"}
+```{r plot-es, fig.cap="Event-study plot with example data", fig.width=8, fig.height=5, dpi=300}
 fixest::iplot(es, main = "Event study: Staggered treatment", xlab = "Relative time to treatment", col = "steelblue", ref.line = -0.5)
 
 # Add the (mean) true effects
@@ -153,7 +154,7 @@ legend(
 
 ### Comparison to TWFE
 
-```{r plot-compare, ig.cap="TWFE and Two-Stage estimates of Event-Study"}
+```{r plot-compare, fig.cap="TWFE and Two-Stage estimates of Event-Study", fig.width=8, fig.height=5, dpi=300}
 twfe <- feols(dep_var ~ i(rel_year, ref = c(-1, Inf)) | unit + year, data = df_het)
 
 fixest::iplot(list(es, twfe),
@@ -178,7 +179,7 @@ In version 1.1.0, we added support for computing a sensitivity analysis using th
 
 Here's an example using data from [here](https://github.com/Mixtape-Sessions/Advanced-DID/tree/main/Exercises/Exercise-1). The provided dataset `ehec_data.dta` contains a state-level panel dataset on health insurance coverage and Medicaid expansion. The variable `dins` shows the share of low-income childless adults with health insurance in the state. The variable `yexp2` gives the year that a state expanded Medicaid coverage under the Affordable Care Act, and is missing if the state never expanded.
 
-```{r ehec-data-est, fig.cap="Estimates of the effect of Medicaid expansion on health insurance coverage"}
+```{r ehec-data-est, fig.cap="Estimates of the effect of Medicaid expansion on health insurance coverage", fig.width=8, fig.height=5, dpi=300}
 library(HonestDiD)
 library(ggplot2)
 
@@ -200,7 +201,7 @@ es_did2s <- did2s(
 coefplot(es_did2s)
 ```
 
-```{r sensitivity, fig.cap="Sensitivity analysis for the example data"}
+```{r sensitivity, fig.cap="Sensitivity analysis for the example data", fig.width=8, fig.height=5, dpi=300}
 # Relative Magnitude sensitivity analysis
 sensitivity_results <- es_did2s |> 
   # Take fixest obj and convert for `honest_did_did2s`
@@ -222,7 +223,7 @@ HonestDiD::createSensitivityPlot_relativeMagnitudes(
 
 ## Event-study plot
 
-```{r}
+```{r, fig.cap="Multiple event-study estimators", fig.width=12, fig.height=8.5, dpi=300}
 library(tidyverse)
 data(df_het)
 df = df_het

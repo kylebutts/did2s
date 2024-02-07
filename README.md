@@ -229,7 +229,14 @@ legend(
 )
 ```
 
-<img src="man/figures/README-plot-compare-1.png" width="100%" />
+<div class="figure">
+
+<img src="man/figures/README-plot-compare-1.png" alt="TWFE and Two-Stage estimates of Event-Study" width="100%" />
+<p class="caption">
+TWFE and Two-Stage estimates of Event-Study
+</p>
+
+</div>
 
 ### Honest DID
 
@@ -354,7 +361,14 @@ multiple_ests = did2s::event_study(
 did2s::plot_event_study(multiple_ests)
 ```
 
-<img src="man/figures/README-unnamed-chunk-3-1.png" width="100%" />
+<div class="figure">
+
+<img src="man/figures/README-unnamed-chunk-3-1.png" alt="Multiple event-study estimators" width="100%" />
+<p class="caption">
+Multiple event-study estimators
+</p>
+
+</div>
 
 # Citation
 
