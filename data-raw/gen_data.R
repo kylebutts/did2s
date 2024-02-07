@@ -20,6 +20,9 @@ castle[, time_til := data.table::fifelse(is.na(time_til), -Inf, time_til)]
 
 castle = castle[, .(year, sid, l_homicide, post, effyear, time_til)]
 
+df_hom = as.data.frame(df_hom)
+df_het = as.data.frame(df_het)
+castle = as.data.frame(castle)
 
 # Export Data ------------------------------------------------------------------
 usethis::use_data(df_hom, overwrite = TRUE)
