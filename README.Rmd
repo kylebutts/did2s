@@ -219,6 +219,24 @@ HonestDiD::createSensitivityPlot_relativeMagnitudes(
 )
 ```
 
+
+## Event-study plot
+
+```{r}
+library(tidyverse)
+data(df_het)
+df = df_het
+multiple_ests = did2s::event_study(
+  data = df |> mutate(g = ifelse(g == Inf, NA, g)) |> as.data.frame(),
+  gname = "g",
+  idname = "unit",
+  tname = "year",
+  yname = "dep_var",
+  estimator = "all"
+)
+did2s::plot_event_study(multiple_ests)
+```
+
 # Citation
 
 If you use this package to produce scientific or commercial publications, please cite according to:

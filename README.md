@@ -321,6 +321,41 @@ Sensitivity analysis for the example data
 
 </div>
 
+## Event-study plot
+
+``` r
+library(tidyverse)
+#> ── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
+#> ✔ dplyr     1.1.4     ✔ readr     2.1.5
+#> ✔ forcats   1.0.0     ✔ stringr   1.5.1
+#> ✔ lubridate 1.9.3     ✔ tibble    3.2.1
+#> ✔ purrr     1.0.2     ✔ tidyr     1.3.1
+#> ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
+#> ✖ dplyr::filter() masks stats::filter()
+#> ✖ dplyr::lag()    masks stats::lag()
+#> ℹ Use the conflicted package (<http://conflicted.r-lib.org/>) to force all conflicts to become errors
+data(df_het)
+df = df_het
+multiple_ests = did2s::event_study(
+  data = df |> mutate(g = ifelse(g == Inf, NA, g)) |> as.data.frame(),
+  gname = "g",
+  idname = "unit",
+  tname = "year",
+  yname = "dep_var",
+  estimator = "all"
+)
+#> Note these estimators rely on different underlying assumptions. See Table 2 of `https://arxiv.org/abs/2109.05913` for an overview.
+#> Estimating TWFE Model
+#> Estimating using Gardner (2021)
+#> Estimating using Callaway and Sant'Anna (2020)
+#> Estimating using Sun and Abraham (2020)
+#> Estimating using Borusyak, Jaravel, Spiess (2021)
+#> Estimating using Roth and Sant'Anna (2021)
+did2s::plot_event_study(multiple_ests)
+```
+
+<img src="man/figures/README-unnamed-chunk-3-1.png" width="100%" />
+
 # Citation
 
 If you use this package to produce scientific or commercial
