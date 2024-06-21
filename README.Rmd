@@ -130,7 +130,7 @@ Then, let's estimate an event study did. Note that relative year has a value of 
 # Event Study
 es <- did2s(df_het,
   yname = "dep_var", first_stage = ~ 0 | state + year,
-  second_stage = ~ i(rel_year, ref = c(-1, Inf)), treatment = "treat",
+  second_stage = ~ i(rel_year, ref = Inf), treatment = "treat",
   cluster_var = "state"
 )
 ```
@@ -138,7 +138,7 @@ es <- did2s(df_het,
 And plot the results:
 
 ```{r plot-es, fig.cap="Event-study plot with example data", fig.width=8, fig.height=5, dpi=300}
-fixest::iplot(es, main = "Event study: Staggered treatment", xlab = "Relative time to treatment", col = "steelblue", ref.line = -0.5)
+fixest::iplot(es, main = "Event study: Staggered treatment", xlab = "Relative time to treatment", col = "steelblue", ref.line = -0.5, drop = "Inf")
 
 # Add the (mean) true effects
 true_effects <- head(tapply((df_het$te + df_het$te_dynamic), df_het$rel_year, mean), -1)
@@ -155,15 +155,16 @@ legend(
 ### Comparison to TWFE
 
 ```{r plot-compare, fig.cap="TWFE and Two-Stage estimates of Event-Study", fig.width=8, fig.height=5, dpi=300}
-twfe <- feols(dep_var ~ i(rel_year, ref = c(-1, Inf)) | unit + year, data = df_het)
+twfe <- feols(dep_var ~ i(rel_year, ref = c(Inf)) | unit + year, data = df_het)
 
-fixest::iplot(list(es, twfe),
+fixest::iplot(
+  list(es, twfe),
   sep = 0.2, ref.line = -0.5,
   col = c("steelblue", "#82b446"), pt.pch = c(20, 18),
   xlab = "Relative time to treatment",
-  main = "Event study: Staggered treatment (comparison)"
+  main = "Event study: Staggered treatment (comparison)",
+  drop = "Inf"
 )
-
 
 # Legend
 legend(
@@ -198,7 +199,7 @@ es_did2s <- did2s(
   cluster_var = "stfips"
 )
 
-coefplot(es_did2s)
+iplot(es_did2s, drop = "-100")
 ```
 
 ```{r sensitivity, fig.cap="Sensitivity analysis for the example data", fig.width=8, fig.height=5, dpi=300}

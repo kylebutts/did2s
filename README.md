@@ -83,6 +83,9 @@ library(did2s)
 #>     year = {2021},
 #>     url = {https://journal.r-project.org/articles/RJ-2022-048/},
 #>   }
+```
+
+``` r
 
 # Load Data from R package
 data("df_het", package = "did2s")
@@ -149,6 +152,9 @@ static <- did2s(
 #>  - second stage formula `~ i(treat, ref = FALSE)`
 #>  - The indicator variable that denotes when treatment is on is `treat`
 #>  - Standard errors will be clustered by `state`
+```
+
+``` r
 
 fixest::etable(static)
 #>                            static
@@ -174,12 +180,12 @@ second stage formula.
 # Event Study
 es <- did2s(df_het,
   yname = "dep_var", first_stage = ~ 0 | state + year,
-  second_stage = ~ i(rel_year, ref = c(-1, Inf)), treatment = "treat",
+  second_stage = ~ i(rel_year, ref = Inf), treatment = "treat",
   cluster_var = "state"
 )
 #> Running Two-stage Difference-in-Differences
 #>  - first stage formula `~ 0 | state + year`
-#>  - second stage formula `~ i(rel_year, ref = c(-1, Inf))`
+#>  - second stage formula `~ i(rel_year, ref = Inf)`
 #>  - The indicator variable that denotes when treatment is on is `treat`
 #>  - Standard errors will be clustered by `state`
 ```
@@ -187,7 +193,7 @@ es <- did2s(df_het,
 And plot the results:
 
 ``` r
-fixest::iplot(es, main = "Event study: Staggered treatment", xlab = "Relative time to treatment", col = "steelblue", ref.line = -0.5)
+fixest::iplot(es, main = "Event study: Staggered treatment", xlab = "Relative time to treatment", col = "steelblue", ref.line = -0.5, drop = "Inf")
 
 # Add the (mean) true effects
 true_effects <- head(tapply((df_het$te + df_het$te_dynamic), df_het$rel_year, mean), -1)
@@ -212,15 +218,20 @@ Event-study plot with example data
 ### Comparison to TWFE
 
 ``` r
-twfe <- feols(dep_var ~ i(rel_year, ref = c(-1, Inf)) | unit + year, data = df_het)
+twfe <- feols(dep_var ~ i(rel_year, ref = c(Inf)) | unit + year, data = df_het)
+#> The variable 'rel_year::20' has been removed because of collinearity (see $collin.var).
+```
 
-fixest::iplot(list(es, twfe),
+``` r
+
+fixest::iplot(
+  list(es, twfe),
   sep = 0.2, ref.line = -0.5,
   col = c("steelblue", "#82b446"), pt.pch = c(20, 18),
   xlab = "Relative time to treatment",
-  main = "Event study: Staggered treatment (comparison)"
+  main = "Event study: Staggered treatment (comparison)",
+  drop = "Inf"
 )
-
 
 # Legend
 legend(
@@ -275,8 +286,11 @@ es_did2s <- did2s(
 #>  - second stage formula `~ 0 + i(rel_year, ref = -100)`
 #>  - The indicator variable that denotes when treatment is on is `treated`
 #>  - Standard errors will be clustered by `stfips`
+```
 
-coefplot(es_did2s)
+``` r
+
+iplot(es_did2s, drop = "-100")
 ```
 
 <div class="figure">
@@ -303,14 +317,15 @@ sensitivity_results <- es_did2s |>
 #> Warning in .ARP_computeCI(betahat = betahat, sigma = sigma, numPrePeriods =
 #> numPrePeriods, : CI is open at one of the endpoints; CI length may not be
 #> accurate
-
 #> Warning in .ARP_computeCI(betahat = betahat, sigma = sigma, numPrePeriods =
 #> numPrePeriods, : CI is open at one of the endpoints; CI length may not be
 #> accurate
-
 #> Warning in .ARP_computeCI(betahat = betahat, sigma = sigma, numPrePeriods =
 #> numPrePeriods, : CI is open at one of the endpoints; CI length may not be
 #> accurate
+```
+
+``` r
 
 # Create plot
 HonestDiD::createSensitivityPlot_relativeMagnitudes(
@@ -341,6 +356,9 @@ library(tidyverse)
 #> ✖ dplyr::filter() masks stats::filter()
 #> ✖ dplyr::lag()    masks stats::lag()
 #> ℹ Use the conflicted package (<http://conflicted.r-lib.org/>) to force all conflicts to become errors
+```
+
+``` r
 data(df_het)
 df = df_het
 multiple_ests = did2s::event_study(
@@ -358,6 +376,9 @@ multiple_ests = did2s::event_study(
 #> Estimating using Sun and Abraham (2020)
 #> Estimating using Borusyak, Jaravel, Spiess (2021)
 #> Estimating using Roth and Sant'Anna (2021)
+```
+
+``` r
 did2s::plot_event_study(multiple_ests)
 ```
 
