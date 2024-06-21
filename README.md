@@ -218,11 +218,7 @@ Event-study plot with example data
 ### Comparison to TWFE
 
 ``` r
-twfe <- feols(dep_var ~ i(rel_year, ref = c(Inf)) | unit + year, data = df_het)
-#> The variable 'rel_year::20' has been removed because of collinearity (see $collin.var).
-```
-
-``` r
+twfe <- feols(dep_var ~ i(rel_year, ref = c(Inf, -1)) | unit + year, data = df_het)
 
 fixest::iplot(
   list(es, twfe),

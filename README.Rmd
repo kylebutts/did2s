@@ -155,7 +155,7 @@ legend(
 ### Comparison to TWFE
 
 ```{r plot-compare, fig.cap="TWFE and Two-Stage estimates of Event-Study", fig.width=8, fig.height=5, dpi=300}
-twfe <- feols(dep_var ~ i(rel_year, ref = c(Inf)) | unit + year, data = df_het)
+twfe <- feols(dep_var ~ i(rel_year, ref = c(Inf, -1)) | unit + year, data = df_het)
 
 fixest::iplot(
   list(es, twfe),
