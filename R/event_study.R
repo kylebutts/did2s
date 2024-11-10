@@ -68,6 +68,11 @@ event_study = function(data, yname, idname, gname, tname,
 			message(paste0("Warning: `", xformla, "` is ignored for the `staggered` estimator"))
 		}
 	}
+	
+	# Checking weights
+	if (!(is.null(weights) || is.character(weights))) {
+	   stop("Argument `weights` must be `NULL` or a character string")
+	}
 
 # Setup ------------------------------------------------------------------------
 
