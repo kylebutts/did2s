@@ -11,7 +11,8 @@
 #' @param xformla A formula for the covariates to include in the model.
 #'   It should be of the form `~ X1 + X2`. Default is NULL.
 #' @param weights Variable name for estimation weights. This is used in
-#'   estimating Y(0) and also augments treatment effect weights
+#'   estimating Y(0) and also augments treatment effect weights.
+#'   Implementation of Roth and Sant'Anna (2021) currently does not allow for weights.
 #' @param estimator Estimator you would like to use. Use "all" to estimate all.
 #'   Otherwise see table to know advantages and requirements for each of these.
 #'
@@ -114,7 +115,15 @@ if(estimator %in% c("TWFE", "all")) {
         yname, " ~ 1 + ", xformla_null, " + i(zz000event_time, ref = c(-1, -Inf)) | ", idname, " + ", tname
       )
     )
-		est_twfe = fixest::feols(twfe_formula, data = data, warn = F, notes = F)
+		if (is.null(weights)){
+		   est_twfe = fixest::feols(twfe_formula, data = data, 
+		                            warn = F, notes = F)
+		} else {
+		   est_twfe = fixest::feols(twfe_formula, data = data, 
+		                            weights = as.matrix(data[weights]),
+		                            warn = F, notes = F)
+		}
+		
 
 		# Extract coefficients and standard errors
 		tidy_twfe = broom::tidy(est_twfe)
@@ -143,7 +152,7 @@ if(estimator %in% c("did2s", "all")) {
       )
     )
 
-		est_did2s = did2s::did2s(data, yname = yname, first_stage = did2s_first_stage, second_stage = ~i(zz000event_time, ref=-Inf), treatment = "zz000treat", cluster_var = idname, verbose = FALSE)
+		est_did2s = did2s::did2s(data, yname = yname, first_stage = did2s_first_stage, second_stage = ~i(zz000event_time, ref=-Inf), treatment = "zz000treat", cluster_var = idname, weights = weights, verbose = FALSE)
 
 		# Extract coefficients and standard errors
 		tidy_did2s = broom::tidy(est_did2s)
@@ -166,7 +175,10 @@ if(estimator %in% c("did", "all")) {
 	message("Estimating using Callaway and Sant'Anna (2020)")
 
 	try({
-		est_did = did::att_gt(yname = yname, tname = tname, idname = idname, gname = gname, xformla = xformla, data = data)
+		est_did = did::att_gt(yname = yname, tname = tname, idname = idname, 
+		                      gname = gname, xformla = xformla, 
+		                      data = data, weightsname = weights,
+		                      allow_unbalanced_panel = FALSE)
 
 		est_did = did::aggte(est_did, type = "dynamic", na.rm = TRUE)
 
@@ -198,8 +210,11 @@ if(estimator %in% c("sunab", "all")) {
         yname, " ~ ", sunab_xformla, " + sunab(", gname, ", zz000event_time, ref.c =0, ref.p = -1) | ", idname, " + ", tname
       )
     )
-
-		est_sunab = fixest::feols(sunab_formla, data = data)
+      if (is.null(weights)){
+         est_sunab = fixest::feols(sunab_formla, data = data)
+      } else {
+         est_sunab = fixest::feols(sunab_formla, data = data, weights = as.matrix(data[weights]))
+      }
 
 		tidy_sunab = broom::tidy(est_sunab)
 
@@ -228,7 +243,7 @@ if(estimator %in% c("impute", "all")) {
     )
 
 		tidy_impute = didimputation::did_imputation(data,
-									 yname = yname, gname = gname, tname = tname, idname = idname,
+									 yname = yname, gname = gname, tname = tname, idname = idname, wname = weights,
 									 first_stage = impute_first_stage, horizon = TRUE, pretrends = TRUE)
 
 		# Subset columns
@@ -275,6 +290,7 @@ if(estimator %in% c("staggered", "all")) {
 	})
 
 	if(is.null(tidy_staggered)) warning("Roth and Sant'Anna (2021) Failed")
+   if(!is.null(weights)) warning("Roth and Sant'Anna (2021) Does Not Allow Weights")
 }
 
 # Bind results together --------------------------------------------------------
