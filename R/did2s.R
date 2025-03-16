@@ -104,49 +104,17 @@ did2s <- function(
   verbose = FALSE
 ) {
   # Check Parameters ---------------------------------------------------------
+  dreamerr::check_arg(data, "data.frame")
+  dreamerr::check_value(data[[treatment]], "logical (loose) vector")
 
-  if (!inherits(data, "data.frame"))
-    stop("`did2s` requires a data.frame like object for analysis.")
-
-  # Check that treatment is a 0/1 or T/F variable
-  if (
-    !all(
-      unique(data[[treatment]]) %in% c(1, 0, T, F)
-    )
-  ) {
-    stop(sprintf(
-      "'%s' must be a 0/1 or T/F variable indicating which observations are untreated/not-yet-treated.",
-      treatment
-    ))
-  }
-
-  # Print --------------------------------------------------------------------
   if (verbose) {
-    if (!bootstrap)
-      cluster_msg <- paste0(
-        "- Standard errors will be clustered by `",
-        cluster_var,
-        "`\n"
-      )
-    if (bootstrap)
-      cluster_msg <- paste0(
-        "- Standard errors will be block bootstrapped with cluster `",
-        cluster_var,
-        "`\n"
-      )
-    message(
-      paste(
-        "Running Two-stage Difference-in-Differences\n",
-        paste0("- first stage formula `", paste0("~ ", first_stage), "`\n"),
-        paste0("- second stage formula `", paste0("~ ", second_stage), "`\n"),
-        paste0(
-          "- The indicator variable that denotes when treatment is on is `",
-          treatment,
-          "`\n"
-        ),
-        cluster_msg,
-        collapse = "\n"
-      )
+    did2s_summary_message(
+      yname,
+      first_stage,
+      second_stage,
+      treatment,
+      cluster_var,
+      bootstrap
     )
   }
 
@@ -246,13 +214,13 @@ did2s <- function(
 
   # Bootstrap Standard Errors ------------------------------------------------
   if (bootstrap) {
-    message(paste0(
-      "Starting ",
-      n_bootstraps,
-      " bootstraps at cluster level: ",
-      cluster_var,
-      "\n"
-    ))
+    if (verbose) {
+      message(sprintf(
+        "Starting %s bootstraps at cluster level: %s\n",
+        n_bootstraps,
+        cluster_var
+      ))
+    }
 
     # Unique values of cluster variable
     cl <- unique(data[[cluster_var]])
@@ -292,20 +260,8 @@ did2s <- function(
   }
 
   # summary creates fixest object with correct standard errors and vcov
-
-  # Once fixest updates on CRAN
-  # rescale cov by G/(G-1) and use t(G-1) distribution
-  # G = length(cl)
-  # cov = cov * G/(G-1)
-
-  return(base::suppressWarnings(
-    # summary(
-    #   est$second_stage,
-    #   .vcov = list("Two-stage Adjusted" = cov),
-    #   ssc = ssc(adj = FALSE, t.df = G-1)
-    # )
-    summary(est$second_stage, .vcov = cov)
-  ))
+  est <- base::suppressWarnings(summary(est$second_stage, .vcov = cov))
+  return(est)
 }
 
 
@@ -377,4 +333,39 @@ did2s_estimate <- function(
   }
 
   return(ret)
+}
+
+did2s_summary_message <- function(
+  yname,
+  first_stage,
+  second_stage,
+  treatment,
+  cluster_var,
+  bootstrap
+) {
+  cluster_msg <- if (bootstrap) {
+    sprintf(
+      "- Standard errors will be block bootstrapped with cluster `%s`\n",
+      cluster_var
+    )
+  } else {
+    sprintf(
+      "- Standard errors will be clustered by `%s`\n",
+      cluster_var
+    )
+  }
+
+  msg <- paste(
+    "Running Two-stage Difference-in-Differences\n",
+    sprintf("- first stage formula %s\n", rlang::f_label(first_stage)),
+    sprintf("- second stage formula %s\n", rlang::f_label(second_stage)),
+    sprintf(
+      "- The indicator variable that denotes when treatment is on is `%s`\n",
+      treatment
+    ),
+    cluster_msg,
+    collapse = "\n"
+  )
+
+  message(msg)
 }
