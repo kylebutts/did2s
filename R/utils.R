@@ -613,7 +613,7 @@ sparse_model_matrix = function(object, data, type = "rhs", na.rm = TRUE,  collin
 
             # Keep non-zero FEs
             if (collin.rm == TRUE) {
-              fixefs = fixef(object, sorted = TRUE)
+              fixefs = fixest::fixef(object, sorted = TRUE)
 
               select =	lapply(
                 names(fixefs), 

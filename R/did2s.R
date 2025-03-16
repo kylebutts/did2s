@@ -90,39 +90,60 @@
 #' ```
 #'
 #' @export
-did2s <- function(data, yname, first_stage, second_stage, treatment, cluster_var,
-                  weights = NULL, bootstrap = FALSE, n_bootstraps = 250,
-                  return_bootstrap = FALSE, verbose = TRUE) {
-
+did2s <- function(
+  data,
+  yname,
+  first_stage,
+  second_stage,
+  treatment,
+  cluster_var,
+  weights = NULL,
+  bootstrap = FALSE,
+  n_bootstraps = 250,
+  return_bootstrap = FALSE,
+  verbose = FALSE
+) {
   # Check Parameters ---------------------------------------------------------
 
-  if (!inherits(data, "data.frame")) stop("`did2s` requires a data.frame like object for analysis.")
-
-  # Extract vars from formula
-  if (inherits(first_stage, "formula")) first_stage <- as.character(first_stage)[[2]]
-  if (inherits(second_stage, "formula")) second_stage <- as.character(second_stage)[[2]]
+  if (!inherits(data, "data.frame"))
+    stop("`did2s` requires a data.frame like object for analysis.")
 
   # Check that treatment is a 0/1 or T/F variable
-  if (!all(
-    unique(data[[treatment]]) %in% c(1, 0, T, F)
-  )) {
+  if (
+    !all(
+      unique(data[[treatment]]) %in% c(1, 0, T, F)
+    )
+  ) {
     stop(sprintf(
       "'%s' must be a 0/1 or T/F variable indicating which observations are untreated/not-yet-treated.",
       treatment
     ))
   }
 
-
   # Print --------------------------------------------------------------------
   if (verbose) {
-    if (!bootstrap) cluster_msg <- paste0("- Standard errors will be clustered by `", cluster_var, "`\n")
-    if (bootstrap) cluster_msg <- paste0("- Standard errors will be block bootstrapped with cluster `", cluster_var, "`\n")
+    if (!bootstrap)
+      cluster_msg <- paste0(
+        "- Standard errors will be clustered by `",
+        cluster_var,
+        "`\n"
+      )
+    if (bootstrap)
+      cluster_msg <- paste0(
+        "- Standard errors will be block bootstrapped with cluster `",
+        cluster_var,
+        "`\n"
+      )
     message(
       paste(
         "Running Two-stage Difference-in-Differences\n",
         paste0("- first stage formula `", paste0("~ ", first_stage), "`\n"),
         paste0("- second stage formula `", paste0("~ ", second_stage), "`\n"),
-        paste0("- The indicator variable that denotes when treatment is on is `", treatment, "`\n"),
+        paste0(
+          "- The indicator variable that denotes when treatment is on is `",
+          treatment,
+          "`\n"
+        ),
         cluster_msg,
         collapse = "\n"
       )
@@ -130,7 +151,6 @@ did2s <- function(data, yname, first_stage, second_stage, treatment, cluster_var
   }
 
   # Point Estimates ----------------------------------------------------------
-
   est <- did2s_estimate(
     data = data,
     yname = yname,
@@ -142,7 +162,6 @@ did2s <- function(data, yname, first_stage, second_stage, treatment, cluster_var
   )
 
   # Analytic Standard Errors -------------------------------------------------
-
   if (!bootstrap) {
     # Subset data to the observations used in the second stage
     # obsRemoved have - in front of rows, so they are deleted
@@ -162,7 +181,9 @@ did2s <- function(data, yname, first_stage, second_stage, treatment, cluster_var
 
     # x1 is matrix used to predict Y(0)
     x1 <- sparse_model_matrix(
-      est$first_stage, data = data, type = c("rhs", "fixef")
+      est$first_stage,
+      data = data,
+      type = c("rhs", "fixef")
     )
 
     # Extract second stage
@@ -178,11 +199,12 @@ did2s <- function(data, yname, first_stage, second_stage, treatment, cluster_var
     # x10 is matrix used to estimate first stage (zero out rows with D_it = 1)
     x10 <- copy(x1)
     # treated rows. Note dgcMatrix is 0-index !!
-    treated_rows = which(data[[treatment]] == 1L) - 1
-    idx = x10@i %in% treated_rows
+    treated_rows <- which(data[[treatment]] == 1L) - 1
+    idx <- x10@i %in% treated_rows
     x10@x[idx] <- 0
 
     # x2'x1 (x10'x10)^-1
+    # = [(x10'x10)^-1 x1' x2]'
     # Note: Matrix::solve relies on A (x10'x10) being positive symmetric
     V <- Matrix::t(
       Matrix::solve(
@@ -192,47 +214,55 @@ did2s <- function(data, yname, first_stage, second_stage, treatment, cluster_var
     )
 
     # Unique values of cluster variable
-    cl = data[[cluster_var]]
-    cls = split(1:length(cl), as.factor(cl))
+    cl <- data[[cluster_var]]
+    cls <- split(1:length(cl), as.factor(cl))
 
     # (X_2'X_2)^-1 (sum_g W_g W_g') (X_2'X_2)^-1
-    tx2x2 = Matrix::crossprod(x2)
+    tx2x2 <- Matrix::crossprod(x2)
     for (i in 1:length(cls)) {
-      in_cl = cls[[i]]
+      in_cl <- cls[[i]]
 
-      x2_g = x2[in_cl, , drop = FALSE]
-      x10_g = x10[in_cl, , drop = FALSE]
-      first_u_g = first_u[in_cl]
-      second_u_g = second_u[in_cl]
-      
+      x2_g <- x2[in_cl, , drop = FALSE]
+      x10_g <- x10[in_cl, , drop = FALSE]
+      first_u_g <- first_u[in_cl]
+      second_u_g <- second_u[in_cl]
+
       # W_g = X_2g u_2g - V X_1g u_1g
-      W_g = Matrix::crossprod(x2_g, second_u_g) - 
-          V %*% Matrix::crossprod(x10_g, first_u_g)
+      W_g <- Matrix::crossprod(x2_g, second_u_g) -
+        V %*% Matrix::crossprod(x10_g, first_u_g)
 
       # Bread x Scores: (X_2'X_2)^-1 W_g
-      # VCOV = \sum_g (X_2'X_2)^-1 W_g W_g' (X_2'X_2)^-1 
-      cov_g = Matrix::tcrossprod(Matrix::solve(tx2x2, W_g))
-      if(i == 1) { 
-        cov = cov_g
+      # VCOV = \sum_g (X_2'X_2)^-1 W_g W_g' (X_2'X_2)^-1
+      cov_g <- Matrix::tcrossprod(Matrix::solve(tx2x2, W_g))
+      if (i == 1) {
+        cov <- cov_g
       } else {
-        cov = cov + cov_g
+        cov <- cov + cov_g
       }
     }
 
-    cov = as.matrix(cov)
+    cov <- as.matrix(cov)
   }
-
 
   # Bootstrap Standard Errors ------------------------------------------------
   if (bootstrap) {
-    message(paste0("Starting ", n_bootstraps, " bootstraps at cluster level: ", cluster_var, "\n"))
+    message(paste0(
+      "Starting ",
+      n_bootstraps,
+      " bootstraps at cluster level: ",
+      cluster_var,
+      "\n"
+    ))
 
     # Unique values of cluster variable
     cl <- unique(data[[cluster_var]])
 
     stat <- function(x, i) {
       # select the observations to subset based on the cluster var
-      block_obs <- unlist(lapply(i, function(n) which(x[n] == data[[cluster_var]])))
+      block_obs <- unlist(lapply(
+        i,
+        function(n) which(x[n] == data[[cluster_var]])
+      ))
       # run regression for given replicate, return estimated coefficients
       stats::coefficients(
         did2s_estimate(
@@ -280,15 +310,21 @@ did2s <- function(data, yname, first_stage, second_stage, treatment, cluster_var
 
 
 # Point estimate for did2s
-did2s_estimate <- function(data, yname, first_stage, second_stage, treatment,
-                           weights = NULL, bootstrap = FALSE) {
+did2s_estimate <- function(
+  data,
+  yname,
+  first_stage,
+  second_stage,
+  treatment,
+  weights = NULL,
+  bootstrap = FALSE
+) {
   ## We'll use fixest's formula expansion macros to swap out first and second
   ## stages (see: ?fixest::xpd)
   fixest::setFixest_fml(
     ..first_stage = first_stage,
     ..second_stage = second_stage
   )
-
 
   # First stage among untreated
   untreat <- data[data[[treatment]] == 0, ]
@@ -298,7 +334,8 @@ did2s_estimate <- function(data, yname, first_stage, second_stage, treatment,
     weights_vector <- untreat[[weights]]
   }
 
-  first_stage <- fixest::feols(fixest::xpd(~ 0 + ..first_stage, lhs = yname),
+  first_stage <- fixest::feols(
+    fixest::xpd(~ 0 + ..first_stage, lhs = yname),
     data = untreat,
     weights = weights_vector,
     combine.quick = FALSE, # allows var1^var2 in FEs
@@ -316,7 +353,8 @@ did2s_estimate <- function(data, yname, first_stage, second_stage, treatment,
   # Second stage
   if (!is.null(weights)) weights_vector <- data[[weights]]
 
-  second_stage <- fixest::feols(fixest::xpd(~ 0 + ..second_stage, lhs = yname),
+  second_stage <- fixest::feols(
+    fixest::xpd(~ 0 + ..second_stage, lhs = yname),
     data = data,
     weights = weights_vector,
     warn = FALSE,
