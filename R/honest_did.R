@@ -18,7 +18,9 @@ get_honestdid_obj_did2s <- function(est, coef_name = "rel_year") {
   event_time <- as.numeric(gsub(paste0(coef_name, "::"), "", names(beta)))
 
   res <- list(
-    beta = beta, V = V, event_time = event_time
+    beta = beta,
+    V = V,
+    event_time = event_time
   )
 
   return(res)
@@ -45,24 +47,25 @@ get_honestdid_obj_did2s <- function(est, coef_name = "rel_year") {
 #' @inheritParams HonestDiD::createSensitivityResults
 #' @inheritParams HonestDiD::createSensitivityResults_relativeMagnitudes
 #' @param ... Ignored.
-#' 
+#'
 #' @export
 honest_did_did2s <- function(
-    es,
-    e = 0,
-    type = c("smoothness", "relative_magnitude"),
-    method = NULL,
-    bound = "deviation from parallel trends",
-    Mvec = NULL,
-    Mbarvec = NULL,
-    monotonicityDirection = NULL,
-    biasDirection = NULL,
-    alpha = 0.05,
-    parallel = FALSE,
-    gridPoints = 10^3,
-    grid.ub = NA,
-    grid.lb = NA,
-    ...) {
+  es,
+  e = 0,
+  type = c("smoothness", "relative_magnitude"),
+  method = NULL,
+  bound = "deviation from parallel trends",
+  Mvec = NULL,
+  Mbarvec = NULL,
+  monotonicityDirection = NULL,
+  biasDirection = NULL,
+  alpha = 0.05,
+  parallel = FALSE,
+  gridPoints = 10^3,
+  grid.ub = NA,
+  grid.lb = NA,
+  ...
+) {
   # Function body
   type <- type[1]
 
@@ -84,7 +87,8 @@ honest_did_did2s <- function(
 
   orig_ci <- HonestDiD::constructOriginalCS(
     betahat = beta,
-    sigma = V, numPrePeriods = npre,
+    sigma = V,
+    numPrePeriods = npre,
     numPostPeriods = npost,
     l_vec = baseVec1
   )
@@ -92,7 +96,8 @@ honest_did_did2s <- function(
   if (type == "relative_magnitude") {
     if (is.null(method)) method <- "C-LF"
     robust_ci <- HonestDiD::createSensitivityResults_relativeMagnitudes(
-      betahat = beta, sigma = V,
+      betahat = beta,
+      sigma = V,
       numPrePeriods = npre,
       numPostPeriods = npost,
       bound = bound,
@@ -124,4 +129,3 @@ honest_did_did2s <- function(
     list(robust_ci = robust_ci, orig_ci = orig_ci, type = type)
   )
 }
-

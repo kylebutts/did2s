@@ -56,8 +56,6 @@
 "df_het"
 
 
-
-
 #' @title Data from Cheng and Hoekstra (2013)
 #'
 #' @description
