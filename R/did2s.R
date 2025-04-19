@@ -148,7 +148,7 @@ did2s <- function(
     if (!is.null(removed_rows)) first_u <- first_u[removed_rows]
 
     # x1 is matrix used to predict Y(0)
-    x1 <- sparse_model_matrix(
+    x1 <- fixest::sparse_model_matrix(
       est$first_stage,
       data = data,
       type = c("rhs", "fixef")
@@ -156,7 +156,10 @@ did2s <- function(
 
     # Extract second stage
     second_u <- stats::residuals(est$second_stage)
-    x2 <- sparse_model_matrix(est$second_stage, type = c("rhs", "fixef"))
+    x2 <- fixest::sparse_model_matrix(
+      est$second_stage,
+      type = c("rhs", "fixef")
+    )
 
     # multiply by weights
     first_u <- weights_vector * first_u
@@ -260,7 +263,9 @@ did2s <- function(
   }
 
   # summary creates fixest object with correct standard errors and vcov
-  est <- base::suppressWarnings(summary(est$second_stage, .vcov = cov))
+  vcov_list = list()
+  vcov_list[[sprintf("Corrected Clustered (%s)", cluster_var)]] = cov
+  est <- base::suppressWarnings(summary(est$second_stage, vcov = vcov_list))
   return(est)
 }
 
