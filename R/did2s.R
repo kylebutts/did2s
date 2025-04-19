@@ -174,45 +174,40 @@ did2s <- function(
     idx <- x10@i %in% treated_rows
     x10@x[idx] <- 0
 
-    # x2'x1 (x10'x10)^-1
-    # = [(x10'x10)^-1 x1' x2]'
-    # Note: Matrix::solve relies on A (x10'x10) being positive symmetric
-    V <- Matrix::t(
-      Matrix::solve(
+    # The influence consists of two terms:
+    # (X_2' X_2)^{-1} X_2' (y - \hat{y}(0))
+    #
+    # First is the second stage standard OLS IF:
+    # $$(X_2' X_2)^{-1} X_{2i}' \hat{v}_i$$
+    #
+    # Second is the effect of the first stage estimate of $\hat{y}(0)$:
+    # $$(X_2' X_2)^{-1} X_2' X_1 (X_{10}' X_{10})^{-1) X_{10, i} \hat{u}_i$$
+    #
+    # The IF is the sum of the two terms
+    #
+    x2tx2_inv <- (est$second_stage$cov.iid / est$second_stage$sigma2)
+    IF_ss <- x2tx2_inv %*% Matrix::t(x2 * second_u)
+    IF_fs <-
+      x2tx2_inv %*%
+      Matrix::t(Matrix::solve(
         Matrix::crossprod(x10),
-        Matrix::t(Matrix::crossprod(x2, x1))
+        Matrix::crossprod(x1, x2)
+      )) %*%
+      Matrix::t((x10 * first_u))
+    IF <- IF_fs - IF_ss
+
+    cl <- data[[cluster_var]]
+    cov <- Reduce(
+      "+",
+      lapply(
+        split(1:length(cl), cl),
+        function(cl_idx) {
+          Matrix::tcrossprod(Matrix::rowSums(IF[, cl_idx, drop = FALSE]))
+        }
       )
     )
-
-    # Unique values of cluster variable
-    cl <- data[[cluster_var]]
-    cls <- split(1:length(cl), as.factor(cl))
-
-    # (X_2'X_2)^-1 (sum_g W_g W_g') (X_2'X_2)^-1
-    tx2x2 <- Matrix::crossprod(x2)
-    for (i in 1:length(cls)) {
-      in_cl <- cls[[i]]
-
-      x2_g <- x2[in_cl, , drop = FALSE]
-      x10_g <- x10[in_cl, , drop = FALSE]
-      first_u_g <- first_u[in_cl]
-      second_u_g <- second_u[in_cl]
-
-      # W_g = X_2g u_2g - V X_1g u_1g
-      W_g <- Matrix::crossprod(x2_g, second_u_g) -
-        V %*% Matrix::crossprod(x10_g, first_u_g)
-
-      # Bread x Scores: (X_2'X_2)^-1 W_g
-      # VCOV = \sum_g (X_2'X_2)^-1 W_g W_g' (X_2'X_2)^-1
-      cov_g <- Matrix::tcrossprod(Matrix::solve(tx2x2, W_g))
-      if (i == 1) {
-        cov <- cov_g
-      } else {
-        cov <- cov + cov_g
-      }
-    }
-
     cov <- as.matrix(cov)
+    rownames(cov) <- colnames(cov) <- names(est$second_stage$coefficients)
   }
 
   # Bootstrap Standard Errors ------------------------------------------------
