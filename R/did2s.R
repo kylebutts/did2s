@@ -134,7 +134,9 @@ did2s <- function(
     # Subset data to the observations used in the second stage
     # obsRemoved have - in front of rows, so they are deleted
     removed_rows <- est$second_stage$obs_selection$obsRemoved
-    if (!is.null(removed_rows)) data <- data[removed_rows, ]
+    if (!is.null(removed_rows)) {
+      data <- data[removed_rows, ]
+    }
 
     # Extract weights
     if (is.null(weights)) {
@@ -145,7 +147,9 @@ did2s <- function(
 
     # Extract first stage
     first_u <- est$first_u
-    if (!is.null(removed_rows)) first_u <- first_u[removed_rows]
+    if (!is.null(removed_rows)) {
+      first_u <- first_u[removed_rows]
+    }
 
     # x1 is matrix used to predict Y(0)
     x1 <- fixest::sparse_model_matrix(
@@ -294,9 +298,10 @@ did2s_estimate <- function(
     fixest::xpd(~ 0 + ..first_stage, lhs = yname),
     data = untreat,
     weights = weights_vector,
-    combine.quick = FALSE, # allows var1^var2 in FEs
+    # combine.quick = FALSE, # (deprecated argument)
+    fixef.keep_names = TRUE, # allows var1^var2 in FEs
     warn = FALSE,
-    notes = FALSE
+    notes = FALSE,
   )
 
   # Residualize outcome variable but keep same yname
@@ -304,10 +309,14 @@ did2s_estimate <- function(
   data[[yname]] <- first_u
 
   # Zero out residual rows with D_it = 1 (for analytical SEs later on)
-  if (!bootstrap) first_u[data[[treatment]] == 1] <- 0
+  if (!bootstrap) {
+    first_u[data[[treatment]] == 1] <- 0
+  }
 
   # Second stage
-  if (!is.null(weights)) weights_vector <- data[[weights]]
+  if (!is.null(weights)) {
+    weights_vector <- data[[weights]]
+  }
 
   second_stage <- fixest::feols(
     fixest::xpd(~ 0 + ..second_stage, lhs = yname),
