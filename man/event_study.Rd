@@ -34,7 +34,8 @@ plot_event_study(out, separate = TRUE, horizon = NULL)
 It should be of the form \code{~ X1 + X2}. Default is NULL.}
 
 \item{weights}{Variable name for estimation weights. This is used in
-estimating Y(0) and also augments treatment effect weights}
+estimating Y(0) and also augments treatment effect weights.
+Implementation of Roth and Sant'Anna (2021) currently does not allow for weights.}
 
 \item{estimator}{Estimator you would like to use. Use "all" to estimate all.
 Otherwise see table to know advantages and requirements for each of these.}

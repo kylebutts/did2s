@@ -15,7 +15,7 @@ did2s(
   bootstrap = FALSE,
   n_bootstraps = 250,
   return_bootstrap = FALSE,
-  verbose = TRUE
+  verbose = FALSE
 )
 }
 \arguments{
@@ -81,11 +81,6 @@ You can run a static TWFE fixed effect model for a simple treatment indicator
     yname = "dep_var", treatment = "treat", cluster_var = "state",
     first_stage = ~ 0 | unit + year,
     second_stage = ~ i(treat, ref=FALSE))
-#> Running Two-stage Difference-in-Differences
-#>  - first stage formula `~ 0 | unit + year`
-#>  - second stage formula `~ i(treat, ref = FALSE)`
-#>  - The indicator variable that denotes when treatment is on is `treat`
-#>  - Standard errors will be clustered by `state`
 
 fixest::esttable(static)
 #>                            static
@@ -93,7 +88,7 @@ fixest::esttable(static)
 #>                                  
 #> treat = TRUE    2.005*** (0.0202)
 #> _______________ _________________
-#> S.E. type                  Custom
+#> S.E.: Clustered         by: state
 #> Observations               46,500
 #> R2                        0.47520
 #> Adj. R2                   0.47520
@@ -110,11 +105,6 @@ Or you can use relative-treatment indicators to estimate an event study estimate
     yname = "dep_var", treatment = "treat", cluster_var = "state",
     first_stage = ~ 0 | unit + year,
     second_stage = ~ i(rel_year, ref=c(-1, Inf)))
-#> Running Two-stage Difference-in-Differences
-#>  - first stage formula `~ 0 | unit + year`
-#>  - second stage formula `~ i(rel_year, ref = c(-1, Inf))`
-#>  - The indicator variable that denotes when treatment is on is `treat`
-#>  - Standard errors will be clustered by `state`
 
 fixest::esttable(es)
 #>                                es
@@ -161,7 +151,7 @@ fixest::esttable(es)
 #> rel_year = 19   2.066*** (0.0609)
 #> rel_year = 20   1.964*** (0.0612)
 #> _______________ _________________
-#> S.E. type                  Custom
+#> S.E.: Clustered         by: state
 #> Observations               46,500
 #> R2                        0.47577
 #> Adj. R2                   0.47533
@@ -189,20 +179,15 @@ did2s(
 	treatment = "post",
 	cluster_var = "state", weights = "popwt"
 )
-#> Running Two-stage Difference-in-Differences
-#>  - first stage formula `~ 0 | sid + year`
-#>  - second stage formula `~ i(post, ref = 0)`
-#>  - The indicator variable that denotes when treatment is on is `post`
-#>  - Standard errors will be clustered by `state`
 #> OLS estimation, Dep. Var.: l_homicide
-#> Observations: 550 
-#> Weights: weights_vector 
-#> Standard-errors: Custom 
+#> Observations: 550
+#> Weights: weights_vector
+#> Standard-errors: Corrected Clustered (state) 
 #>         Estimate Std. Error t value Pr(>|t|)    
 #> post::1 0.075142    0.03538 2.12387 0.034127 *  
 #> ---
 #> Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
-#> RMSE: 263.4   Adj. R2: 0.052465
+#> RMSE: 0.109374   Adj. R2: 0.052465
 }\if{html}{\out{</div>}}
 }
 }

@@ -40,7 +40,7 @@ of deviations from parallel trends in pre-treatment periods).}
   }
 
 \item{bound}{
-  String that specifies the base choice of Delta (to which additional sign and shape restrictions will be incorporated if specified by the user). This must be either "deviation from parallel trends" or "deviation from linear trend". If bound equals "deviation from parallel trends", then the function will select Delta^{RM}(Mbar) as the base choice of Delta. If bound equals "deviation from linear trends", then the function will select Delta^{SDRM} as the base choice of Delta. By default, this is set to "deviation from parallel trends". See Section 2.3.1 and 2.3.2 of Rambachan & Roth (2021) for a discussion of these choices of Delta.
+  String that specifies the base choice of Delta (to which additional sign and shape restrictions will be incorporated if specified by the user). This must be either "deviation from parallel trends" or "deviation from linear trend". If bound equals "deviation from parallel trends", then the function will select \eqn{\Delta^{RM}(Mbar)} as the base choice of \eqn{\Delta}. If bound equals "deviation from linear trends", then the function will select \eqn{\Delta^{SDRM}} as the base choice of \eqn{\Delta}. By default, this is set to "deviation from parallel trends". See Section 2.3.1 and 2.3.2 of Rambachan & Roth (2021) for a discussion of these choices of \eqn{\Delta}.
   }
 
 \item{Mvec}{
@@ -52,11 +52,11 @@ of deviations from parallel trends in pre-treatment periods).}
   }
 
 \item{monotonicityDirection}{
-  This must be specified if the user wishes to add an additional monotonicity restriction to Delta^{SD}(M). If "increasing", underlying trend specified to be increasing, delta_t >= delta_{t-1}. If "decreasing", underlying trend specified to be decreasing delta_t <= delta_{t-1}. Default equals NULL
+  This must be specified if the user wishes to add an additional monotonicity restriction to \eqn{\Delta^{SD}(M)}. If "increasing", underlying trend specified to be increasing, \eqn{\delta_t \ge \delta_{t-1}}. If "decreasing", underlying trend specified to be decreasing \eqn{\delta_t \le \delta_{t-1}}. Default equals NULL
   }
 
 \item{biasDirection}{
-  This must be specified if the user wishes to add an additional bias restriction to Delta^{SD}(M). If "positive", bias is restricted to be positive, delta >= 0. If "negative", bias is restricted to be negative, delta <= 0. Default equals NULL.
+  This must be specified if the user wishes to add an additional bias restriction to \eqn{\Delta^{SD}(M)}. If "positive", bias is restricted to be positive, \eqn{\delta \ge 0}. If "negative", bias is restricted to be negative, \eqn{\delta \le 0}. Default equals NULL.
   }
 
 \item{alpha}{
