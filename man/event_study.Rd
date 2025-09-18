@@ -13,7 +13,8 @@ event_study(
   tname,
   xformla = NULL,
   weights = NULL,
-  estimator = c("all", "TWFE", "did2s", "did", "impute", "sunab", "staggered")
+  estimator = c("all", "TWFE", "did2s", "did", "impute", "sunab", "staggered"),
+  verbose = TRUE
 )
 
 plot_event_study(out, separate = TRUE, horizon = NULL)
@@ -39,6 +40,10 @@ Implementation of Roth and Sant'Anna (2021) currently does not allow for weights
 
 \item{estimator}{Estimator you would like to use. Use "all" to estimate all.
 Otherwise see table to know advantages and requirements for each of these.}
+
+\item{verbose}{Optional. Logical. Should information about the two-stage
+procedure be printed back to the user?
+Default is \code{TRUE}.}
 
 \item{out}{Output from \code{\link[=event_study]{event_study()}}}
 

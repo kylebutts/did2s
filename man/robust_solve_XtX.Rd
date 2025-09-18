@@ -15,7 +15,7 @@ robust_solve_XtX(X, Y)
 The least squares solution beta (may contain 0 for rank-deficient columns)
 }
 \description{
-This function computes the least squares solution beta = (X'X)^{-1} X'Y
+This function computes the least squares solution beta = (X'X)^(-1) X'Y
 in a numerically stable way using QR decomposition, handling rank-deficient
 matrices gracefully.
 }

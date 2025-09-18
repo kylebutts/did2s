@@ -1,4 +1,4 @@
-#' (WIP!) Calculate two-stage difference-in-differences following Gardner (2021)
+#' (WIP!) two-stage DID with time-varying covariates that can be impacted by treatment
 #'
 #' @import fixest
 #'
@@ -88,24 +88,38 @@
 #' )
 #' ```
 #'
-did3s <- function(data, yname, gname, tname, time_varying,
-                  third_stage, treatment, cluster_var,
-                  time_invariant = c("1"), weights = NULL,
-                  n_bootstraps = 250,
-                  return_bootstrap = FALSE, verbose = TRUE) {
+did3s <- function(
+  data,
+  yname,
+  gname,
+  tname,
+  time_varying,
+  third_stage,
+  treatment,
+  cluster_var,
+  time_invariant = c("1"),
+  weights = NULL,
+  n_bootstraps = 250,
+  return_bootstrap = FALSE,
+  verbose = TRUE
+) {
   bootstrap <- TRUE
 
   # Check Parameters ---------------------------------------------------------
 
-  if (!inherits(data, "data.frame")) stop("`did3s` requires a data.frame like object for analysis.")
+  if (!inherits(data, "data.frame"))
+    stop("`did3s` requires a data.frame like object for analysis.")
 
   # Extract vars from formula
-  if (inherits(third_stage, "formula")) third_stage <- as.character(third_stage)[[2]]
+  if (inherits(third_stage, "formula"))
+    third_stage <- as.character(third_stage)[[2]]
 
   # Check that treatment is a 0/1 or T/F variable
-  if (!all(
-    unique(data[[treatment]]) %in% c(1, 0, T, F)
-  )) {
+  if (
+    !all(
+      unique(data[[treatment]]) %in% c(1, 0, T, F)
+    )
+  ) {
     stop(sprintf(
       "'%s' must be a 0/1 or T/F variable indicating which observations are untreated/not-yet-treated.",
       treatment
@@ -129,14 +143,19 @@ did3s <- function(data, yname, gname, tname, time_varying,
 
   # Bootstrap Standard Errors ------------------------------------------------
 
-  cli::cli_alert("Starting {n_bootstraps} bootstraps at cluster level: {cluster_var}")
+  cli::cli_alert(
+    "Starting {n_bootstraps} bootstraps at cluster level: {cluster_var}"
+  )
 
   # Unique values of cluster variable
   cl <- unique(data[[cluster_var]])
 
   stat <- function(x, i) {
     # select the observations to subset based on the cluster var
-    block_obs <- unlist(lapply(i, function(n) which(x[n] == data[[cluster_var]])))
+    block_obs <- unlist(lapply(
+      i,
+      function(n) which(x[n] == data[[cluster_var]])
+    ))
     # run regression for given replicate, return estimated coefficients
     stats::coefficients(
       did3s_estimate(
@@ -186,12 +205,21 @@ did3s <- function(data, yname, gname, tname, time_varying,
 
 
 # Point estimate for did2s
-did3s_estimate <- function(data, yname, gname, tname, time_invariant, time_varying, third_stage, treatment,
-                           weights = NULL, bootstrap = FALSE) {
+did3s_estimate <- function(
+  data,
+  yname,
+  gname,
+  tname,
+  time_invariant,
+  time_varying,
+  third_stage,
+  treatment,
+  weights = NULL,
+  bootstrap = FALSE
+) {
   ## We'll use fixest's formula expansion macros to swap out first and second
   ## stages (see: ?fixest::xpd)
   fixest::setFixest_fml(..third_stage = third_stage)
-
 
   untreat <- data[data[[treatment]] == 0, ]
   if (is.null(weights)) {
@@ -209,7 +237,6 @@ did3s_estimate <- function(data, yname, gname, tname, time_invariant, time_varyi
   time_inv_fml <- "1 "
   for (var in time_invariant) {
     if (var == "1" | var == "0") {
-
     } else {
       time_inv_fml <- paste0(time_inv_fml, " + ", "i(", tname, ", ", var, ")")
     }
@@ -225,11 +252,14 @@ did3s_estimate <- function(data, yname, gname, tname, time_invariant, time_varyi
     time_var_fml,
     "~ ",
     time_inv_fml,
-    " | ", gname, " + ", tname
+    " | ",
+    gname,
+    " + ",
+    tname
   ))
 
-
-  first_stage <- fixest::feols(first_stage_formula,
+  first_stage <- fixest::feols(
+    first_stage_formula,
     data = untreat,
     weights = weights_vector,
     warn = FALSE,
@@ -259,13 +289,17 @@ did3s_estimate <- function(data, yname, gname, tname, time_invariant, time_varyi
   second_stage_formula <- as.formula(paste0(
     yname,
     "~ ",
-    time_var_fml, " + ",
+    time_var_fml,
+    " + ",
     time_inv_fml,
-    " | ", gname, " + ", tname
+    " | ",
+    gname,
+    " + ",
+    tname
   ))
 
-
-  second_stage <- fixest::feols(second_stage_formula,
+  second_stage <- fixest::feols(
+    second_stage_formula,
     data = untreat,
     weights = weights_vector,
     warn = FALSE,
@@ -279,20 +313,19 @@ did3s_estimate <- function(data, yname, gname, tname, time_invariant, time_varyi
   # Zero out residual rows with D_it = 1 (for analytical SEs later on)
   if (!bootstrap) second_u[data[[treatment]] == 1] <- 0
 
-
   # ------------------------------------------------------------------------------
   # Stage 3: Regress tilde{y} on third_stage
   # ------------------------------------------------------------------------------
 
   if (!is.null(weights)) weights_vector <- data[[weights]]
 
-  third_stage <- fixest::feols(fixest::xpd(~ 0 + ..third_stage, lhs = yname),
+  third_stage <- fixest::feols(
+    fixest::xpd(~ 0 + ..third_stage, lhs = yname),
     data = data,
     weights = weights_vector,
     warn = FALSE,
     notes = FALSE
   )
-
 
   ret <- list(third_stage = third_stage)
 

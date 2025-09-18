@@ -15,6 +15,9 @@
 #'   Implementation of Roth and Sant'Anna (2021) currently does not allow for weights.
 #' @param estimator Estimator you would like to use. Use "all" to estimate all.
 #'   Otherwise see table to know advantages and requirements for each of these.
+#' @param verbose Optional. Logical. Should information about the two-stage
+#'   procedure be printed back to the user?
+#'   Default is `TRUE`.
 #'
 #' @return `event_study` returns a data.frame of point estimates for each estimator
 #'
@@ -35,7 +38,8 @@ event_study = function(
   tname,
   xformla = NULL,
   weights = NULL,
-  estimator = c("all", "TWFE", "did2s", "did", "impute", "sunab", "staggered")
+  estimator = c("all", "TWFE", "did2s", "did", "impute", "sunab", "staggered"),
+  verbose = TRUE
 ) {
   # Check Parameters -------------------------------------------------------------
 
@@ -43,7 +47,7 @@ event_study = function(
   estimator <- match.arg(estimator)
 
   # Display message about estimator's different assumptions
-  if (estimator == "all") {
+  if (estimator == "all" && isTRUE(verbose)) {
     message(
       "Note these estimators rely on different underlying assumptions. See Table 2 of `https://arxiv.org/abs/2109.05913` for an overview."
     )
@@ -75,7 +79,7 @@ event_study = function(
   # If `xformla` is included, note
   if (!is.null(xformla)) {
     if (estimator %in% c("all", "staggered")) {
-      message(paste0(
+      warning(paste0(
         "Warning: `",
         xformla,
         "` is ignored for the `staggered` estimator"
@@ -124,7 +128,9 @@ event_study = function(
 
   # TWFE -------------------------------------------------------------------------
   if (estimator %in% c("TWFE", "all")) {
-    message("Estimating TWFE Model")
+    if (isTRUE(verbose)) {
+      message("Estimating TWFE Model")
+    }
 
     try({
       twfe_formula = stats::as.formula(
@@ -168,7 +174,9 @@ event_study = function(
 
   # did2s ------------------------------------------------------------------------
   if (estimator %in% c("did2s", "all")) {
-    message("Estimating using Gardner (2021)")
+    if (isTRUE(verbose)) {
+      message("Estimating using Gardner (2021)")
+    }
 
     try({
       did2s_first_stage = stats::as.formula(
@@ -215,7 +223,9 @@ event_study = function(
 
   # did --------------------------------------------------------------------------
   if (estimator %in% c("did", "all")) {
-    message("Estimating using Callaway and Sant'Anna (2020)")
+    if (isTRUE(verbose)) {
+      message("Estimating using Callaway and Sant'Anna (2020)")
+    }
 
     try({
       est_did = did::att_gt(
@@ -244,7 +254,9 @@ event_study = function(
 
   # sunab ------------------------------------------------------------------------
   if (estimator %in% c("sunab", "all")) {
-    message("Estimating using Sun and Abraham (2020)")
+    if (isTRUE(verbose)) {
+      message("Estimating using Sun and Abraham (2020)")
+    }
 
     try({
       # Format xformla for inclusion
@@ -298,7 +310,9 @@ event_study = function(
 
   # did_imputation ---------------------------------------------------------------
   if (estimator %in% c("impute", "all")) {
-    message("Estimating using Borusyak, Jaravel, Spiess (2021)")
+    if (isTRUE(verbose)) {
+      message("Estimating using Borusyak, Jaravel, Spiess (2021)")
+    }
 
     try({
       impute_first_stage = stats::as.formula(
@@ -339,7 +353,9 @@ event_study = function(
   # staggered --------------------------------------------------------------------
   if (estimator %in% c("staggered", "all")) {
     # Waiting for staggered on CRAN
-    message("Estimating using Roth and Sant'Anna (2021)")
+    if (isTRUE(verbose)) {
+      message("Estimating using Roth and Sant'Anna (2021)")
+    }
 
     try({
       # Make untreated g = Inf
@@ -375,9 +391,12 @@ event_study = function(
       tidy_staggered = tidy_staggered[, c("term", "estimate", "std.error")]
     })
 
-    if (is.null(tidy_staggered)) warning("Roth and Sant'Anna (2021) Failed")
-    if (!is.null(weights))
+    if (is.null(tidy_staggered)) {
+      warning("Roth and Sant'Anna (2021) Failed")
+    }
+    if (!is.null(weights)) {
       warning("Roth and Sant'Anna (2021) Does Not Allow Weights")
+    }
   }
 
   # Bind results together --------------------------------------------------------
@@ -444,8 +463,11 @@ plot_event_study = function(out, separate = TRUE, horizon = NULL) {
   out$ci_upper = out$estimate + 1.96 * out$std.error
 
   # position depending on separate
-  if (separate) position = "identity" else
+  if (separate) {
+    position = "identity"
+  } else {
     position = ggplot2::position_dodge(width = 0.5)
+  }
 
   # Subset plot if horizon is specified
   if (!is.null(horizon)) {

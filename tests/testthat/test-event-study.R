@@ -7,7 +7,8 @@ plot_event_study_check <- function() {
     yname = "dep_var",
     idname = "unit",
     tname = "year",
-    gname = "g"
+    gname = "g",
+    verbose = FALSE
   )
   plot_event_study(out)
 }
@@ -20,7 +21,8 @@ test_that("estimation runs", {
       yname = "dep_var",
       idname = "unit",
       tname = "year",
-      gname = "g"
+      gname = "g",
+      verbose = FALSE
     ),
     NA
   )
@@ -32,7 +34,8 @@ test_that("estimation runs", {
       idname = "unit",
       tname = "year",
       gname = "g",
-      weight = "weight"
+      weight = "weight",
+      verbose = FALSE
     ),
     NA
   )

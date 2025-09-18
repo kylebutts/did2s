@@ -7,8 +7,9 @@
 ^docs$
 ^pkgdown$
 ^\.github$
-^R/dev-*\.R$
 ^vignettes/event_study.Rmd$
 ^\.Renviron$
 ^cran-comments\.md$
+^R/dev-*\.R$
+^dev-*\.R$
 .*did3s.*

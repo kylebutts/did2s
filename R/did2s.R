@@ -270,7 +270,7 @@ did2s <- function(
 # Point estimate for did2s
 #' Robust solve for X'X beta = X'Y using QR decomposition
 #'
-#' This function computes the least squares solution beta = (X'X)^{-1} X'Y
+#' This function computes the least squares solution beta = (X'X)^(-1) X'Y
 #' in a numerically stable way using QR decomposition, handling rank-deficient
 #' matrices gracefully.
 #'
@@ -333,7 +333,8 @@ did2s_estimate <- function(
   second_stage,
   treatment,
   weights = NULL,
-  bootstrap = FALSE
+  bootstrap = FALSE,
+  cluster_var = NULL # Just so you can switch `did2s` to `did2s_estimate` for quick dev estimation
 ) {
   ## We'll use fixest's formula expansion macros to swap out first and second
   ## stages (see: ?fixest::xpd)
