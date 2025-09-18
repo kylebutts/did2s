@@ -29,7 +29,7 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2
 Depends: 
     R (>= 3.5.0),
-    fixest (>= 0.12.2)
+    fixest (>= 0.13.2)
 Imports: 
     data.table,
     Matrix,
