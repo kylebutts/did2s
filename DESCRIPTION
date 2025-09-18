@@ -31,23 +31,23 @@ Depends:
     R (>= 3.5.0),
     fixest (>= 0.13.2)
 Imports: 
-    data.table,
-    Matrix,
-    stats,
     boot,
     broom,
-    ggplot2,
-    rlang,
+    data.table,
     did,
-    staggered,
     didimputation,
-    dreamerr
+    dreamerr,
+    ggplot2,
+    HonestDiD,
+    Matrix,
+    rlang,
+    staggered,
+    stats
 URL: https://kylebutts.github.io/did2s/
 Suggests: 
-    rmarkdown,
-    knitr,
     haven,
-    testthat (>= 3.0.0),
-    HonestDiD
+    knitr,
+    rmarkdown,
+    testthat (>= 3.0.0)
 VignetteBuilder: knitr
 Config/testthat/edition: 3
