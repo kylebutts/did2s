@@ -357,6 +357,7 @@ did2s_estimate <- function(
     weights = weights_vector,
     # combine.quick = FALSE, # (deprecated argument)
     fixef.keep_names = TRUE, # allows var1^var2 in FEs
+    fixef.rm = "none",
     warn = FALSE,
     notes = FALSE,
   )
