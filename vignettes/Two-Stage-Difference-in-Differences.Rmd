@@ -17,7 +17,7 @@ knitr::opts_chunk$set(
 
 ## Two-stage Difference-in-differences, [Gardner (2021)](https://jrgcmu.github.io/2sdd_current.pdf)
 
-Researchers often want to a difference-in-differences (DiD) model in a regression setting. Typically, these have made use of the so-called _twoway fixed effects_ (TWFE) framework. For example, in a static setting:
+Researchers often want to fit a difference-in-differences (DiD) model in a regression setting. Typically, these have made use of the so-called _twoway fixed effects_ (TWFE) framework. For example, in a static setting:
 
 \begin{equation}
   y_{it} = \mu_i + \mu_t + \tau D_{it} + \varepsilon_{it},
@@ -138,7 +138,7 @@ legend(
 
 ### Estimate Two-stage Difference-in-Differences 
 
-First, lets estimate a static did. There are two things to note here. First, note that I can use `fixest::feols` formula including the `|` for specifying fixed effects and `fixest::i` for improved factor variable support. Second, note that `did2s` returns a `fixest` estimate object, so `fixest::esttable`, `fixest::coefplot`, and `fixest::iplot` all work as expected.
+First, lets estimate a static DiD model. There are two things to note here. First, note that I can use `fixest::feols` formula including the `|` for specifying fixed effects and `fixest::i` for improved factor variable support. Second, note that `did2s` returns a `fixest` estimate object, so `fixest::esttable`, `fixest::coefplot`, and `fixest::iplot` all work as expected.
 
 ```{r static}
 # Static
@@ -153,7 +153,7 @@ fixest::esttable(static)
 
 This is very close to the true treatment effect of ~2.23.
 
-Then, let's estimate an event study did. Note that relative year has a value of `Inf` for never treated, so I put this as a reference in the second stage formula.
+Then, let's estimate an event study DiD. Note that relative year has a value of `Inf` for never treated, so I put this as a reference in the second stage formula.
 
 ```{r event-study}
 # Event Study
