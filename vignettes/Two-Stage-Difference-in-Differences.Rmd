@@ -17,7 +17,7 @@ knitr::opts_chunk$set(
 
 ## Two-stage Difference-in-differences, [Gardner (2021)](https://jrgcmu.github.io/2sdd_current.pdf)
 
-Researchers often want to a difference-in-differences (DiD) model in a regression setting. Typically, these have made use of the so-called _twoway fixed effects_ (TWFE) framework. For example, in a static setting:
+Researchers often want a difference-in-differences (DiD) model in a regression setting. Typically, these have made use of the so-called _twoway fixed effects_ (TWFE) framework. For example, in a static setting:
 
 \begin{equation}
   y_{it} = \mu_i + \mu_t + \tau D_{it} + \varepsilon_{it},
@@ -33,7 +33,7 @@ y_{it} = \mu_i + \mu_t + \sum_{k = -L}^{-2} \tau^k D_{it}^k + \sum_{k = 1}^{K} \
 
 where $D_{it}^k$ are lag/leads of treatment (k periods from initial treatment date).
 
-<aside>Aside: Sometimes researches use variants of this model where they bin or drop leads and lags.</aside>
+<aside>Aside: Sometimes researchers use variants of this model where they bin or drop leads and lags.</aside>
 
 However, running OLS to estimate either model has been shown to not recover an average treatment effect and has the potential to be severely misleading in cases of treatment effect heterogeneity [Borusyak et. al. (2021)](https://www.dropbox.com/s/y92mmyndlbkufo1/Draft_RobustAndEfficient.pdf?raw=true); [Callaway and Sant'Anna (2020)](https://www.sciencedirect.com/science/article/pii/S0304407621001445#b18); [de Chaisemartin and d'Haultfoeuille (2020)](https://doi.org/10.1257/aer.20181169); [Goodman-Bacon (2021)](https://www.sciencedirect.com/science/article/pii/S0304407621001445); [Sun and Abraham (2020)](https://www.sciencedirect.com/science/article/pii/S030440762030378X)]. 
 
