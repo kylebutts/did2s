@@ -1,6 +1,5 @@
 data <- df_hom[df_hom$unit <= 60, ]
 
-
 plot_event_study_check <- function() {
   out <- event_study(
     data = data,
@@ -27,7 +26,7 @@ test_that("estimation runs", {
     NA
   )
   # Weighted
-  expect_error(
+  expect_message(
     event_study(
       data = data,
       yname = "dep_var",

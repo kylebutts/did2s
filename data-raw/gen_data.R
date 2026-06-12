@@ -40,7 +40,15 @@ castle <- haven::read_dta("data-raw/castle.dta")
 data.table::setDT(castle)
 castle[, time_til := data.table::fifelse(is.na(time_til), -Inf, time_til)]
 
-castle = castle[, .(year, sid, l_homicide, post, effyear, time_til)]
+castle = castle[, .(
+  year,
+  state = sid,
+  popwt,
+  l_homicide,
+  post,
+  effyear,
+  time_til
+)]
 
 df_hom = as.data.frame(df_hom)
 df_het = as.data.frame(df_het)

@@ -3,14 +3,10 @@
 ##
 ## Test did2s function
 
-data(df_hom)
-library(haven)
-castle = haven::read_dta(
-  "https://github.com/scunning1975/mixtape/raw/master/castle.dta"
-)
+data(df_hom, package = "did2s")
+data(castle, package = "did2s")
 
-# Add random 0/1 variable
-
+# Add random U(0, 1) variable
 df_hom$temp = as.numeric(runif(nrow(df_hom)) > 0.5)
 
 test_that("estimation runs", {
@@ -56,7 +52,7 @@ test_that("estimation runs", {
     did2s(
       data = castle,
       yname = "l_homicide",
-      first_stage = ~ 0 | sid + year,
+      first_stage = ~ 0 | state + year,
       second_stage = ~ i(post, ref = 0),
       treatment = "post",
       cluster_var = "state",

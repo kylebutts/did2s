@@ -64,8 +64,9 @@
 #'
 #' @format A data frame with 550 rows and 5 variables:
 #' \describe{
-#'   \item{sid}{state id, unit of observation}
+#'   \item{state}{state id, unit of observation}
 #'   \item{year}{time in panel data}
+#'   \item{popwt}{population-based weights}
 #'   \item{l_homicide}{log of the number of homicides per capita}
 #'   \item{effyear}{year that castle doctrine is passed}
 #'   \item{post}{0/1 variable for when castle doctrine is active}

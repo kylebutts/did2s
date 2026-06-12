@@ -104,7 +104,7 @@ Or you can use relative-treatment indicators to estimate an event study estimate
 \if{html}{\out{<div class="sourceCode r">}}\preformatted{es <- did2s(df_hom,
     yname = "dep_var", treatment = "treat", cluster_var = "state",
     first_stage = ~ 0 | unit + year,
-    second_stage = ~ i(rel_year, ref=c(-1, Inf)))
+    second_stage = ~ i(rel_year, ref=Inf))
 
 fixest::esttable(es)
 #>                                es
@@ -169,15 +169,16 @@ fixest::coefplot(es, keep = "rel_year::(.*)")
 Here's an example using data from Cheng and Hoekstra (2013)
 
 \if{html}{\out{<div class="sourceCode r">}}\preformatted{# Castle Data
-castle <- haven::read_dta("https://github.com/scunning1975/mixtape/raw/master/castle.dta")
+data(castle, package = "did2s")
 
 did2s(
 	data = castle,
 	yname = "l_homicide",
-	first_stage = ~ 0 | sid + year,
+	first_stage = ~ 0 | state + year,
 	second_stage = ~ i(post, ref=0),
 	treatment = "post",
-	cluster_var = "state", weights = "popwt"
+	cluster_var = "state",
+ weights = "popwt"
 )
 #> OLS estimation, Dep. Var.: l_homicide
 #> Observations: 550
