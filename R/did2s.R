@@ -25,6 +25,17 @@
 #' @param return_bootstrap Optional. Logical. Will return each bootstrap second-stage
 #'   estimate to allow for manual use, e.g. percentile standard errors and empirical
 #'   confidence intervals.
+#' @param vcov_method Method used to solve the first-stage correction in the
+#'   analytic variance calculation. `"sparse"` forms and solves the sparse
+#'   cross-product matrix and is typically fastest for conventional unit by
+#'   time panels. `"matrix_free"` applies the cross-product as a linear
+#'   operator and solves it with preconditioned conjugate gradients, avoiding
+#'   factorization fill-in that can dominate with high-cardinality crossed
+#'   fixed effects.
+#' @param vcov_tol Relative residual tolerance for `vcov_method =
+#'   "matrix_free"`.
+#' @param vcov_maxiter Maximum number of conjugate-gradient iterations for each
+#'   second-stage coefficient when `vcov_method = "matrix_free"`.
 #' @param verbose Optional. Logical. Should information about the two-stage
 #'   procedure be printed back to the user?
 #'   Default is `TRUE`.
@@ -33,6 +44,15 @@
 #'   (either by formula or by bootstrap). All the methods from `fixest` package
 #'   will work, including \code{\link[fixest:esttable]{fixest::esttable}} and
 #'   \code{\link[fixest:coefplot]{fixest::coefplot}}
+#'
+#' @details Matrix-free PCG will perform better when there are a lot of
+#'   complicated fixed effects.
+#'
+#'   First-stage fixed effects nested within the clustering variable are
+#'   detected automatically. Their cluster-level scores are zero by the
+#'   first-stage normal equations and are omitted from the VCOV calculation. If
+#'   every first-stage column is a nested fixed effect, the first-stage
+#'   correction solve is skipped entirely.
 #'
 #' @section Examples:
 #'
@@ -102,11 +122,43 @@ did2s <- function(
   bootstrap = FALSE,
   n_bootstraps = 250,
   return_bootstrap = FALSE,
+  vcov_method = "sparse",
+  vcov_tol = 1e-10,
+  vcov_maxiter = 2000L,
   verbose = FALSE
 ) {
-  # Check Parameters ---------------------------------------------------------
+  # Check Parameters -----------------------------------------------------------
   dreamerr::check_arg(data, "data.frame")
   dreamerr::check_value(data[[treatment]], "logical (loose) vector")
+
+  if (
+    length(vcov_method) != 1L ||
+      !is.character(vcov_method) ||
+      !vcov_method %in% c("sparse", "matrix_free")
+  ) {
+    stop(
+      "`vcov_method` must be either \"sparse\" or \"matrix_free\".",
+      call. = FALSE
+    )
+  }
+  if (
+    !is.numeric(vcov_tol) ||
+      length(vcov_tol) != 1L ||
+      !is.finite(vcov_tol) ||
+      vcov_tol <= 0
+  ) {
+    stop("`vcov_tol` must be a single positive finite number.", call. = FALSE)
+  }
+  if (
+    !is.numeric(vcov_maxiter) ||
+      length(vcov_maxiter) != 1L ||
+      !is.finite(vcov_maxiter) ||
+      vcov_maxiter < 1 ||
+      vcov_maxiter != as.integer(vcov_maxiter)
+  ) {
+    stop("`vcov_maxiter` must be a positive integer.", call. = FALSE)
+  }
+  vcov_maxiter <- as.integer(vcov_maxiter)
 
   if (verbose) {
     did2s_summary_message(
@@ -119,7 +171,7 @@ did2s <- function(
     )
   }
 
-  # Point Estimates ----------------------------------------------------------
+  # Point Estimates ------------------------------------------------------------
   est <- did2s_estimate(
     data = data,
     yname = yname,
@@ -130,7 +182,23 @@ did2s <- function(
     bootstrap = bootstrap
   )
 
-  # Analytic Standard Errors -------------------------------------------------
+  # Analytic Standard Errors ---------------------------------------------------
+  # With X10 equal to the untreated rows of X1 (equivalently, with treated
+  # rows set to zero), the
+  # observation-level influence function is
+  #
+  #   IF_i = (X2' X2)^(-1) [
+  #     X2_i' u2_i
+  #     - X2' X1 (X10' X10)^(-1) X10_i' u1_i
+  #   ].
+  #
+  # The first term is the normal second-stage score, while the second
+  # term accounts for estimation uncertainty in the fitted values from
+  # the first-stage.
+  #
+  # The cluster-robust VCOV is sum_g IF_g IF_g', where
+  # IF_g = sum_{i in g} IF_i. Square-root weights are incorporated into X1,
+  # X10, X2, u1, and u2 below, so no separate weight matrices appear.
   if (!bootstrap) {
     # Subset data to the observations used in the second stage
     # obsRemoved have - in front of rows, so they are deleted
@@ -172,49 +240,72 @@ did2s <- function(
     second_u <- weights_vector * second_u
     x2 <- weights_vector * x2
 
-    # x10 is matrix used to estimate first stage (zero out rows with D_it = 1)
-    x10 <- copy(x1)
-    # treated rows. Note dgcMatrix is 0-index !!
-    treated_rows <- which(data[[treatment]] == 1L) - 1
-    idx <- x10@i %in% treated_rows
-    x10@x[idx] <- 0
+    # x10 is the first-stage design among untreated observations. Subsetting
+    # avoids a full copy of x1 with structurally stored zeros in treated rows.
+    untreated_rows <- data[[treatment]] == 0L
+    x10 <- x1[untreated_rows, , drop = FALSE]
 
-    # The influence consists of two terms:
-    # (X_2' X_2)^{-1} X_2' (y - \hat{y}(0))
-    #
-    # First is the second stage standard OLS IF:
-    # $$(X_2' X_2)^{-1} X_{2i}' \hat{v}_i$$
-    #
-    # Second is the effect of the first stage estimate of $\hat{y}(0)$:
-    # $$(X_2' X_2)^{-1} X_2' X_1 (X_{10}' X_{10})^{-1) X_{10, i} \hat{u}_i$$
-    #
-    # The IF is the sum of the two terms
-    #
     x2tx2_inv <- (est$second_stage$cov.iid / est$second_stage$sigma2)
-    IF_ss <- x2tx2_inv %*% Matrix::t(x2 * second_u)
-
-    # Use robust QR-based solve instead of direct Matrix::solve()
-    gamma_hat <- robust_solve_XtX(x10, Matrix::crossprod(x1, x2))
-    IF_fs <- x2tx2_inv %*% Matrix::t(gamma_hat) %*% Matrix::t((x10 * first_u))
-
-    IF <- IF_fs - IF_ss
-
     cl <- data[[cluster_var]]
 
-    cov <- Reduce(
-      "+",
-      lapply(
-        split(1:length(cl), cl),
-        function(cl_idx) {
-          Matrix::tcrossprod(Matrix::rowSums(IF[, cl_idx, drop = FALSE]))
-        }
-      )
+    ## Here, we are checking if any of the fixed effects are nested within the clusters
+    ## e.g. student FE and student cluster or student FE and classroom cluster.
+    ## If we find any nesting, these don't need to be included when we calculate the
+    ## influence function because after summing IF_i by cluster, these columns will be
+    ## exactly equal to 0 from the first-stage estimation equations
+    ##
+    fe_nesting <- check_nesting_of_fe_in_clusters(
+      first_stage = est$first_stage,
+      data = data,
+      cluster_name = cluster_var
     )
-    cov <- as.matrix(cov)
+    score_columns <- get_score_columns(fe_nesting, x1)
+
+    # The sandwich only uses cluster sums of the observation scores.
+    # Aggregate the sparse scores first instead of materializing a dense
+    # n_second_stage_coefs by n_observations influence matrix.
+    cluster_id <- match(cl, unique(cl))
+    cluster_sum_operator <- Matrix::sparseMatrix(
+      i = cluster_id,
+      j = seq_along(cluster_id),
+      x = 1,
+      dims = c(max(cluster_id), length(cluster_id))
+    )
+
+    second_stage_score <- cluster_sum_operator %*% (x2 * second_u)
+    if (length(score_columns) == 0L) {
+      # Every first-stage column is a fixed effect nested in the clusters, so
+      # every cluster-level first-stage score is zero by the normal equations.
+      first_stage_adjustment <- 0
+    } else {
+      first_stage_score <-
+        cluster_sum_operator[, untreated_rows, drop = FALSE] %*%
+        (x10[, score_columns, drop = FALSE] * first_u[untreated_rows])
+
+      # The first-stage adjustment is
+      #
+      #   Scores_1 (X10' X10)^(-1) X1' X2
+      #
+      rhs <- Matrix::crossprod(x1, x2)
+      correction_coef <- did2s_first_stage_solve(
+        x10 = x10,
+        rhs = rhs,
+        method = vcov_method,
+        tol = vcov_tol,
+        maxiter = vcov_maxiter
+      )
+      first_stage_adjustment <- first_stage_score %*%
+        correction_coef[score_columns, , drop = FALSE]
+    }
+
+    cluster_moment <- second_stage_score - first_stage_adjustment
+    IF <- cluster_moment %*% Matrix::t(x2tx2_inv)
+    cov <- as.matrix(Matrix::crossprod(IF))
+
     rownames(cov) <- colnames(cov) <- names(est$second_stage$coefficients)
   }
 
-  # Bootstrap Standard Errors ------------------------------------------------
+  # Bootstrap Standard Errors --------------------------------------------------
   if (bootstrap) {
     if (verbose) {
       message(sprintf(
@@ -261,11 +352,179 @@ did2s <- function(
     }
   }
 
+  # Prepare return object ------------------------------------------------------
   # summary creates fixest object with correct standard errors and vcov
-  vcov_list = list()
-  vcov_list[[sprintf("Corrected Clustered (%s)", cluster_var)]] = cov
+  vcov_list <- list()
+  vcov_list[[sprintf("Corrected Clustered (%s)", cluster_var)]] <- cov
   est <- base::suppressWarnings(summary(est$second_stage, vcov = vcov_list))
   return(est)
+}
+
+
+# Fixed-effect nesting ---------------------------------------------------------
+
+# Check whether each first-stage fixed effect is nested in the clusters.
+# A fixed effect is nested when each of its levels belongs to exactly one
+# cluster.
+check_nesting_of_fe_in_clusters <- function(first_stage, data, cluster_name) {
+  fixef_vars <- first_stage$fixef_vars
+  if (is.null(fixef_vars) || length(fixef_vars) == 0L) {
+    return(stats::setNames(logical(), character()))
+  }
+
+  cl <- data[[cluster_name]]
+  vapply(
+    fixef_vars,
+    function(fixef_name) {
+      if (identical(fixef_name, cluster_name)) {
+        return(TRUE)
+      }
+      fixef_var <- data[[fixef_name]]
+      if (is.null(fixef_var)) {
+        return(FALSE)
+      }
+      data.table::uniqueN(data.table::data.table(fixef_var, cl)) ==
+        data.table::uniqueN(fixef_var)
+    },
+    logical(1L)
+  )
+}
+
+
+# Locate sparse-model-matrix columns with potentially nonzero cluster scores.
+get_score_columns <- function(fe_nesting, x1) {
+  nested_fixef <- names(fe_nesting)[fe_nesting]
+  if (length(nested_fixef) == 0L || ncol(x1) == 0L) {
+    return(seq_len(ncol(x1)))
+  }
+
+  fixef_labels <- sub("::.*$", "", colnames(x1))
+  fixef_labels <- sub("\\[\\[.*\\]\\]$", "", fixef_labels)
+
+  which(!fixef_labels %in% nested_fixef)
+}
+
+
+# First-stage correction backends ----------------------------------------------
+# Solve (X10' X10) B = rhs with the requested backend.
+did2s_first_stage_solve <- function(
+  x10,
+  rhs,
+  method = "sparse",
+  tol = 1e-10,
+  maxiter = 2000L
+) {
+  if (identical(method, "sparse")) {
+    solution <- robust_solve_XtX(x10, rhs)
+    return(solution)
+  } else if (identical(method, "matrix_free")) {
+    solution <- pcg_crossprod(
+      X = x10,
+      rhs = rhs,
+      tol = tol,
+      maxiter = maxiter
+    )
+    convergence <- attr(solution, "convergence")
+    if (any(!convergence$converged)) {
+      warning(
+        sprintf(
+          paste0(
+            "Matrix-free VCOV solve did not converge for %d of %d ",
+            "right-hand sides (maximum relative residual %.3e)."
+          ),
+          sum(!convergence$converged),
+          nrow(convergence),
+          max(convergence$relative_residual)
+        ),
+        call. = FALSE
+      )
+    }
+    return(solution)
+  } else {
+    stop(
+      "`vcov_method` must be either \"sparse\" or \"matrix_free\".",
+      call. = FALSE
+    )
+  }
+}
+
+# Jacobi-preconditioned conjugate gradients for (X' X) B = rhs.
+pcg_crossprod <- function(X, rhs, tol = 1e-10, maxiter = 2000L) {
+  rhs <- as.matrix(rhs)
+  n_coef <- ncol(X)
+  n_rhs <- ncol(rhs)
+
+  if (nrow(rhs) != n_coef) {
+    stop("`rhs` must have one row per column of `X`.", call. = FALSE)
+  }
+
+  diagonal <- as.numeric(Matrix::colSums(X^2))
+  diagonal[!is.finite(diagonal) | diagonal <= 0] <- 1
+
+  solution <- matrix(0, nrow = n_coef, ncol = n_rhs)
+  converged <- logical(n_rhs)
+  iterations <- integer(n_rhs)
+  relative_residual <- numeric(n_rhs)
+
+  for (j in seq_len(n_rhs)) {
+    target <- rhs[, j]
+    target_norm <- sqrt(sum(target * target))
+
+    if (target_norm == 0) {
+      converged[j] <- TRUE
+      next
+    }
+
+    estimate <- numeric(n_coef)
+    residual <- target
+    preconditioned_residual <- residual / diagonal
+    direction <- preconditioned_residual
+    residual_inner <- sum(residual * preconditioned_residual)
+    relres <- 1
+
+    for (iteration in seq_len(maxiter)) {
+      normal_direction <- as.numeric(
+        Matrix::crossprod(X, X %*% direction)
+      )
+      curvature <- sum(direction * normal_direction)
+
+      if (
+        !is.finite(curvature) ||
+          curvature <= 0 ||
+          !is.finite(residual_inner) ||
+          residual_inner <= 0
+      ) {
+        break
+      }
+
+      step <- residual_inner / curvature
+      estimate <- estimate + step * direction
+      residual <- residual - step * normal_direction
+      relres <- sqrt(sum(residual * residual)) / target_norm
+      iterations[j] <- iteration
+
+      if (!is.finite(relres) || relres > 1e6 || relres <= tol) {
+        break
+      }
+
+      preconditioned_residual <- residual / diagonal
+      next_residual_inner <- sum(residual * preconditioned_residual)
+      direction <- preconditioned_residual +
+        (next_residual_inner / residual_inner) * direction
+      residual_inner <- next_residual_inner
+    }
+
+    solution[, j] <- estimate
+    converged[j] <- is.finite(relres) && relres <= tol
+    relative_residual[j] <- relres
+  }
+
+  attr(solution, "convergence") <- data.frame(
+    converged = converged,
+    iterations = iterations,
+    relative_residual = relative_residual
+  )
+  solution
 }
 
 
@@ -327,7 +586,7 @@ robust_solve_XtX <- function(X, Y) {
 }
 
 
-# Point estimate for did2s
+# Point estimate for did2s -----------------------------------------------------
 did2s_estimate <- function(
   data,
   yname,

@@ -15,6 +15,9 @@ did2s(
   bootstrap = FALSE,
   n_bootstraps = 250,
   return_bootstrap = FALSE,
+  vcov_method = "sparse",
+  vcov_tol = 1e-10,
+  vcov_maxiter = 2000L,
   verbose = FALSE
 )
 }
@@ -52,6 +55,18 @@ Default is \code{250}.}
 estimate to allow for manual use, e.g. percentile standard errors and empirical
 confidence intervals.}
 
+\item{vcov_method}{Method used to solve the first-stage correction in the
+analytic variance calculation. \code{"sparse"} forms and solves the sparse
+cross-product matrix and is typically fastest for conventional unit by time
+panels. \code{"matrix_free"} applies the cross-product as a linear operator and
+solves it with preconditioned conjugate gradients, avoiding factorization
+fill-in that can dominate with high-cardinality crossed fixed effects.}
+
+\item{vcov_tol}{Relative residual tolerance for \code{vcov_method = "matrix_free"}.}
+
+\item{vcov_maxiter}{Maximum number of conjugate-gradient iterations for each
+second-stage coefficient when \code{vcov_method = "matrix_free"}.}
+
 \item{verbose}{Optional. Logical. Should information about the two-stage
 procedure be printed back to the user?
 Default is \code{TRUE}.}
@@ -64,6 +79,16 @@ will work, including \code{\link[fixest:esttable]{fixest::esttable}} and
 }
 \description{
 Calculate two-stage difference-in-differences following Gardner (2021)
+}
+\details{
+Matrix-free PCG will perform better when there are a lot of complicated fixed
+effects.
+
+First-stage fixed effects nested within the clustering variable are detected
+automatically. Their cluster-level scores are zero by the first-stage normal
+equations and are omitted from the VCOV calculation. If every first-stage
+column is a nested fixed effect, the first-stage correction solve is skipped
+entirely.
 }
 \section{Examples}{
 
@@ -192,4 +217,3 @@ did2s(
 }\if{html}{\out{</div>}}
 }
 }
-
