@@ -1,3 +1,19 @@
+# did2s 1.3.0
+
+- Significantly improved the speed and memory usage of analytic clustered standard errors by aggregating score contributions at the cluster level before constructing the influence function.
+
+- First-stage fixed effects nested within the clustering variable are now detected and omitted from the variance correction. The correction solve is skipped entirely when all first-stage fixed effects are nested.
+
+- Added a `matrix_free` covariance backend for models with high-cardinality crossed fixed effects, with `vcov_method`, `vcov_tol`, and `vcov_maxiter` arguments to control the solver.
+
+# did2s 1.2.0
+
+- Added support for estimation weights in `event_study()` for supported estimators.
+
+- Improved the speed and robustness of sparse model-matrix construction, including better handling of collinear fixed effects.
+
+- Updated `did2s()` for compatibility with newer versions of `fixest`.
+
 # did2s 1.1.0
 
 - Added `honest_did` function to compute a sensitivity analysis using the approach of Rambachan and Roth (2021)
