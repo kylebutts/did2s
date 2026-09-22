@@ -28,24 +28,28 @@ where $\mu_i$ are unit fixed effects, $\mu_t$ are time fixed effects, and $D_{it
 Similarly, a (dynamic) event-study TWFE model could be written as:
 
 \begin{equation}
-y_{it} = \mu_i + \mu_t + \sum_{k = -L}^{-2} \tau^k D_{it}^k + \sum_{k = 1}^{K} \tau^k D_{it}^k + \varepsilon_{it},
+y_{it} = \mu_i + \mu_t + \sum_{k = -L}^{-2} \tau^k D_{it}^k + \sum_{k = 0}^{K} \tau^k D_{it}^k + \varepsilon_{it},
 \end{equation}
 
-where $D_{it}^k$ are lag/leads of treatment (k periods from initial treatment date).
+where $D_{it}^k$ are lag/leads of treatment (k periods from initial treatment date) with $-L$ representing the start of the pre-treatment window and $K$ the end of the post-treatment window. Note that in the traditional TWFE framework at least one period must be dropped to avoid perfect multi-collinearity. Specifically, the event-time dummies $D_it^k$ would be perfectly collinear with the unit and time fixed effects $\mu_i$ + $\mu_t$. Thus, following convention, the first period before the treatment $(k = -1)$ is dropped in the second sum above since that period acts as the most natural reference period, e.g., "how did units differ from their own baseline, one period before treatment?"
 
 <aside>Aside: Sometimes researchers use variants of this model where they bin or drop leads and lags.</aside>
 
 However, running OLS to estimate either model has been shown to not recover an average treatment effect and has the potential to be severely misleading in cases of treatment effect heterogeneity [Borusyak et. al. (2021)](https://www.dropbox.com/s/y92mmyndlbkufo1/Draft_RobustAndEfficient.pdf?raw=true); [Callaway and Sant'Anna (2020)](https://www.sciencedirect.com/science/article/pii/S0304407621001445#b18); [de Chaisemartin and d'Haultfoeuille (2020)](https://doi.org/10.1257/aer.20181169); [Goodman-Bacon (2021)](https://www.sciencedirect.com/science/article/pii/S0304407621001445); [Sun and Abraham (2020)](https://www.sciencedirect.com/science/article/pii/S030440762030378X)]. 
 
-One way of thinking about this problem is through the [Frisch–Waugh–Lovell (FWL) theorem](https://en.wikipedia.org/wiki/Frisch%E2%80%93Waugh%E2%80%93Lovell_theorem). When estimating the unit and time fixed effects, you create a residualized $\tilde{Y}_{it}$ which is commonly said to be "the outcome variable after removing time shocks and fixed units characteristics", but you also create a residulaized $\tilde{D}_{it}$ or $\tilde{D}_{it}^k$. To simplify the literature, this residualized treatment indicators is what creates the problem of interpreting $\tau$ or $\tau^k$, especially when treatment effects are heterogeneous.
+One way of thinking about this problem is through the [Frisch–Waugh–Lovell (FWL) theorem](https://en.wikipedia.org/wiki/Frisch%E2%80%93Waugh%E2%80%93Lovell_theorem). When estimating the unit and time fixed effects, you create a residualized $\tilde{Y}_{it}$ which is commonly said to be "the outcome variable after removing time shocks and fixed units characteristics". But this process also inherently creates a residulaized treatment indicator $\tilde{D}_{it}$ or $\tilde{D}_{it}^k$. To simplify the literature, this residualized treatment indicators is what creates the problem of interpreting the treatment effects $\tau$ or $\tau^k$, especially when the treatment effects are heterogeneous.
 
-That's where [Gardner (2021)](https://jrgcmu.github.io/2sdd_current.pdf) comes in. What Gardner does to fix the problem is quite simple: estimate $\mu_i$ and $\mu_t$ seperately so you don't residualize the treatment indicators. In the absence of treatment, the TWFE model gives you a model for (potentially unobserved) untreated outcomes 
+That's where [Gardner (2021)](https://jrgcmu.github.io/2sdd_current.pdf) comes in.
+> [!IMPORTANT]
+> What Gardner does to fix the problem is quite simple: estimate $\mu_i$ and $\mu_t$ seperately so you don't residualize the treatment indicators. 
+
+In the absence of treatment, the TWFE model gives you a model for (potentially unobserved) untreated outcomes 
 
 $$y_{it}(0) = \mu_i + \mu_t + \varepsilon_{it}.$$
 
 Therefore, if you can ***consistently*** estimate $y_{it}(0)$, you can impute the untreated outcome and remove that from the observed outcome $y_{it}$. The value of $y_{it} - \hat{y}_{it}(0)$ should be close to zero for control units and should be close to $\tau_{it}$ for treated observations. Then, regressing $y_{it} - \hat{y}_{it}(0)$ on the treatment variables should give unbiased estimates of treatment effects (either static or dynamic/event-study).
 
-<aside>Aside: This is the same logic as the new paper by [[Borusyak et. al. (2021)](https://sites.google.com/view/borusyak/research).</aside>
+This is the same logic as the new paper by [Borusyak et. al. (2021)](https://sites.google.com/view/borusyak/research).
 
 The steps of the two-step estimator are:
 
@@ -59,19 +63,25 @@ Some notes:
 
 First, the standard errors on $\tau$ or $\tau^k$'s will be incorrect as the dependent variable is itself an estimate. This is referred to the generated regressor problem in econometrics parlance. Therefore, [Gardner (2021)](https://jrgcmu.github.io/2sdd_current.pdf) has developed a GMM estimator that will give asymptotically correct standard errors. 
 
-<aside>Details are left to the paper, but are implemented in this R package</aside>
+> [!NOTE]
+> Details about the standard errors of treatment effects are left to the paper, but are implemented in this R package.
 
 ### Anticipation
 
 Second, this procedure works so long as $\mu_i$ and $\mu_t$ are ***consistently*** estimated. The key is to use only untreated/not-yet-treated observations to estimate the fixed effects. For example, if you used observations with $D_{it} = 1$, you would attribute treatment effects $\tau$ as "fixed characteristics" and would combine $\mu_i$ with the treatment effects.
 
-The fixed effects could be biased/inconsistent if there are anticipation effects, i.e. units respond before treatment starts. The fix is fairly simple, simply "shift" treatment date earlier by as many years as you suspect anticipation to occur (e.g. 2 years before treatment starts) and estimate on the subsample where the shifted treatment equals zero.
+> [!WARNING]
+> The fixed effects could be biased/inconsistent if there are anticipation effects, i.e. units respond before treatment starts. 
 
-<aside>This R package allows you to specify the variable $D_{it}$, if you suspect anticipation, provide the shifted variable to this option.</aside>
+The fix is fairly simple, simply "shift" treatment date earlier by as many time periods as you suspect anticipation to occur (e.g., 2 years before treatment starts) and estimate on the subsample where the shifted treatment equals zero.
+
+> [!TIP]
+> This R package allows you to specify the variable $D_{it}$, if you suspect anticipation, provide the shifted variable to this option.
 
 ### Covariates
 
 This method works with pre-determined covariates as well. Augment the above step 1. to include $X_i$ and remove that from $y_{it}$ along with the fixed effects to get $\tilde{y}_{it}$. 
+See the `first_stage` description in the `did2s()`requirements below. 
 
 
 ## did2s R Package
@@ -82,7 +92,8 @@ This method works with pre-determined covariates as well. Augment the above step
 remotes::install_github("kylebutts/did2s")
 ```
 
-> Note: Windows users should install [Rtools](https://cran.r-project.org/bin/windows/Rtools/) before running the above command, since they will need to compile some C++ code from source.
+> [!NOTE]
+> Windows users should install [Rtools](https://cran.r-project.org/bin/windows/Rtools/) before running the above command, since they will need to compile some C++ code from source.
 
 The main function is **`did2s()`**, which estimates the two-stage DiD procedure. The function is really a convenience wrapper (plus some important transformations) around [`fixest::feols()`](https://lrberge.github.io/fixest/reference/feols.html) and will return a **fixest** object. This is important for several reasons that will become clear in the examples that follow. 
 
